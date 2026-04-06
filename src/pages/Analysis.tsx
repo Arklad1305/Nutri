@@ -3,8 +3,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import { TrendingUp, Activity, Send, Sparkles, Loader2, BarChart3, Flame, Beef, Wheat, Droplets } from 'lucide-react'
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { TrendingUp, Activity, Send, Sparkles, Loader2, BarChart3, Flame, Droplets, Zap, Target } from 'lucide-react'
 import { submitHealthData } from '../lib/n8n'
 import { BiohackerNutrients } from '../components/BiohackerNutrients'
 import { BComplexVitamins } from '../components/BComplexVitamins'
@@ -256,8 +256,8 @@ export function Analysis() {
       {/* ── Hero Section ── */}
       <div className="relative overflow-hidden px-4 pt-6 pb-8 mb-6">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-72 h-64 bg-orange-600/15 rounded-full blur-3xl" />
-          <div className="absolute top-4 right-1/4 w-56 h-48 bg-blue-600/15 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-72 h-64 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute top-4 right-1/4 w-56 h-48 bg-info/10 rounded-full blur-3xl" />
         </div>
 
         <div className="relative z-10">
@@ -278,7 +278,7 @@ export function Analysis() {
               {averages.calories} kcal/día
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-dark-card/60 backdrop-blur-sm border border-dark-border/50 rounded-full text-xs font-bold text-white">
-              <Beef className="w-3.5 h-3.5 text-blue-400" />
+              <Activity className="w-3.5 h-3.5 text-blue-400" />
               {averages.protein_g}g proteína
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-dark-card/60 backdrop-blur-sm border border-dark-border/50 rounded-full text-xs font-bold text-white">
@@ -338,14 +338,16 @@ export function Analysis() {
         {/* ── Average Metric Cards ── */}
         <div className="analysis-section grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: 'Calorías', value: averages.calories, unit: 'kcal/día', icon: Activity, color: 'text-orange-400', glow: 'shadow-orange-500/20' },
-            { label: 'Proteína', value: `${averages.protein_g}g`, unit: '/día', icon: Beef, color: 'text-blue-400', glow: 'shadow-blue-500/20' },
-            { label: 'Carbohidratos', value: `${averages.carbs_g}g`, unit: '/día', icon: Wheat, color: 'text-green-400', glow: 'shadow-green-500/20' },
-            { label: 'Grasas', value: `${averages.fat_g}g`, unit: '/día', icon: Droplets, color: 'text-yellow-400', glow: 'shadow-yellow-500/20' },
-          ].map(({ label, value, unit, icon: Icon, color, glow }) => (
-            <div key={label} className={`bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-4 shadow-lg ${glow}`}>
+            { label: 'Calorías', value: averages.calories, unit: 'kcal/día', icon: Zap, color: 'text-amber-400', bg: 'from-amber-500/15 to-orange-500/5', border: 'border-amber-500/20' },
+            { label: 'Proteína', value: `${averages.protein_g}g`, unit: '/día', icon: Activity, color: 'text-blue-400', bg: 'from-blue-500/15 to-cyan-500/5', border: 'border-blue-500/20' },
+            { label: 'Carbohidratos', value: `${averages.carbs_g}g`, unit: '/día', icon: Flame, color: 'text-emerald-400', bg: 'from-emerald-500/15 to-green-500/5', border: 'border-emerald-500/20' },
+            { label: 'Grasas', value: `${averages.fat_g}g`, unit: '/día', icon: Droplets, color: 'text-yellow-400', bg: 'from-yellow-500/15 to-amber-500/5', border: 'border-yellow-500/20' },
+          ].map(({ label, value, unit, icon: Icon, color, bg, border }) => (
+            <div key={label} className={`relative overflow-hidden bg-gradient-to-br ${bg} backdrop-blur-sm border ${border} rounded-2xl p-4 shadow-lg shadow-black/20`}>
               <div className="flex items-center gap-2 mb-3">
-                <Icon className={`w-4 h-4 ${color}`} />
+                <div className={`p-1.5 rounded-lg bg-dark-bg/40`}>
+                  <Icon className={`w-3.5 h-3.5 ${color}`} />
+                </div>
                 <span className="text-dark-muted text-xs font-semibold">{label}</span>
               </div>
               <div className="text-2xl font-black text-white">{value}</div>
@@ -356,31 +358,53 @@ export function Analysis() {
 
         {/* ── Charts Row ── */}
         <div className="analysis-section grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-5">
-            <h2 className="text-base font-black text-white mb-4">Tendencia de Calorías</h2>
+          <div className="bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-5 shadow-lg shadow-black/20">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-4 h-4 text-amber-400" />
+              <h2 className="text-base font-black text-white">Tendencia de Calorías</h2>
+            </div>
             <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="date" stroke="#555" tick={{ fontSize: 12 }} />
-                <YAxis stroke="#555" tick={{ fontSize: 12 }} />
-                <Tooltip contentStyle={chartTooltipStyle} />
-                <Line type="monotone" dataKey="calories" stroke="#f59e0b" strokeWidth={2.5} dot={{ fill: '#f59e0b', r: 4 }} name="Calorías" />
-              </LineChart>
+              <AreaChart data={weeklyData}>
+                <defs>
+                  <linearGradient id="calorieGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.35} />
+                    <stop offset="50%" stopColor="#f59e0b" stopOpacity={0.1} />
+                    <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="date" stroke="#4a5568" tick={{ fontSize: 11, fill: '#7d8590' }} axisLine={false} tickLine={false} />
+                <YAxis stroke="#4a5568" tick={{ fontSize: 11, fill: '#7d8590' }} axisLine={false} tickLine={false} width={40} />
+                <Tooltip contentStyle={chartTooltipStyle} cursor={{ stroke: 'rgba(245,158,11,0.2)', strokeWidth: 1 }} />
+                <Area type="monotone" dataKey="calories" stroke="#f59e0b" strokeWidth={2.5} fill="url(#calorieGradient)" dot={{ fill: '#f59e0b', r: 4, strokeWidth: 2, stroke: '#0d1117' }} activeDot={{ r: 6, stroke: '#f59e0b', strokeWidth: 2, fill: '#0d1117' }} name="Calorías" />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-5">
-            <h2 className="text-base font-black text-white mb-4">Distribución Macros</h2>
+          <div className="bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-5 shadow-lg shadow-black/20">
+            <div className="flex items-center gap-2 mb-4">
+              <Target className="w-4 h-4 text-primary" />
+              <h2 className="text-base font-black text-white">Distribución Macros</h2>
+            </div>
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
+                <defs>
+                  <filter id="pieShadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#000" floodOpacity="0.4" />
+                  </filter>
+                </defs>
                 <Pie
                   data={macroDistribution}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={90}
+                  outerRadius={95}
+                  innerRadius={45}
                   dataKey="value"
+                  strokeWidth={2}
+                  stroke="#0d1117"
+                  style={{ filter: 'url(#pieShadow)' }}
                 >
                   {macroDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -393,18 +417,35 @@ export function Analysis() {
         </div>
 
         {/* ── Bar Chart ── */}
-        <div className="analysis-section bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-5">
-          <h2 className="text-base font-black text-white mb-4">Comparación Semanal de Macros</h2>
+        <div className="analysis-section bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-5 shadow-lg shadow-black/20">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 className="w-4 h-4 text-blue-400" />
+            <h2 className="text-base font-black text-white">Comparación Semanal de Macros</h2>
+          </div>
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="date" stroke="#555" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#555" tick={{ fontSize: 12 }} />
-              <Tooltip contentStyle={chartTooltipStyle} />
-              <Legend />
-              <Bar dataKey="protein_g" fill="#3b82f6" name="Proteína (g)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="carbs_g" fill="#10b981" name="Carbos (g)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="fat_g" fill="#f59e0b" name="Grasas (g)" radius={[4, 4, 0, 0]} />
+            <BarChart data={weeklyData} barCategoryGap="20%">
+              <defs>
+                <linearGradient id="proteinGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#60a5fa" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#2563eb" stopOpacity={0.7} />
+                </linearGradient>
+                <linearGradient id="carbsGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#34d399" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
+                </linearGradient>
+                <linearGradient id="fatGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#d97706" stopOpacity={0.7} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis dataKey="date" stroke="#4a5568" tick={{ fontSize: 11, fill: '#7d8590' }} axisLine={false} tickLine={false} />
+              <YAxis stroke="#4a5568" tick={{ fontSize: 11, fill: '#7d8590' }} axisLine={false} tickLine={false} width={35} />
+              <Tooltip contentStyle={chartTooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#7d8590' }} />
+              <Bar dataKey="protein_g" fill="url(#proteinGrad)" name="Proteína (g)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="carbs_g" fill="url(#carbsGrad)" name="Carbos (g)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="fat_g" fill="url(#fatGrad)" name="Grasas (g)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

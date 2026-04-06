@@ -140,27 +140,27 @@ export function MacroRing({
 
               <defs>
                 <linearGradient id="calorieGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#f97316" />
-                  <stop offset="100%" stopColor="#f59e0b" />
+                  <stop offset="0%" stopColor="#0d9488" />
+                  <stop offset="100%" stopColor="#2dd4bf" />
                 </linearGradient>
                 <linearGradient id="proteinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#3b82f6" />
-                  <stop offset="100%" stopColor="#06b6d4" />
+                  <stop offset="100%" stopColor="#60a5fa" />
                 </linearGradient>
                 <linearGradient id="carbsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#14b8a6" />
+                  <stop offset="0%" stopColor="#059669" />
+                  <stop offset="100%" stopColor="#34d399" />
                 </linearGradient>
                 <linearGradient id="fatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#f43f5e" />
-                  <stop offset="100%" stopColor="#ec4899" />
+                  <stop offset="0%" stopColor="#d97706" />
+                  <stop offset="100%" stopColor="#fbbf24" />
                 </linearGradient>
               </defs>
             </svg>
 
             {/* Center display */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div ref={calorieRef} className="text-4xl font-black text-orange-400">
+              <div ref={calorieRef} className="text-4xl font-black text-primary-400">
                 {Math.round(calories)}
               </div>
               <div className="text-xs text-dark-muted mt-1">kcal</div>
@@ -180,9 +180,9 @@ export function MacroRing({
             <div className="text-lg font-bold text-green-400">{Math.round(carbs)}g</div>
             <div className="text-xs text-dark-muted">{Math.round(carbsPercentage)}%</div>
           </div>
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-center">
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-center">
             <div className="text-xs text-dark-muted mb-1">Grasas</div>
-            <div className="text-lg font-bold text-red-400">{Math.round(fat)}g</div>
+            <div className="text-lg font-bold text-amber-400">{Math.round(fat)}g</div>
             <div className="text-xs text-dark-muted">{Math.round(fatPercentage)}%</div>
           </div>
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-center">

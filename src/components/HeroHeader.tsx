@@ -1,6 +1,7 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { ImagePlus } from 'lucide-react'
 
 interface HeroHeaderProps {
   userName: string
@@ -13,82 +14,91 @@ function SunArc() {
   const now = new Date()
   const hours = now.getHours() + now.getMinutes() / 60
 
-  // Sun arc: 6am (sunrise) → 12pm (noon/top) → 20h (sunset)
   const sunrise = 6
   const sunset = 20
   const dayLength = sunset - sunrise
   const isDay = hours >= sunrise && hours <= sunset
 
-  // Progress through the day: 0 (sunrise) → 1 (sunset)
   const progress = isDay
     ? Math.max(0, Math.min(1, (hours - sunrise) / dayLength))
-    : hours < sunrise
-    ? 0
-    : 1
+    : hours < sunrise ? 0 : 1
 
-  // Arc geometry: semicircle from left to right
-  const arcWidth = 200
-  const arcHeight = 50
-  const cx = progress * arcWidth
-  const cy = arcHeight - Math.sin(progress * Math.PI) * arcHeight
+  const arcWidth = 240
+  const arcHeight = 70
+  const cx = 10 + progress * (arcWidth - 20)
+  const cy = arcHeight - Math.sin(progress * Math.PI) * (arcHeight - 8)
 
-  // Sky gradient based on time
-  const skyColor = !isDay
-    ? '#0f172a'
-    : hours < 8
-    ? '#1e3a5f'
-    : hours < 17
-    ? '#1e40af'
-    : '#1e3a5f'
-
-  const sunColor = !isDay ? '#94a3b8' : hours < 8 || hours > 18 ? '#f59e0b' : '#fbbf24'
-  const sunGlow = !isDay ? 'transparent' : hours < 8 || hours > 18 ? '#f59e0b' : '#fde68a'
-  const sunSize = isDay ? 6 : 4
-
-  // Horizon line
-  const horizonY = arcHeight + 2
+  const sunColor = !isDay ? '#7d8590' : hours < 8 || hours > 18 ? '#d97706' : '#f59e0b'
+  const sunSize = isDay ? 5 : 3.5
 
   return (
-    <svg viewBox={`0 0 ${arcWidth} ${arcHeight + 10}`} className="w-full h-12 md:h-14" preserveAspectRatio="xMidYMid meet">
-      {/* Sky fill */}
-      <rect x="0" y="0" width={arcWidth} height={horizonY} rx="6" fill={skyColor} opacity="0.15" />
+    <svg viewBox={`0 0 ${arcWidth} ${arcHeight + 14}`} className="w-full h-20 md:h-24" preserveAspectRatio="xMidYMid meet">
+      {/* Sky gradient */}
+      <defs>
+        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={isDay ? '#0c4a6e' : '#0f172a'} stopOpacity="0.12" />
+          <stop offset="100%" stopColor="transparent" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width={arcWidth} height={arcHeight + 2} rx="8" fill="url(#skyGrad)" />
 
-      {/* Arc path (dotted trajectory) */}
+      {/* Arc trajectory */}
       <path
-        d={`M 0 ${horizonY} Q ${arcWidth / 2} ${-arcHeight * 0.8} ${arcWidth} ${horizonY}`}
+        d={`M 10 ${arcHeight + 2} Q ${arcWidth / 2} ${-arcHeight * 0.6} ${arcWidth - 10} ${arcHeight + 2}`}
         fill="none"
-        stroke="currentColor"
-        strokeWidth="0.5"
-        strokeDasharray="3 3"
-        className="text-dark-border"
+        stroke="#21262d"
+        strokeWidth="0.8"
+        strokeDasharray="4 4"
       />
 
-      {/* Horizon line */}
-      <line x1="0" y1={horizonY} x2={arcWidth} y2={horizonY} stroke="currentColor" strokeWidth="0.5" className="text-dark-border" />
+      {/* Horizon */}
+      <line x1="0" y1={arcHeight + 2} x2={arcWidth} y2={arcHeight + 2} stroke="#21262d" strokeWidth="0.5" />
 
       {/* Sun glow */}
-      {isDay && (
-        <circle cx={cx} cy={cy} r={sunSize * 2.5} fill={sunGlow} opacity="0.15" />
-      )}
+      {isDay && <circle cx={cx} cy={cy} r={sunSize * 3} fill={sunColor} opacity="0.08" />}
+      {isDay && <circle cx={cx} cy={cy} r={sunSize * 1.8} fill={sunColor} opacity="0.15" />}
 
-      {/* Sun / Moon */}
+      {/* Sun */}
       <circle cx={cx} cy={cy} r={sunSize} fill={sunColor} />
 
-      {/* Time labels */}
-      <text x="4" y={horizonY + 8} fontSize="6" fill="#6b7280" fontFamily="inherit">6:00</text>
-      <text x={arcWidth / 2 - 6} y="8" fontSize="6" fill="#6b7280" fontFamily="inherit">12:00</text>
-      <text x={arcWidth - 22} y={horizonY + 8} fontSize="6" fill="#6b7280" fontFamily="inherit">20:00</text>
+      {/* Labels */}
+      <text x="6" y={arcHeight + 12} fontSize="7" fill="#7d8590" fontFamily="inherit" fontWeight="500">6:00</text>
+      <text x={arcWidth / 2 - 8} y="10" fontSize="7" fill="#7d8590" fontFamily="inherit" fontWeight="500">12:00</text>
+      <text x={arcWidth - 28} y={arcHeight + 12} fontSize="7" fill="#7d8590" fontFamily="inherit" fontWeight="500">20:00</text>
     </svg>
   )
 }
 
 export function HeroHeader({ userName, totalCalories, goalCalories }: HeroHeaderProps) {
   const [currentHour, setCurrentHour] = useState(new Date().getHours())
+  const [bgImage, setBgImage] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentHour(new Date().getHours()), 60000)
     return () => clearInterval(interval)
   }, [])
+
+  // Load saved background
+  useEffect(() => {
+    const saved = localStorage.getItem('nutri_hero_bg')
+    if (saved) setBgImage(saved)
+  }, [])
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !file.type.startsWith('image/')) return
+    if (file.size > 2 * 1024 * 1024) return // 2MB max
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string
+      setBgImage(dataUrl)
+      localStorage.setItem('nutri_hero_bg', dataUrl)
+    }
+    reader.readAsDataURL(file)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   const greeting = useMemo(() => {
     if (currentHour < 12) return 'Buenos días'
@@ -96,44 +106,57 @@ export function HeroHeader({ userName, totalCalories, goalCalories }: HeroHeader
     return 'Buenas noches'
   }, [currentHour])
 
-  const calPercentage = (totalCalories / goalCalories) * 100
+  const calPercentage = goalCalories > 0 ? (totalCalories / goalCalories) * 100 : 0
   const remaining = Math.max(0, goalCalories - totalCalories)
 
   return (
-    <div className="relative mb-6 overflow-hidden">
-      <div className="relative z-10 bg-dark-card/50 backdrop-blur-xl border border-dark-border/50 rounded-2xl p-5 md:p-6">
+    <div className="relative mb-6 overflow-hidden rounded-2xl">
+      {/* Background image */}
+      {bgImage && (
+        <div className="absolute inset-0 z-0">
+          <img src={bgImage} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-dark-bg/80 backdrop-blur-sm" />
+        </div>
+      )}
 
-        {/* Top row: greeting + date */}
-        <div className="mb-4">
-          <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+      <div className={`relative z-10 ${bgImage ? '' : 'bg-dark-card/50 backdrop-blur-xl border border-dark-border/50'} rounded-2xl p-5 md:p-6`}>
+        {/* Upload button */}
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="absolute top-3 right-3 p-1.5 rounded-lg bg-dark-hover/60 border border-dark-border/40 text-dark-muted hover:text-white hover:bg-dark-hover transition-all z-20"
+          title="Cambiar fondo"
+        >
+          <ImagePlus className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Greeting + date */}
+        <div className="mb-3">
+          <h1 className="text-xl md:text-2xl font-bold text-dark-text tracking-tight">
             {greeting}, <span className="text-primary">{userName}</span>
           </h1>
-          <p className="text-xs text-dark-muted mt-1 capitalize">{format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}</p>
+          <p className="text-[11px] text-dark-muted mt-0.5 capitalize">{format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}</p>
         </div>
 
         {/* Sun arc */}
-        <div className="mb-4 rounded-xl overflow-hidden">
+        <div className="mb-3 rounded-xl overflow-hidden">
           <SunArc />
         </div>
 
         {/* Calorie progress */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-dark-muted text-xs font-medium">Energía</span>
-            <span className={`text-xs font-bold ${
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-dark-muted text-[11px] font-medium">Energía diaria</span>
+            <span className={`text-[11px] font-semibold ${
               calPercentage >= 90 && calPercentage <= 110 ? 'text-primary' : calPercentage > 110 ? 'text-danger' : 'text-accent'
             }`}>
               {totalCalories} / {goalCalories} kcal
             </span>
           </div>
-          <div className="relative h-1.5 bg-dark-border rounded-full overflow-hidden">
+          <div className="relative h-1 bg-dark-border/60 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                calPercentage >= 90 && calPercentage <= 110
-                  ? 'bg-primary'
-                  : calPercentage > 110
-                  ? 'bg-danger'
-                  : 'bg-accent'
+              className={`h-full rounded-full transition-all duration-700 ${
+                calPercentage >= 90 && calPercentage <= 110 ? 'bg-primary' : calPercentage > 110 ? 'bg-danger' : 'bg-accent'
               }`}
               style={{ width: `${Math.min(calPercentage, 100)}%` }}
             />

@@ -110,7 +110,7 @@ export function WaterTracker({ current, goal, onWaterAdded }: WaterTrackerProps)
 
   return (
     <div ref={cardRef} className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-5 group-hover:opacity-10 transition-opacity duration-500"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-[0.06] transition-opacity duration-300"></div>
 
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-6">

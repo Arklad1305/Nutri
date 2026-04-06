@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { format, startOfDay, endOfDay } from 'date-fns'
+import { ClipboardList } from 'lucide-react'
 import { FoodLogList } from '../components/FoodLogList'
 import { WaterTracker } from '../components/WaterTracker'
 import { MetabolicStateCard } from '../components/MetabolicStateCard'
@@ -608,7 +609,12 @@ export function Dashboard() {
           {/* Food Log List - Large (full width) */}
           <div className="dash-section col-span-full lg:col-span-3">
             <div className="bg-dark-card/40 backdrop-blur-xl border border-dark-border/50 rounded-3xl p-6">
-              <h3 className="text-sm font-semibold text-dark-muted mb-4">Últimos Alimentos</h3>
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <ClipboardList className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="text-sm font-bold text-white">Registro de Alimentos</h3>
+              </div>
               <FoodLogList refreshKey={refreshKey} onFoodDeleted={handleFoodDeleted} limit={5} />
             </div>
           </div>
