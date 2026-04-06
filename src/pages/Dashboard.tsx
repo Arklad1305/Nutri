@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { format, startOfDay, endOfDay } from 'date-fns'
@@ -22,6 +22,8 @@ import DayTypeSelector from '../components/DayTypeSelector'
 import { Ripple } from '../components/Ripple'
 import { analyzeAllNutrients, NutrientStatus } from '../lib/nutritionStandards'
 import { calculateNutritionTargets } from '../lib/nutritionTargetCalculator'
+import { gsap, useGSAP } from '../lib/gsap'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 interface DailyGoals {
   calories: number
@@ -60,6 +62,23 @@ export function Dashboard() {
   const [isTrainingDay, setIsTrainingDay] = useState<boolean>(false)
   const [diaTipo, setDiaTipo] = useState<string>('')
   const [activities, setActivities] = useState<any[]>([])
+  const dashRef = useRef<HTMLDivElement>(null)
+  const reducedMotion = useReducedMotion()
+
+  useGSAP(() => {
+    if (reducedMotion || !dashRef.current || !goals) return
+
+    const sections = dashRef.current.querySelectorAll('.dash-section')
+    if (sections.length === 0) return
+
+    gsap.from(sections, {
+      opacity: 0,
+      y: 30,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: 'power3.out',
+    })
+  }, { scope: dashRef, dependencies: [goals, mainTab, reducedMotion], revertOnUpdate: true })
 
   useEffect(() => {
     if (user) {
@@ -557,9 +576,9 @@ export function Dashboard() {
   const leucineStatus = nutrientStatuses.find(s => s.nutrient_key === 'leucine_g')
 
   return (
-    <div className="min-h-screen bg-dark-bg pb-20">
+    <div ref={dashRef} className="min-h-screen bg-dark-bg pb-20">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="mb-6">
+        <div className="dash-section mb-6">
           <h1 className="text-2xl font-bold text-white mb-1">Dashboard</h1>
           <p className="text-dark-muted">{format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}</p>
         </div>
@@ -613,7 +632,7 @@ export function Dashboard() {
 
         {mainTab === 'resumen' && (
           <div className="space-y-6">
-            <div className="space-y-4">
+            <div className="dash-section space-y-4">
               <DayTypeSelector isTrainingDay={isTrainingDay} onChange={updateDailyActivity} />
               {diaTipo && (
                 <div className={`p-4 rounded-xl border ${
@@ -641,7 +660,7 @@ export function Dashboard() {
               />
             </div>
 
-            <div>
+            <div className="dash-section">
               <h2 className="text-lg font-semibold text-white mb-4">Macros Vitales</h2>
               <div className="w-layout-grid">
                 <MacroCard
@@ -683,7 +702,7 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="dash-section grid grid-cols-1 md:grid-cols-2 gap-4">
               {leucineStatus && <NutrientStatusCard status={leucineStatus} />}
               <WaterTracker
                 current={waterIntake}
@@ -692,7 +711,7 @@ export function Dashboard() {
               />
             </div>
 
-            <div className="bg-dark-card border border-dark-border rounded-xl p-6">
+            <div className="dash-section bg-dark-card border border-dark-border rounded-xl p-6">
               <h3 className="text-sm font-semibold text-white mb-4">Últimos Alimentos</h3>
               <FoodLogList refreshKey={refreshKey} onFoodDeleted={handleFoodDeleted} limit={5} />
             </div>

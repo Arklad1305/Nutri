@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Droplet, Waves, Plus, CheckCircle2, AlertCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { gsap, useGSAP } from '../lib/gsap'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 interface WaterTrackerProps {
   current: number
@@ -12,6 +14,7 @@ interface WaterTrackerProps {
 export function WaterTracker({ current, goal, onWaterAdded }: WaterTrackerProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
+  const reducedMotion = useReducedMotion()
 
   const percentage = (current / goal) * 100
   const liters = current / 1000
@@ -38,10 +41,75 @@ export function WaterTracker({ current, goal, onWaterAdded }: WaterTrackerProps)
 
   const clampedPercentage = Math.min(percentage, 100)
   const circumference = 2 * Math.PI * 54
-  const strokeDashoffset = circumference - (clampedPercentage / 100) * circumference
+  const targetOffset = circumference - (clampedPercentage / 100) * circumference
+
+  const cardRef = useRef<HTMLDivElement>(null)
+  const circleRef = useRef<SVGCircleElement>(null)
+  const litersRef = useRef<HTMLDivElement>(null)
+  const percentRef = useRef<HTMLSpanElement>(null)
+  const [hasAnimated, setHasAnimated] = useState(false)
+
+  useGSAP(() => {
+    if (reducedMotion || !cardRef.current) return
+
+    if (circleRef.current) {
+      gsap.fromTo(circleRef.current,
+        { strokeDashoffset: circumference },
+        {
+          strokeDashoffset: targetOffset,
+          duration: 1.4,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: cardRef.current,
+            start: 'top 85%',
+            once: true,
+            onEnter: () => setHasAnimated(true),
+          },
+        }
+      )
+    }
+
+    if (litersRef.current) {
+      const obj = { val: 0 }
+      gsap.to(obj, {
+        val: liters,
+        duration: 1.2,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: cardRef.current,
+          start: 'top 85%',
+          once: true,
+        },
+        onUpdate: () => {
+          if (litersRef.current) {
+            litersRef.current.textContent = obj.val.toFixed(1)
+          }
+        },
+      })
+    }
+
+    if (percentRef.current) {
+      const obj = { val: 0 }
+      gsap.to(obj, {
+        val: Math.round(percentage),
+        duration: 1.2,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: cardRef.current,
+          start: 'top 85%',
+          once: true,
+        },
+        onUpdate: () => {
+          if (percentRef.current) {
+            percentRef.current.textContent = `${Math.round(obj.val)}%`
+          }
+        },
+      })
+    }
+  }, { scope: cardRef, dependencies: [current, percentage, reducedMotion], revertOnUpdate: true })
 
   return (
-    <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
+    <div ref={cardRef} className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-5 group-hover:opacity-10 transition-opacity duration-500"></div>
 
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
@@ -74,6 +142,7 @@ export function WaterTracker({ current, goal, onWaterAdded }: WaterTrackerProps)
                 className="text-dark-border"
               />
               <circle
+                ref={circleRef}
                 cx="64"
                 cy="64"
                 r="54"
@@ -81,9 +150,8 @@ export function WaterTracker({ current, goal, onWaterAdded }: WaterTrackerProps)
                 strokeWidth="8"
                 fill="none"
                 strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
+                strokeDashoffset={reducedMotion || hasAnimated ? targetOffset : circumference}
                 strokeLinecap="round"
-                className="transition-all duration-700 ease-out"
               />
               <defs>
                 <linearGradient id="waterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -93,7 +161,7 @@ export function WaterTracker({ current, goal, onWaterAdded }: WaterTrackerProps)
               </defs>
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="text-3xl font-bold text-blue-400">
+              <div ref={litersRef} className="text-3xl font-bold text-blue-400">
                 {liters.toFixed(1)}
               </div>
               <div className="text-xs text-dark-muted">litros</div>
@@ -107,7 +175,7 @@ export function WaterTracker({ current, goal, onWaterAdded }: WaterTrackerProps)
             </div>
             <div className="space-y-1">
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-white">{Math.round(percentage)}%</span>
+                <span ref={percentRef} className="text-2xl font-bold text-white">{Math.round(percentage)}%</span>
                 <span className="text-xs text-dark-muted">completado</span>
               </div>
               <p className="text-xs text-dark-muted">

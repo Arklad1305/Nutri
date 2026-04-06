@@ -1,6 +1,9 @@
+import { useRef, useState } from 'react'
 import { LucideIcon } from 'lucide-react'
 import { TrendingUp, TrendingDown, CheckCircle2 } from 'lucide-react'
 import { macroColorConfig } from '../lib/colorConfig'
+import { gsap, useGSAP } from '../lib/gsap'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 interface MacroCardProps {
   title: string
@@ -16,13 +19,82 @@ export function MacroCard({ title, current, goal, unit, icon: Icon, color, perce
   const isOverGoal = percentage > 100
   const isOnTarget = percentage >= 90 && percentage <= 110
   const config = macroColorConfig[color] || macroColorConfig['text-blue-500']
+  const reducedMotion = useReducedMotion()
 
   const clampedPercentage = Math.min(percentage, 100)
   const circumference = 2 * Math.PI * 45
-  const strokeDashoffset = circumference - (clampedPercentage / 100) * circumference
+  const targetOffset = circumference - (clampedPercentage / 100) * circumference
+
+  const cardRef = useRef<HTMLDivElement>(null)
+  const circleRef = useRef<SVGCircleElement>(null)
+  const percentRef = useRef<HTMLDivElement>(null)
+  const valueRef = useRef<HTMLSpanElement>(null)
+  const [hasAnimated, setHasAnimated] = useState(false)
+
+  useGSAP(() => {
+    if (reducedMotion || !cardRef.current) return
+
+    // Animate SVG arc from empty to current value
+    if (circleRef.current) {
+      gsap.fromTo(circleRef.current,
+        { strokeDashoffset: circumference },
+        {
+          strokeDashoffset: targetOffset,
+          duration: 1.4,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: cardRef.current,
+            start: 'top 85%',
+            once: true,
+            onEnter: () => setHasAnimated(true),
+          },
+        }
+      )
+    }
+
+    // Count-up for percentage display
+    if (percentRef.current) {
+      const obj = { val: 0 }
+      gsap.to(obj, {
+        val: Math.round(percentage),
+        duration: 1.2,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: cardRef.current,
+          start: 'top 85%',
+          once: true,
+        },
+        onUpdate: () => {
+          if (percentRef.current) {
+            percentRef.current.textContent = `${Math.round(obj.val)}%`
+          }
+        },
+      })
+    }
+
+    // Count-up for absolute value
+    if (valueRef.current) {
+      const obj = { val: 0 }
+      gsap.to(obj, {
+        val: Math.round(current),
+        duration: 1.2,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: cardRef.current,
+          start: 'top 85%',
+          once: true,
+        },
+        onUpdate: () => {
+          if (valueRef.current) {
+            valueRef.current.textContent = String(Math.round(obj.val))
+          }
+        },
+      })
+    }
+  }, { scope: cardRef, dependencies: [current, percentage, reducedMotion], revertOnUpdate: true })
 
   return (
-    <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-5 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
+    <div ref={cardRef} className="macro-card relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-5 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
       <div className={`absolute inset-0 bg-gradient-to-br ${config.bgGradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
 
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-2xl"></div>
@@ -56,6 +128,7 @@ export function MacroCard({ title, current, goal, unit, icon: Icon, color, perce
                 className="text-dark-border"
               />
               <circle
+                ref={circleRef}
                 cx="48"
                 cy="48"
                 r="45"
@@ -63,9 +136,8 @@ export function MacroCard({ title, current, goal, unit, icon: Icon, color, perce
                 strokeWidth="6"
                 fill="none"
                 strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
+                strokeDashoffset={reducedMotion || hasAnimated ? targetOffset : circumference}
                 strokeLinecap="round"
-                className="transition-all duration-700 ease-out"
               />
               <defs>
                 <linearGradient id="macroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -75,7 +147,7 @@ export function MacroCard({ title, current, goal, unit, icon: Icon, color, perce
               </defs>
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`text-2xl font-bold ${config.textColor}`}>
+              <div ref={percentRef} className={`text-2xl font-bold ${config.textColor}`}>
                 {Math.round(percentage)}%
               </div>
             </div>
@@ -84,7 +156,7 @@ export function MacroCard({ title, current, goal, unit, icon: Icon, color, perce
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-medium text-dark-muted mb-1">{title}</h3>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-white truncate">
+              <span ref={valueRef} className="text-2xl font-bold text-white truncate">
                 {Math.round(current)}
               </span>
               <span className="text-xs text-dark-muted">{unit}</span>

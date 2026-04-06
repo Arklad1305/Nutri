@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import { X, Sparkles, PenLine } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { createNutritionalMatrix } from '../lib/nutritionUtils'
+import { gsap, useGSAP } from '../lib/gsap'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 interface AddFoodModalProps {
   isOpen: boolean
@@ -13,6 +15,37 @@ interface AddFoodModalProps {
 export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const reducedMotion = useReducedMotion()
+
+  useGSAP(() => {
+    if (!isOpen || reducedMotion) return
+    if (overlayRef.current) {
+      gsap.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'power2.out' })
+    }
+    if (panelRef.current) {
+      gsap.fromTo(panelRef.current,
+        { opacity: 0, y: 30, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: 'back.out(1.4)' }
+      )
+    }
+  }, { dependencies: [isOpen, reducedMotion] })
+
+  const handleClose = useCallback(() => {
+    if (reducedMotion || !overlayRef.current || !panelRef.current) {
+      onClose()
+      return
+    }
+    gsap.to(panelRef.current, {
+      opacity: 0, y: 20, scale: 0.97,
+      duration: 0.2, ease: 'power2.in',
+    })
+    gsap.to(overlayRef.current, {
+      opacity: 0, duration: 0.2, ease: 'power2.in',
+      onComplete: onClose,
+    })
+  }, [onClose, reducedMotion])
   const [inputMode, setInputMode] = useState<'manual' | 'ai'>('manual')
   const [aiDescription, setAiDescription] = useState('')
   const [formData, setFormData] = useState({
@@ -154,12 +187,12 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-      <div className="bg-dark-card/95 backdrop-blur-xl border border-dark-border/50 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mobile-scroll-hide scroll-smooth-mobile shadow-2xl shadow-black/50 animate-in zoom-in-95 duration-300">
+    <div ref={overlayRef} className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div ref={panelRef} className="bg-dark-card/95 backdrop-blur-xl border border-dark-border/50 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mobile-scroll-hide scroll-smooth-mobile shadow-2xl shadow-black/50">
         <div className="sticky top-0 bg-gradient-to-b from-dark-card via-dark-card to-dark-card/80 backdrop-blur-xl border-b border-dark-border/50 px-6 py-5 flex items-center justify-between z-10">
           <h2 className="text-xl font-black text-white bg-gradient-to-r from-white to-gray-300 bg-clip-text">Agregar Alimento</h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 text-dark-muted hover:text-white hover:bg-dark-hover rounded-xl transition-all duration-200 hover:scale-110 group"
           >
             <X className="w-6 h-6 group-hover:rotate-90 transition-transform duration-200" />

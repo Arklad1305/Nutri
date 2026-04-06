@@ -1,15 +1,31 @@
-import { ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import { ReactNode, useRef } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import { Home, BarChart3, User, MessageCircle, ChefHat } from 'lucide-react'
+import { gsap, useGSAP } from '../lib/gsap'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 interface LayoutProps {
   children: ReactNode
 }
 
 export function Layout({ children }: LayoutProps) {
+  const contentRef = useRef<HTMLDivElement>(null)
+  const location = useLocation()
+  const reducedMotion = useReducedMotion()
+
+  useGSAP(() => {
+    if (reducedMotion || !contentRef.current) return
+    gsap.fromTo(contentRef.current,
+      { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
+    )
+  }, { dependencies: [location.pathname, reducedMotion] })
+
   return (
     <div className="min-h-screen bg-dark-bg">
-      {children}
+      <div ref={contentRef}>
+        {children}
+      </div>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-dark-card/90 backdrop-blur-xl border-t border-dark-border/50 z-50 shadow-2xl">
         <div className="max-w-7xl mx-auto px-2">
