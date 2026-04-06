@@ -52,6 +52,7 @@ export function Dashboard() {
   const [activities, setActivities] = useState<any[]>([])
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false)
   const [expandedCard, setExpandedCard] = useState<string | null>(null)
+  const [profileName, setProfileName] = useState<string>('')
   const dashRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
 
@@ -128,6 +129,10 @@ export function Dashboard() {
       .select('*')
       .eq('id', user!.id)
       .maybeSingle()
+
+    if (profileData?.full_name) {
+      setProfileName(profileData.full_name.split(' ')[0])
+    }
 
     if (profileData && profileData.weight_kg && profileData.height_cm && profileData.age) {
       const goalMapping: Record<string, 'lose_weight' | 'maintain' | 'gain_muscle'> = {
@@ -569,7 +574,7 @@ export function Dashboard() {
         {/* Hero Header */}
         <div className="dash-section mb-6">
           <HeroHeader
-            userName={user?.user_metadata?.first_name || 'Usuario'}
+            userName={profileName || user?.user_metadata?.first_name || 'Usuario'}
             totalCalories={totals.calories}
             goalCalories={goals.calories}
             metabolicState={isTrainingDay ? 'mTOR_ACTIVE' : 'NEUTRAL'}
@@ -597,30 +602,32 @@ export function Dashboard() {
           <div className="dash-section">
             <button
               onClick={() => toggleCard('water')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-cyan-500/30 transition-all duration-300 group"
+              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-cyan-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-cyan-500/25 hover:shadow-cyan-500/5 transition-all duration-300 group"
             >
-              <div className="flex items-center gap-4 p-4">
+              <div className="flex items-center gap-4 p-4 relative">
+                {/* Decorative image */}
+                <img src="/weather-icons/humidity.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/15 to-blue-500/10 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
                     <img src="/weather-icons/humidity.svg" alt="" className="w-8 h-8" />
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 relative">
                   <h3 className="text-sm font-bold text-cyan-400">Hidratación</h3>
                   <p className="text-xs text-dark-muted truncate">{waterLiters}L / {waterGoalLiters}L consumidos</p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-3 shrink-0 relative">
                   <span className="text-lg font-black text-white">{waterPercentage}%</span>
                   <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'water' ? 'rotate-90' : ''}`} />
                 </div>
               </div>
-              {/* Mini progress bar */}
-              <div className="h-0.5 bg-dark-border/30">
+              <div className="h-0.5 bg-dark-border/20">
                 <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-700" style={{ width: `${Math.min(waterPercentage, 100)}%` }} />
               </div>
             </button>
             {expandedCard === 'water' && (
-              <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+              <div className="mt-2">
                 <WaterTracker current={waterIntake} goal={goals.water_ml} onWaterAdded={handleWaterAdded} />
               </div>
             )}
@@ -631,31 +638,33 @@ export function Dashboard() {
             <div className="dash-section">
               <button
                 onClick={() => toggleCard('sleep')}
-                className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-indigo-500/30 transition-all duration-300 group"
+                className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-indigo-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-indigo-500/25 hover:shadow-indigo-500/5 transition-all duration-300 group"
               >
-                <div className="flex items-center gap-4 p-4">
+                <div className="flex items-center gap-4 p-4 relative">
+                  <img src="/weather-icons/moon-waxing-gibbous.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+
                   <div className="relative shrink-0">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/15 to-violet-500/10 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
                       <Moon className="w-5 h-5 text-indigo-400" />
                     </div>
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 relative">
                     <h3 className="text-sm font-bold text-indigo-400">Sueño</h3>
                     <p className="text-xs text-dark-muted truncate">
                       {sleepHours < 6 ? 'Descanso insuficiente' : sleepHours < 7.5 ? 'Descanso moderado' : 'Buen descanso'}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0 relative">
                     <span className="text-lg font-black text-white">{sleepHours}h</span>
                     <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'sleep' ? 'rotate-90' : ''}`} />
                   </div>
                 </div>
-                <div className="h-0.5 bg-dark-border/30">
+                <div className="h-0.5 bg-dark-border/20">
                   <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-700" style={{ width: `${Math.min((sleepHours / 9) * 100, 100)}%` }} />
                 </div>
               </button>
               {expandedCard === 'sleep' && (
-                <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+                <div className="mt-2">
                   <QuickSleepEditor sleepHours={sleepHours} onSleepUpdated={handleSleepUpdated} />
                 </div>
               )}
@@ -666,26 +675,28 @@ export function Dashboard() {
           <div className="dash-section">
             <button
               onClick={() => toggleCard('metabolic')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-emerald-500/30 transition-all duration-300 group"
+              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-emerald-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-emerald-500/25 hover:shadow-emerald-500/5 transition-all duration-300 group"
             >
-              <div className="flex items-center gap-4 p-4">
+              <div className="flex items-center gap-4 p-4 relative">
+                <img src="/weather-icons/thermometer-raindrop.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/15 to-teal-500/10 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
                     <Activity className="w-5 h-5 text-emerald-400" />
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 relative">
                   <h3 className="text-sm font-bold text-emerald-400">Estado Metabólico</h3>
                   <p className="text-xs text-dark-muted truncate">Monitor de vía mTOR / autofagia</p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 relative">
                   <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'metabolic' ? 'rotate-90' : ''}`} />
                 </div>
               </div>
-              <div className="h-0.5 bg-gradient-to-r from-emerald-500/40 to-teal-500/40" />
+              <div className="h-0.5 bg-gradient-to-r from-emerald-500/30 to-teal-500/30" />
             </button>
             {expandedCard === 'metabolic' && (
-              <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+              <div className="mt-2">
                 <MetabolicStateCard />
               </div>
             )}
@@ -695,31 +706,33 @@ export function Dashboard() {
           <div className="dash-section">
             <button
               onClick={() => toggleCard('activity')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-amber-500/30 transition-all duration-300 group"
+              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-amber-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-amber-500/25 hover:shadow-amber-500/5 transition-all duration-300 group"
             >
-              <div className="flex items-center gap-4 p-4">
+              <div className="flex items-center gap-4 p-4 relative">
+                <img src="/weather-icons/lightning-bolt.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/10 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
                     <Dumbbell className="w-5 h-5 text-amber-400" />
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 relative">
                   <h3 className="text-sm font-bold text-amber-400">Actividad Física</h3>
                   <p className="text-xs text-dark-muted truncate">
                     {activities.length > 0 ? `${activities.length} actividad${activities.length > 1 ? 'es' : ''} registrada${activities.length > 1 ? 's' : ''}` : 'Sin actividad registrada'}
                   </p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-3 shrink-0 relative">
                   {totalBurned > 0 && <span className="text-lg font-black text-white">{totalBurned} kcal</span>}
                   <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'activity' ? 'rotate-90' : ''}`} />
                 </div>
               </div>
-              <div className="h-0.5 bg-dark-border/30">
+              <div className="h-0.5 bg-dark-border/20">
                 <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-700" style={{ width: `${Math.min((totalBurned / 500) * 100, 100)}%` }} />
               </div>
             </button>
             {expandedCard === 'activity' && (
-              <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+              <div className="mt-2">
                 <ActivityTracker activities={activities} onActivityAdded={handleActivityAdded} />
               </div>
             )}
@@ -729,19 +742,21 @@ export function Dashboard() {
           <div className="dash-section">
             <button
               onClick={() => toggleCard('daytype')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-slate-400/30 transition-all duration-300 group"
+              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-slate-900/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-slate-400/20 transition-all duration-300 group"
             >
-              <div className="flex items-center gap-4 p-4">
+              <div className="flex items-center gap-4 p-4 relative">
+                <img src={isTrainingDay ? '/weather-icons/thermometer-sun.svg' : '/weather-icons/wind.svg'} alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500/15 to-gray-500/10 flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-slate-400" />
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
+                    <Zap className={`w-5 h-5 ${isTrainingDay ? 'text-red-400' : 'text-slate-400'}`} />
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 relative">
                   <h3 className={`text-sm font-bold ${isTrainingDay ? 'text-red-400' : 'text-slate-400'}`}>Tipo de Día</h3>
                   <p className="text-xs text-dark-muted truncate">{isTrainingDay ? 'Día de entrenamiento' : 'Día de descanso'}</p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-3 shrink-0 relative">
                   <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${isTrainingDay ? 'bg-red-500/15 text-red-400' : 'bg-slate-500/15 text-slate-400'}`}>
                     {isTrainingDay ? 'Training' : 'Rest'}
                   </span>
@@ -750,7 +765,7 @@ export function Dashboard() {
               </div>
             </button>
             {expandedCard === 'daytype' && (
-              <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+              <div className="mt-2">
                 <DayTypeSelector isTrainingDay={isTrainingDay} onChange={updateDailyActivity} />
               </div>
             )}

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7CB4C8"/>
+      <stop offset="35%" stop-color="#D4918B"/>
+      <stop offset="60%" stop-color="#E8A990"/>
+      <stop offset="100%" stop-color="#C8889E"/>
+    </linearGradient>
+    <linearGradient id="m1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C498A8"/>
+      <stop offset="100%" stop-color="#A47090"/>
+    </linearGradient>
+    <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#B08098"/>
+      <stop offset="100%" stop-color="#8A5878"/>
+    </linearGradient>
+    <linearGradient id="m3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7A4868"/>
+      <stop offset="100%" stop-color="#4A2040"/>
+    </linearGradient>
+    <linearGradient id="forest" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5A3050"/>
+      <stop offset="100%" stop-color="#2A1020"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="800" height="400" fill="url(#sky)"/>
+  <!-- Far mountains -->
+  <path d="M0 280 Q100 180 200 240 Q300 160 400 220 Q500 150 600 210 Q700 170 800 230 L800 400 L0 400Z" fill="url(#m1)" opacity="0.7"/>
+  <!-- Mid mountains -->
+  <path d="M0 300 Q150 200 280 260 Q380 190 480 250 Q580 200 700 240 Q750 220 800 260 L800 400 L0 400Z" fill="url(#m2)" opacity="0.8"/>
+  <!-- Near mountains -->
+  <path d="M0 320 Q100 250 200 290 Q350 230 450 280 Q550 240 680 270 Q740 250 800 290 L800 400 L0 400Z" fill="url(#m3)" opacity="0.9"/>
+  <!-- Forest silhouette -->
+  <path d="M0 340 L20 310 L30 340 L45 305 L55 340 L70 300 L80 340 L95 308 L105 340 L120 295 L130 340 L145 310 L155 340 L170 298 L180 340 L200 305 L210 340 L225 310 L235 340 L250 295 L260 340 L275 308 L285 340 L300 300 L310 340 L325 310 L335 340 L350 298 L360 340 L380 305 L390 340 L405 310 L415 340 L430 295 L440 340 L460 308 L470 340 L485 300 L495 340 L510 310 L520 340 L535 298 L545 340 L560 305 L570 340 L590 310 L600 340 L615 295 L625 340 L640 308 L650 340 L665 300 L675 340 L690 310 L700 340 L715 298 L725 340 L740 305 L750 340 L770 310 L780 340 L800 308 L800 400 L0 400Z" fill="url(#forest)"/>
+  <!-- Star -->
+  <path d="M760 370 L762 365 L764 370 L769 372 L764 374 L762 379 L760 374 L755 372Z" fill="white" opacity="0.8"/>
+</svg>

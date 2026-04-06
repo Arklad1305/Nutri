@@ -99,10 +99,10 @@ export function HeroHeader({ userName, totalCalories, goalCalories }: HeroHeader
     return () => clearInterval(interval)
   }, [])
 
-  // Load saved background
+  // Load saved background or default
   useEffect(() => {
     const saved = localStorage.getItem('nutri_hero_bg')
-    if (saved) setBgImage(saved)
+    setBgImage(saved || '/hero-default.svg')
   }, [])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
