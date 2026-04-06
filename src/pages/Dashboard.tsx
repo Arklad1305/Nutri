@@ -216,6 +216,8 @@ export function Dashboard() {
       setTotals(totals)
 
       // Analyze nutrients against standards (including from nutritional_matrix)
+      // STRATEGY: For each nutrient, prefer VIP column if present; fallback to matrix.
+      // Within matrix, each nutrient is counted from ONE subsystem only (no cross-subsystem sums).
 
       // Initialize accumulators for nutritional_matrix nutrients
       let omega3Total = 0
@@ -264,139 +266,145 @@ export function Dashboard() {
       let vitKTotal = 0
 
       data.forEach(log => {
-        // Use direct VIP columns first (hybrid schema)
-        if (log.omega_3_total_g) omega3Total += Number(log.omega_3_total_g)
-        if (log.sodium_mg) sodiumTotal += Number(log.sodium_mg)
-        if (log.polyphenols_total_mg) polyphenolsTotal += Number(log.polyphenols_total_mg)
-        if (log.leucine_mg) leucineTotal += Number(log.leucine_mg) / 1000 // convert to grams
-        if (log.zinc_mg) zincTotal += Number(log.zinc_mg)
-        if (log.magnesium_mg) magnesiumTotal += Number(log.magnesium_mg)
-        if (log.choline_mg) // choline handled separately if needed
+        const matrix = log.nutritional_matrix as any
+        const hasMatrix = !!matrix
 
-        if (log.nutritional_matrix) {
-          const matrix = log.nutritional_matrix as any
+        // === VIP-first pattern: use VIP column if present, else fallback to matrix ===
 
-          // NEW FORMAT: motor, cognitive, hormonal, inflammation
+        // Omega-3: VIP is in grams, matrix is in mg
+        if (log.omega_3_total_g) {
+          omega3Total += Number(log.omega_3_total_g)
+        } else if (hasMatrix && matrix.inflammation?.omega?.omega_3_total_mg) {
+          omega3Total += Number(matrix.inflammation.omega.omega_3_total_mg) / 1000
+        }
 
-          // INFLAMMATION - Lipid profile and bioactives (REAL SCHEMA)
-          if (matrix.inflammation?.omega) {
-            const omega = matrix.inflammation.omega
-            if (omega.omega_3_total_mg) omega3Total += Number(omega.omega_3_total_mg) / 1000 // convert to grams
-            if (omega.epa_dha_mg) omega3EpaDha += Number(omega.epa_dha_mg) / 1000
-            if (omega.omega_6_mg) omega6Total += Number(omega.omega_6_mg) / 1000
-          }
+        // EPA+DHA: only in matrix
+        if (hasMatrix && matrix.inflammation?.omega?.epa_dha_mg) {
+          omega3EpaDha += Number(matrix.inflammation.omega.epa_dha_mg) / 1000
+        }
 
+        // Omega-6: only in matrix
+        if (hasMatrix && matrix.inflammation?.omega?.omega_6_mg) {
+          omega6Total += Number(matrix.inflammation.omega.omega_6_mg) / 1000
+        }
+
+        // Sodium: VIP or matrix (motor.electrolytes is primary, NOT cognitive which duplicates)
+        if (log.sodium_mg) {
+          sodiumTotal += Number(log.sodium_mg)
+        } else if (hasMatrix && matrix.motor?.electrolytes?.sodium_mg) {
+          sodiumTotal += Number(matrix.motor.electrolytes.sodium_mg)
+        }
+
+        // Polyphenols: VIP or matrix
+        if (log.polyphenols_total_mg) {
+          polyphenolsTotal += Number(log.polyphenols_total_mg)
+        } else if (hasMatrix && matrix.inflammation?.bioactives?.polyphenols_total_mg) {
+          polyphenolsTotal += Number(matrix.inflammation.bioactives.polyphenols_total_mg)
+        }
+
+        // Leucine: VIP or matrix
+        if (log.leucine_mg) {
+          leucineTotal += Number(log.leucine_mg) / 1000
+        } else if (hasMatrix && matrix.motor?.aminos_muscle?.leucine_mg) {
+          leucineTotal += Number(matrix.motor.aminos_muscle.leucine_mg) / 1000
+        }
+
+        // Zinc: VIP or matrix (motor.structure_minerals is primary)
+        if (log.zinc_mg) {
+          zincTotal += Number(log.zinc_mg)
+        } else if (hasMatrix) {
+          zincTotal += Number(matrix.motor?.structure_minerals?.zinc_mg || 0)
+        }
+
+        // Magnesium: VIP or matrix (motor.structure_minerals is primary)
+        if (log.magnesium_mg) {
+          magnesiumTotal += Number(log.magnesium_mg)
+        } else if (hasMatrix) {
+          magnesiumTotal += Number(matrix.motor?.structure_minerals?.magnesium_mg || 0)
+        }
+
+        // Choline: VIP column only (tracked separately if needed)
+
+        // === Matrix-only nutrients (no VIP column) ===
+        if (hasMatrix) {
+          // Sat fats & cholesterol
           if (matrix.inflammation?.sat_fats) {
-            const satFats = matrix.inflammation.sat_fats
-            if (satFats.saturated_g) satFatTotal += Number(satFats.saturated_g)
-            if (satFats.cholesterol_mg) cholesterolTotal += Number(satFats.cholesterol_mg)
+            satFatTotal += Number(matrix.inflammation.sat_fats.saturated_g || 0)
+            cholesterolTotal += Number(matrix.inflammation.sat_fats.cholesterol_mg || 0)
           }
 
-          if (matrix.inflammation?.bioactives) {
-            const bioactives = matrix.inflammation.bioactives
-            if (bioactives.polyphenols_total_mg) polyphenolsTotal += Number(bioactives.polyphenols_total_mg)
-          }
+          // Potassium: use motor.electrolytes only (avoid cognitive duplicate)
+          potassiumTotal += Number(matrix.motor?.electrolytes?.potassium_mg || 0)
 
-          // MOTOR - Electrolytes and muscle amino acids
-          if (matrix.motor?.electrolytes) {
-            const electrolytes = matrix.motor.electrolytes
-            if (electrolytes.sodium_mg) sodiumTotal += Number(electrolytes.sodium_mg)
-            if (electrolytes.potassium_mg) potassiumTotal += Number(electrolytes.potassium_mg)
-          }
-
+          // Muscle amino acids (except leucine handled above)
           if (matrix.motor?.aminos_muscle) {
             const aminos = matrix.motor.aminos_muscle
-            if (aminos.leucine_mg) leucineTotal += Number(aminos.leucine_mg) / 1000
-            if (aminos.isoleucine_mg) isoleucineTotal += Number(aminos.isoleucine_mg) / 1000
-            if (aminos.valine_mg) valineTotal += Number(aminos.valine_mg) / 1000
-            if (aminos.lysine_mg) lysineTotal += Number(aminos.lysine_mg) / 1000
-            if (aminos.methionine_mg) methionineTotal += Number(aminos.methionine_mg) / 1000
-            if (aminos.threonine_mg) threonineTotal += Number(aminos.threonine_mg) / 1000
+            isoleucineTotal += Number(aminos.isoleucine_mg || 0) / 1000
+            valineTotal += Number(aminos.valine_mg || 0) / 1000
+            lysineTotal += Number(aminos.lysine_mg || 0) / 1000
+            methionineTotal += Number(aminos.methionine_mg || 0) / 1000
+            threonineTotal += Number(aminos.threonine_mg || 0) / 1000
           }
 
-          if (matrix.motor?.structure_minerals) {
-            const minerals = matrix.motor.structure_minerals
-            if (minerals.zinc_mg) zincTotal += Number(minerals.zinc_mg)
-            if (minerals.magnesium_mg) magnesiumTotal += Number(minerals.magnesium_mg)
-            if (minerals.iron_mg) ironTotal += Number(minerals.iron_mg)
-          }
+          // Iron: use motor.structure_minerals only (avoid hormonal.structure duplicate)
+          ironTotal += Number(matrix.motor?.structure_minerals?.iron_mg || 0)
 
-          // NOTE: Glycine is not in nutritional_matrix schema - needs to be added later
-
-          // COGNITIVE - Neuro amino acids and vitamins (REAL SCHEMA)
+          // Brain amino acids
           if (matrix.cognitive?.aminos_brain) {
             const aminosBrain = matrix.cognitive.aminos_brain
-            if (aminosBrain.tryptophan_mg) tryptophanTotal += Number(aminosBrain.tryptophan_mg) / 1000
-            if (aminosBrain.phenylalanine_mg) phenylalanineTotal += Number(aminosBrain.phenylalanine_mg) / 1000
-            if (aminosBrain.tyrosine_mg) tyrosineTotal += Number(aminosBrain.tyrosine_mg) / 1000
-            if (aminosBrain.histidine_mg) histidineTotal += Number(aminosBrain.histidine_mg) / 1000
+            tryptophanTotal += Number(aminosBrain.tryptophan_mg || 0) / 1000
+            phenylalanineTotal += Number(aminosBrain.phenylalanine_mg || 0) / 1000
+            tyrosineTotal += Number(aminosBrain.tyrosine_mg || 0) / 1000
+            histidineTotal += Number(aminosBrain.histidine_mg || 0) / 1000
           }
 
+          // Neuro others
           if (matrix.cognitive?.neuro_others) {
-            const neuroOthers = matrix.cognitive.neuro_others
-            if (neuroOthers.choline_mg) // already tracked via VIP column
-            if (neuroOthers.taurine_mg) taurineTotal += Number(neuroOthers.taurine_mg)
-            if (neuroOthers.creatine_mg) creatineTotal += Number(neuroOthers.creatine_mg)
+            taurineTotal += Number(matrix.cognitive.neuro_others.taurine_mg || 0)
+            creatineTotal += Number(matrix.cognitive.neuro_others.creatine_mg || 0)
           }
 
-          if (matrix.cognitive?.electrolytes) {
-            const electrolytes = matrix.cognitive.electrolytes
-            if (electrolytes.sodium_mg) sodiumTotal += Number(electrolytes.sodium_mg)
-            if (electrolytes.potassium_mg) potassiumTotal += Number(electrolytes.potassium_mg)
-          }
-
+          // B vitamins + vitamin C (cognitive.energy_vitamins)
           if (matrix.cognitive?.energy_vitamins) {
             const vitamins = matrix.cognitive.energy_vitamins
-            if (vitamins.vit_b1_thiamin_mg) vitB1Total += Number(vitamins.vit_b1_thiamin_mg)
-            if (vitamins.vit_b2_riboflavin_mg) vitB2Total += Number(vitamins.vit_b2_riboflavin_mg)
-            if (vitamins.vit_b3_niacin_mg) vitB3Total += Number(vitamins.vit_b3_niacin_mg)
-            if (vitamins.vit_b5_pantothenic_mg) vitB5Total += Number(vitamins.vit_b5_pantothenic_mg)
-            if (vitamins.vit_b6_mg) vitB6Total += Number(vitamins.vit_b6_mg)
-            if (vitamins.vit_b7_biotin_mcg) vitB7Total += Number(vitamins.vit_b7_biotin_mcg)
-            if (vitamins.folate_mcg) folateTotal += Number(vitamins.folate_mcg)
-            if (vitamins.vit_b12_mcg) vitB12Total += Number(vitamins.vit_b12_mcg)
-            if (vitamins.vit_c_mg) vitCTotal += Number(vitamins.vit_c_mg)
+            vitB1Total += Number(vitamins.vit_b1_thiamin_mg || 0)
+            vitB2Total += Number(vitamins.vit_b2_riboflavin_mg || 0)
+            vitB3Total += Number(vitamins.vit_b3_niacin_mg || 0)
+            vitB5Total += Number(vitamins.vit_b5_pantothenic_mg || 0)
+            vitB6Total += Number(vitamins.vit_b6_mg || 0)
+            vitB7Total += Number(vitamins.vit_b7_biotin_mcg || 0)
+            folateTotal += Number(vitamins.folate_mcg || 0)
+            vitB12Total += Number(vitamins.vit_b12_mcg || 0)
+            vitCTotal += Number(vitamins.vit_c_mg || 0)
           }
 
-          if (matrix.cognitive?.trace_minerals) {
-            const traceMinerals = matrix.cognitive.trace_minerals
-            if (traceMinerals.selenium_mcg) seleniumTotal += Number(traceMinerals.selenium_mcg)
-            if (traceMinerals.chromium_mcg) chromiumTotal += Number(traceMinerals.chromium_mcg)
-          }
+          // Selenium: use cognitive.trace_minerals only (avoid hormonal duplicate)
+          seleniumTotal += Number(matrix.cognitive?.trace_minerals?.selenium_mcg || 0)
+          chromiumTotal += Number(matrix.cognitive?.trace_minerals?.chromium_mcg || 0)
 
-          // HORMONAL - Thyroid/insulin minerals and fat-soluble vitamins
+          // Hormonal-specific minerals (only those NOT already counted from motor/cognitive)
           if (matrix.hormonal?.thyroid_insulin) {
-            const minerals = matrix.hormonal.thyroid_insulin
-            if (minerals.selenium_mcg) seleniumTotal += Number(minerals.selenium_mcg)
-            if (minerals.chromium_mcg) chromiumTotal += Number(minerals.chromium_mcg)
-            if (minerals.zinc_mg) zincTotal += Number(minerals.zinc_mg)
-            if (minerals.magnesium_mg) magnesiumTotal += Number(minerals.magnesium_mg)
-            if (minerals.iodine_mcg) iodineTotal += Number(minerals.iodine_mcg)
-            if (minerals.manganese_mg) manganeseTotal += Number(minerals.manganese_mg)
+            iodineTotal += Number(matrix.hormonal.thyroid_insulin.iodine_mcg || 0)
+            manganeseTotal += Number(matrix.hormonal.thyroid_insulin.manganese_mg || 0)
           }
 
+          // Hormonal structure minerals (calcium, phosphorus, copper — unique to this subsystem)
           if (matrix.hormonal?.structure) {
-            const structure = matrix.hormonal.structure
-            if (structure.calcium_mg) calciumTotal += Number(structure.calcium_mg)
-            if (structure.phosphorus_mg) phosphorusTotal += Number(structure.phosphorus_mg)
-            if (structure.copper_mg) copperTotal += Number(structure.copper_mg)
-            if (structure.iron_mg) ironTotal += Number(structure.iron_mg)
+            calciumTotal += Number(matrix.hormonal.structure.calcium_mg || 0)
+            phosphorusTotal += Number(matrix.hormonal.structure.phosphorus_mg || 0)
+            copperTotal += Number(matrix.hormonal.structure.copper_mg || 0)
           }
 
+          // Fat-soluble vitamins (only in hormonal.liposolubles)
           if (matrix.hormonal?.liposolubles) {
             const vitamins = matrix.hormonal.liposolubles
-            if (vitamins.vitamin_a_mcg) vitATotal += Number(vitamins.vitamin_a_mcg)
-            if (vitamins.vit_d3_iu) vitDTotal += Number(vitamins.vit_d3_iu)
-            if (vitamins.vitamin_e_iu) vitETotal += Number(vitamins.vitamin_e_iu)
-            if (vitamins.vitamin_k1_mcg) vitKTotal += Number(vitamins.vitamin_k1_mcg)
-            if (vitamins.vitamin_k2_mcg) vitKTotal += Number(vitamins.vitamin_k2_mcg)
+            vitATotal += Number(vitamins.vitamin_a_mcg || 0)
+            vitDTotal += Number(vitamins.vit_d3_iu || 0)
+            vitETotal += Number(vitamins.vitamin_e_iu || 0)
+            vitKTotal += Number(vitamins.vitamin_k1_mcg || 0) + Number(vitamins.vitamin_k2_mcg || 0)
           }
         }
       })
-
-      // VIP columns are tracked directly
-      const directZinc = data.reduce((acc, log) => acc + (Number(log.zinc_mg) || 0), 0)
-      const directMagnesium = data.reduce((acc, log) => acc + (Number(log.magnesium_mg) || 0), 0)
 
       const allNutrients: Record<string, number> = {
         calories: totals.calories,
@@ -413,11 +421,11 @@ export function Dashboard() {
         omega_6_g: omega6Total,
         sat_fat_g: satFatTotal,
         cholesterol_mg: cholesterolTotal,
-        vit_a_iu: vitATotal,
+        vit_a_iu: vitATotal, // Note: stored as mcg in matrix, needs conversion if standards are IU
         vit_c_mg: vitCTotal,
-        vit_d3_iu: data.reduce((acc, log) => acc + (Number(log.vit_d3_iu) || 0), 0) + vitDTotal,
+        vit_d3_iu: vitDTotal, // VIP column already included in matrix read
         vit_e_iu: vitETotal,
-        vit_k2_mcg: vitKTotal,
+        vit_k_mcg: vitKTotal,
         b1_mg: vitB1Total,
         b2_mg: vitB2Total,
         b3_mg: vitB3Total,
@@ -428,8 +436,8 @@ export function Dashboard() {
         folate_mcg: folateTotal,
         calcium_mg: calciumTotal,
         phosphorus_mg: phosphorusTotal,
-        magnesium_mg: directMagnesium + magnesiumTotal,
-        zinc_mg: directZinc + zincTotal,
+        magnesium_mg: magnesiumTotal,
+        zinc_mg: zincTotal,
         potassium_mg: potassiumTotal,
         sodium_mg: sodiumTotal,
         selenium_mcg: seleniumTotal,
@@ -453,10 +461,11 @@ export function Dashboard() {
         creatine_mg: creatineTotal,
         polyphenols_total_mg: polyphenolsTotal,
         water_ml: data.reduce((acc, log) => {
+          // Water: VIP or matrix, not both
           const directWater = Number(log.water_ml) || 0
+          if (directWater > 0) return acc + directWater
           const matrix = log.nutritional_matrix as any
-          const matrixWater = matrix?.motor?.water_ml || 0
-          return acc + directWater + Number(matrixWater)
+          return acc + Number(matrix?.motor?.water_ml || 0)
         }, 0),
       }
 
@@ -497,10 +506,11 @@ export function Dashboard() {
 
     if (foodData) {
       waterTotal += foodData.reduce((acc, log) => {
+        // VIP-first: use direct water_ml if present, else fallback to matrix
         const directWater = Number(log.water_ml) || 0
+        if (directWater > 0) return acc + directWater
         const matrix = log.nutritional_matrix as any
-        const matrixWater = matrix?.motor?.water_ml || 0
-        return acc + directWater + Number(matrixWater)
+        return acc + Number(matrix?.motor?.water_ml || 0)
       }, 0)
     }
 

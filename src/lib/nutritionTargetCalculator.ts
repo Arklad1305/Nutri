@@ -97,17 +97,20 @@ export function calculateNutritionTargets(user: UserProfile): NutritionTargets {
   // ==========================================
   let bmr = 0
 
+  // Use adjustedWeight for BMR (accounts for Willett adjustment in obese users)
+  const bmrWeight = adjustedWeight
+
   if (user.body_fat_percent && user.body_fat_percent > 0) {
     // Katch-McArdle: Más precisa para composición corporal conocida
-    const leanMassKg = user.weight_kg * (1 - user.body_fat_percent / 100)
+    const leanMassKg = bmrWeight * (1 - user.body_fat_percent / 100)
     bmr = 370 + (21.6 * leanMassKg)
     diagnostico += ` BMR calculado con Katch-McArdle (${user.body_fat_percent}% grasa).`
   } else {
-    // Mifflin-St Jeor: Estándar clínico general
+    // Mifflin-St Jeor: Estándar clínico general (uses adjusted weight for obese)
     if (user.gender === 'male') {
-      bmr = 10 * user.weight_kg + 6.25 * user.height_cm - 5 * user.age + 5
+      bmr = 10 * bmrWeight + 6.25 * user.height_cm - 5 * user.age + 5
     } else {
-      bmr = 10 * user.weight_kg + 6.25 * user.height_cm - 5 * user.age - 161
+      bmr = 10 * bmrWeight + 6.25 * user.height_cm - 5 * user.age - 161
     }
     diagnostico += ` BMR: ${Math.round(bmr)} kcal (Mifflin-St Jeor).`
   }
@@ -130,7 +133,8 @@ export function calculateNutritionTargets(user: UserProfile): NutritionTargets {
   // Ajuste dinámico por día de entrenamiento
   if (isTrainingDay) {
     // En día de entreno, aumentamos el factor (refleja gasto energético extra)
-    dailyFactor = Math.min(baseFactor + 0.25, 1.9)
+    // Cap at 2.4 to allow effect even for very_active users
+    dailyFactor = Math.min(baseFactor + 0.25, 2.4)
   } else {
     // En día de descanso, bajamos ligeramente (NEAT puro sin ejercicio estructurado)
     dailyFactor = Math.max(baseFactor - 0.15, 1.2)
@@ -261,14 +265,11 @@ export function calculateNutritionTargets(user: UserProfile): NutritionTargets {
     }
   }
 
-  // Recalcular carbos para ajustar a calorías objetivo
+  // Derive carbs from remaining calories to ensure macros sum to target
   const proteinCalories = proteinTarget * 4
   const fatCalories = fatTarget * 9
   const remainingCalories = Math.max(targetCalories - proteinCalories - fatCalories, 0)
-  const calculatedCarbs = remainingCalories / 4
-
-  // Usar el valor más apropiado (promedio entre ODI ajustado y calculado)
-  carbsTarget = Math.round((carbsTarget + calculatedCarbs) / 2)
+  carbsTarget = Math.round(remainingCalories / 4)
 
   // Safeguard cerebral: Mínimo 80g glucosa
   const MIN_CARBS_SAFETY = 80
@@ -309,8 +310,8 @@ export function calculateNutritionTargets(user: UserProfile): NutritionTargets {
   }
 
   const waterMl = user.weight_kg * 35
-  const zinc = user.gender === 'male' ? 15 : 12
-  const iron = user.gender === 'male' ? 10 : 18
+  const zinc = user.gender === 'male' ? 11 : 8  // IOM RDA
+  const iron = user.gender === 'male' ? 8 : 18   // IOM RDA (men 8mg, premenopausal women 18mg)
   const calcium = user.age > 50 ? 1200 : 1000
   const potassium = 3500
   const folate = 400
