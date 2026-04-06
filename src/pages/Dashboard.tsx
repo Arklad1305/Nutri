@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { format, startOfDay, endOfDay } from 'date-fns'
-import { ClipboardList } from 'lucide-react'
+import { ClipboardList, Moon, Zap, Dumbbell, ChevronRight, Activity } from 'lucide-react'
 import { FoodLogList } from '../components/FoodLogList'
 import { WaterTracker } from '../components/WaterTracker'
 import { MetabolicStateCard } from '../components/MetabolicStateCard'
@@ -51,8 +51,11 @@ export function Dashboard() {
   const [isTrainingDay, setIsTrainingDay] = useState<boolean>(false)
   const [activities, setActivities] = useState<any[]>([])
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false)
+  const [expandedCard, setExpandedCard] = useState<string | null>(null)
   const dashRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
+
+  const toggleCard = (id: string) => setExpandedCard(prev => prev === id ? null : id)
 
   useGSAP(() => {
     if (reducedMotion || !dashRef.current || !goals) return
@@ -553,11 +556,18 @@ export function Dashboard() {
     )
   }
 
+  const waterPercentage = goals.water_ml > 0 ? Math.round((waterIntake / goals.water_ml) * 100) : 0
+  const waterLiters = (waterIntake / 1000).toFixed(1)
+  const waterGoalLiters = (goals.water_ml / 1000).toFixed(1)
+
+  const totalBurned = activities.reduce((acc, a) => acc + (a.calories_burned || 0), 0)
+
   return (
     <div ref={dashRef} className="min-h-screen bg-dark-bg pb-24">
       <div className="max-w-7xl mx-auto px-4 py-6">
+
         {/* Hero Header */}
-        <div className="dash-section mb-8">
+        <div className="dash-section mb-6">
           <HeroHeader
             userName={user?.user_metadata?.first_name || 'Usuario'}
             totalCalories={totals.calories}
@@ -566,70 +576,197 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {/* MacroRing - Large (2x1) */}
-          <div className="dash-section md:col-span-2">
-            <MacroRing
-              calories={totals.calories}
-              calorieGoal={goals.calories}
-              protein={totals.protein_g}
-              proteinGoal={goals.protein_g}
-              carbs={totals.carbs_g}
-              carbsGoal={goals.carbs_g}
-              fat={totals.fat_g}
-              fatGoal={goals.fat_g}
-            />
-          </div>
+        {/* MacroRing — central piece */}
+        <div className="dash-section mb-5">
+          <MacroRing
+            calories={totals.calories}
+            calorieGoal={goals.calories}
+            protein={totals.protein_g}
+            proteinGoal={goals.protein_g}
+            carbs={totals.carbs_g}
+            carbsGoal={goals.carbs_g}
+            fat={totals.fat_g}
+            fatGoal={goals.fat_g}
+          />
+        </div>
 
-          {/* Metabolic State - Tall (1x2) */}
-          <div className="dash-section md:row-span-2">
-            <MetabolicStateCard />
-          </div>
+        {/* ── Quick Access Cards ── */}
+        <div className="space-y-3 mb-5">
 
-          {/* Water Tracker */}
+          {/* Hydration */}
           <div className="dash-section">
-            <WaterTracker
-              current={waterIntake}
-              goal={goals.water_ml}
-              onWaterAdded={handleWaterAdded}
-            />
-          </div>
-
-          {/* Quick Sleep Editor */}
-          <div className="dash-section">
-            {sleepHours !== null && (
-              <QuickSleepEditor
-                sleepHours={sleepHours}
-                onSleepUpdated={handleSleepUpdated}
-              />
+            <button
+              onClick={() => toggleCard('water')}
+              className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-cyan-500/30 transition-all duration-300 group"
+            >
+              <div className="flex items-center gap-4 p-4">
+                <div className="relative shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/15 to-blue-500/10 flex items-center justify-center">
+                    <img src="/weather-icons/humidity.svg" alt="" className="w-8 h-8" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-cyan-400">Hidratación</h3>
+                  <p className="text-xs text-dark-muted truncate">{waterLiters}L / {waterGoalLiters}L consumidos</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-lg font-black text-white">{waterPercentage}%</span>
+                  <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'water' ? 'rotate-90' : ''}`} />
+                </div>
+              </div>
+              {/* Mini progress bar */}
+              <div className="h-0.5 bg-dark-border/30">
+                <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-700" style={{ width: `${Math.min(waterPercentage, 100)}%` }} />
+              </div>
+            </button>
+            {expandedCard === 'water' && (
+              <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+                <WaterTracker current={waterIntake} goal={goals.water_ml} onWaterAdded={handleWaterAdded} />
+              </div>
             )}
           </div>
 
-          {/* Food Log List - Large (full width) */}
-          <div className="dash-section col-span-full lg:col-span-3">
-            <div className="bg-dark-card/40 backdrop-blur-xl border border-dark-border/50 rounded-3xl p-6">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <ClipboardList className="w-4 h-4 text-primary" />
+          {/* Sleep */}
+          {sleepHours !== null && (
+            <div className="dash-section">
+              <button
+                onClick={() => toggleCard('sleep')}
+                className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-indigo-500/30 transition-all duration-300 group"
+              >
+                <div className="flex items-center gap-4 p-4">
+                  <div className="relative shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/15 to-violet-500/10 flex items-center justify-center">
+                      <Moon className="w-5 h-5 text-indigo-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-bold text-indigo-400">Sueño</h3>
+                    <p className="text-xs text-dark-muted truncate">
+                      {sleepHours < 6 ? 'Descanso insuficiente' : sleepHours < 7.5 ? 'Descanso moderado' : 'Buen descanso'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-lg font-black text-white">{sleepHours}h</span>
+                    <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'sleep' ? 'rotate-90' : ''}`} />
+                  </div>
                 </div>
-                <h3 className="text-sm font-bold text-white">Registro de Alimentos</h3>
-              </div>
-              <FoodLogList refreshKey={refreshKey} onFoodDeleted={handleFoodDeleted} limit={5} />
+                <div className="h-0.5 bg-dark-border/30">
+                  <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-700" style={{ width: `${Math.min((sleepHours / 9) * 100, 100)}%` }} />
+                </div>
+              </button>
+              {expandedCard === 'sleep' && (
+                <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+                  <QuickSleepEditor sleepHours={sleepHours} onSleepUpdated={handleSleepUpdated} />
+                </div>
+              )}
             </div>
+          )}
+
+          {/* Metabolic State */}
+          <div className="dash-section">
+            <button
+              onClick={() => toggleCard('metabolic')}
+              className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-emerald-500/30 transition-all duration-300 group"
+            >
+              <div className="flex items-center gap-4 p-4">
+                <div className="relative shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/15 to-teal-500/10 flex items-center justify-center">
+                    <Activity className="w-5 h-5 text-emerald-400" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-emerald-400">Estado Metabólico</h3>
+                  <p className="text-xs text-dark-muted truncate">Monitor de vía mTOR / autofagia</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'metabolic' ? 'rotate-90' : ''}`} />
+                </div>
+              </div>
+              <div className="h-0.5 bg-gradient-to-r from-emerald-500/40 to-teal-500/40" />
+            </button>
+            {expandedCard === 'metabolic' && (
+              <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+                <MetabolicStateCard />
+              </div>
+            )}
+          </div>
+
+          {/* Activity */}
+          <div className="dash-section">
+            <button
+              onClick={() => toggleCard('activity')}
+              className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-amber-500/30 transition-all duration-300 group"
+            >
+              <div className="flex items-center gap-4 p-4">
+                <div className="relative shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/10 flex items-center justify-center">
+                    <Dumbbell className="w-5 h-5 text-amber-400" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-amber-400">Actividad Física</h3>
+                  <p className="text-xs text-dark-muted truncate">
+                    {activities.length > 0 ? `${activities.length} actividad${activities.length > 1 ? 'es' : ''} registrada${activities.length > 1 ? 's' : ''}` : 'Sin actividad registrada'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  {totalBurned > 0 && <span className="text-lg font-black text-white">{totalBurned} kcal</span>}
+                  <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'activity' ? 'rotate-90' : ''}`} />
+                </div>
+              </div>
+              <div className="h-0.5 bg-dark-border/30">
+                <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-700" style={{ width: `${Math.min((totalBurned / 500) * 100, 100)}%` }} />
+              </div>
+            </button>
+            {expandedCard === 'activity' && (
+              <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+                <ActivityTracker activities={activities} onActivityAdded={handleActivityAdded} />
+              </div>
+            )}
+          </div>
+
+          {/* Day Type */}
+          <div className="dash-section">
+            <button
+              onClick={() => toggleCard('daytype')}
+              className="w-full text-left rounded-2xl overflow-hidden border border-dark-border/50 bg-dark-card/40 backdrop-blur-sm hover:border-slate-400/30 transition-all duration-300 group"
+            >
+              <div className="flex items-center gap-4 p-4">
+                <div className="relative shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500/15 to-gray-500/10 flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-slate-400" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-sm font-bold ${isTrainingDay ? 'text-red-400' : 'text-slate-400'}`}>Tipo de Día</h3>
+                  <p className="text-xs text-dark-muted truncate">{isTrainingDay ? 'Día de entrenamiento' : 'Día de descanso'}</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${isTrainingDay ? 'bg-red-500/15 text-red-400' : 'bg-slate-500/15 text-slate-400'}`}>
+                    {isTrainingDay ? 'Training' : 'Rest'}
+                  </span>
+                  <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'daytype' ? 'rotate-90' : ''}`} />
+                </div>
+              </div>
+            </button>
+            {expandedCard === 'daytype' && (
+              <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+                <DayTypeSelector isTrainingDay={isTrainingDay} onChange={updateDailyActivity} />
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Activity & Training Day Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="dash-section">
-            <DayTypeSelector isTrainingDay={isTrainingDay} onChange={updateDailyActivity} />
-          </div>
-          <div className="dash-section">
-            <ActivityTracker
-              activities={activities}
-              onActivityAdded={handleActivityAdded}
-            />
+        {/* ── Food Log ── */}
+        <div className="dash-section">
+          <div className="bg-dark-card/40 backdrop-blur-xl border border-dark-border/50 rounded-2xl p-5">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="p-1.5 rounded-lg bg-primary/10">
+                <ClipboardList className="w-4 h-4 text-primary" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Registro de Alimentos</h3>
+            </div>
+            <FoodLogList refreshKey={refreshKey} onFoodDeleted={handleFoodDeleted} limit={5} />
           </div>
         </div>
       </div>
