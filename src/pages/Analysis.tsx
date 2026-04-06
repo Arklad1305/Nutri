@@ -243,7 +243,7 @@ export function Analysis() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-dark-bg">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-blue-600 animate-pulse shadow-lg shadow-orange-500/40" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-700 animate-pulse shadow-lg shadow-primary/30" />
           <p className="text-dark-muted text-sm">Cargando análisis...</p>
         </div>
       </div>
@@ -262,7 +262,7 @@ export function Analysis() {
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-blue-600 flex items-center justify-center shadow-lg shadow-orange-500/40">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-700 flex items-center justify-center shadow-lg shadow-primary/30">
               <BarChart3 className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -294,7 +294,7 @@ export function Analysis() {
         {/* ── AI Analysis ── */}
         <div className="analysis-section bg-dark-card/40 backdrop-blur-sm border border-primary/20 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center shadow-md shadow-primary/30">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-primary-600 flex items-center justify-center shadow-md shadow-primary/30">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             <h2 className="text-base font-black text-white">Análisis con IA</h2>
@@ -313,7 +313,7 @@ export function Analysis() {
             <button
               onClick={handleSubmitToN8N}
               disabled={isSubmitting || !userMessage.trim()}
-              className="px-5 py-3 bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/30 hover:scale-105 active:scale-95"
+              className="px-5 py-3 bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/30 hover:scale-105 active:scale-95"
             >
               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </button>

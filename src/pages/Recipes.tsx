@@ -265,8 +265,8 @@ export function Recipes() {
   const mealTypes = [
     { value: 'breakfast' as MealType, label: 'Desayuno', icon: Coffee, color: 'from-amber-500 to-orange-500', shadow: 'shadow-amber-500/30' },
     { value: 'lunch' as MealType, label: 'Almuerzo', icon: Sunset, color: 'from-yellow-500 to-orange-500', shadow: 'shadow-yellow-500/30' },
-    { value: 'dinner' as MealType, label: 'Cena', icon: Moon, color: 'from-indigo-500 to-purple-500', shadow: 'shadow-indigo-500/30' },
-    { value: 'snack' as MealType, label: 'Snack', icon: Cookie, color: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/30' },
+    { value: 'dinner' as MealType, label: 'Cena', icon: Moon, color: 'from-slate-600 to-slate-700', shadow: 'shadow-slate-500/20' },
+    { value: 'snack' as MealType, label: 'Snack', icon: Cookie, color: 'from-amber-500 to-amber-600', shadow: 'shadow-amber-500/20' },
   ]
 
   const todayRecipes = recipes.filter(recipe => isToday(parseISO(recipe.createdAt)))
@@ -278,13 +278,13 @@ export function Recipes() {
       <div className="relative overflow-hidden px-4 pt-6 pb-8 mb-6">
         {/* Ambient glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
           <div className="absolute top-4 right-1/4 w-48 h-48 bg-blue-600/15 rounded-full blur-3xl" />
         </div>
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/40">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-700 flex items-center justify-center shadow-md shadow-primary/30">
               <ChefHat className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -300,7 +300,7 @@ export function Recipes() {
               {pantryItems.length} ingredientes
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-dark-card/60 backdrop-blur-sm border border-dark-border/50 rounded-full text-xs font-semibold text-white">
-              <Calendar className="w-3.5 h-3.5 text-purple-400" />
+              <Calendar className="w-3.5 h-3.5 text-primary-400" />
               {todayRecipes.length} recetas hoy
             </span>
           </div>
@@ -332,7 +332,7 @@ export function Recipes() {
             onClick={() => setActiveTab('recipes')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold text-sm transition-all duration-300 ${
               activeTab === 'recipes'
-                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30 scale-[1.02]'
+                ? 'bg-gradient-to-r from-primary to-primary-600 text-white shadow-lg shadow-primary/25 scale-[1.02]'
                 : 'text-dark-muted hover:text-white hover:bg-dark-hover/50'
             }`}
           >
@@ -340,7 +340,7 @@ export function Recipes() {
             Recetas
             {todayRecipes.length > 0 && (
               <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
-                activeTab === 'recipes' ? 'bg-white/25 text-white' : 'bg-purple-500/20 text-purple-400'
+                activeTab === 'recipes' ? 'bg-white/25 text-white' : 'bg-primary/20 text-primary-400'
               }`}>
                 {todayRecipes.length}
               </span>
@@ -405,7 +405,7 @@ export function Recipes() {
             {pantryItems.length > 0 && (
               <button
                 onClick={() => setActiveTab('recipes')}
-                className="chef-section w-full py-3.5 px-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl font-bold transition-all shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]"
+                className="chef-section w-full py-3.5 px-6 bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-primary/25 hover:shadow-primary/30 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Sparkles className="w-5 h-5" />
                 Generar Receta con estos ingredientes
@@ -494,7 +494,7 @@ export function Recipes() {
                     onChange={(e) => setCustomRequest(e.target.value)}
                     placeholder="Solicitud adicional (opcional)..."
                     rows={2}
-                    className="w-full px-4 py-3 bg-dark-hover/60 border border-dark-border/50 rounded-xl text-white placeholder-dark-muted focus:outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 resize-none mb-4 transition-all"
+                    className="w-full px-4 py-3 bg-dark-hover/60 border border-dark-border/50 rounded-xl text-white placeholder-dark-muted focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 resize-none mb-4 transition-all"
                   />
 
                   {error && (
@@ -506,7 +506,7 @@ export function Recipes() {
                   <button
                     onClick={generateRecipe}
                     disabled={isGenerating || !selectedMealType || selectedPantryItems.length === 0}
-                    className="relative w-full py-3.5 px-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.01] active:scale-[0.99] overflow-hidden group"
+                    className="relative w-full py-3.5 px-6 bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-primary/25 hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] overflow-hidden group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     {isGenerating ? (
@@ -526,7 +526,7 @@ export function Recipes() {
                 {/* Today's Recipes */}
                 <div className="chef-section">
                   <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="w-5 h-5 text-purple-400" />
+                    <Calendar className="w-5 h-5 text-primary-400" />
                     <h2 className="text-lg font-black text-white">Recetas de Hoy</h2>
                     {todayRecipes.length > 0 && (
                       <span className="text-xs font-bold text-dark-muted bg-dark-hover/60 border border-dark-border/40 px-2.5 py-1 rounded-full">
@@ -538,7 +538,7 @@ export function Recipes() {
                   {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-14">
                       <div className="relative mb-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl animate-pulse shadow-lg shadow-purple-500/40" />
+                        <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-700 rounded-2xl animate-pulse shadow-md shadow-primary/30" />
                         <ChefHat className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                       </div>
                       <p className="text-dark-muted text-sm">Cargando recetas...</p>
@@ -547,7 +547,7 @@ export function Recipes() {
                     <div className="bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-8 text-center">
                       <div className="relative inline-block mb-4">
                         <ChefHat className="w-14 h-14 text-dark-muted opacity-30" />
-                        <Sparkles className="w-5 h-5 text-purple-400 absolute -top-1 -right-1 animate-pulse" />
+                        <Sparkles className="w-5 h-5 text-primary-400 absolute -top-1 -right-1 animate-pulse" />
                       </div>
                       <p className="text-white font-black mb-1">No hay recetas generadas hoy</p>
                       <p className="text-sm text-dark-muted">

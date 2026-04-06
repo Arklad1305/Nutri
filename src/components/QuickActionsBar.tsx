@@ -144,7 +144,7 @@ export function QuickActionsBar({ onWaterAdded, onOpenAddFood, onFoodAdded }: Qu
       {/* Add food primary */}
       <button
         onClick={onOpenAddFood}
-        className="group relative w-14 h-14 rounded-full bg-gradient-to-br from-primary to-orange-500 hover:from-primary/90 hover:to-orange-600 shadow-lg shadow-primary/50 hover:shadow-primary/70 transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95"
+        className="group relative w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg shadow-primary/30 hover:shadow-primary/40 transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95"
         title="Agregar alimento"
       >
         <Plus className="w-6 h-6 text-white" />
@@ -159,12 +159,12 @@ export function QuickActionsBar({ onWaterAdded, onOpenAddFood, onFoodAdded }: Qu
         disabled={cameraState === 'processing'}
         className={`group relative w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95 disabled:hover:scale-100 ${
           cameraState === 'processing'
-            ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-purple-500/50 animate-pulse'
+            ? 'bg-gradient-to-br from-primary-700 to-primary-800 shadow-primary/25 animate-pulse'
             : cameraState === 'success'
             ? 'bg-gradient-to-br from-green-500 to-emerald-500 shadow-green-500/50'
             : cameraState === 'error'
             ? 'bg-gradient-to-br from-red-500 to-rose-500 shadow-red-500/50'
-            : 'bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-purple-500/50 hover:shadow-purple-500/70'
+            : 'bg-gradient-to-br from-primary-700 to-primary-800 hover:from-primary-800 hover:to-primary-900 shadow-primary/25 hover:shadow-primary/35'
         }`}
         title="Foto de alimento"
       >

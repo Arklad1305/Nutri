@@ -206,7 +206,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
               onClick={() => setInputMode('manual')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold text-sm transition-all duration-300 ${
                 inputMode === 'manual'
-                  ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg shadow-primary/30 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-primary to-primary-600 text-white shadow-lg shadow-primary/30 scale-[1.02]'
                   : 'text-dark-muted hover:text-white hover:bg-dark-hover/50'
               }`}
             >
@@ -218,7 +218,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
               onClick={() => setInputMode('ai')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold text-sm transition-all duration-300 ${
                 inputMode === 'ai'
-                  ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg shadow-primary/30 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-primary to-primary-600 text-white shadow-lg shadow-primary/30 scale-[1.02]'
                   : 'text-dark-muted hover:text-white hover:bg-dark-hover/50'
               }`}
             >
@@ -262,7 +262,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
                 <button
                   type="submit"
                   disabled={loading || !aiDescription.trim()}
-                  className="relative flex-1 py-3.5 px-4 bg-gradient-to-r from-primary to-orange-500 hover:from-primary-hover hover:to-orange-600 text-white font-bold rounded-xl transition-all duration-200 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 overflow-hidden group"
+                  className="relative flex-1 py-3.5 px-4 bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <span className="relative z-10">{loading ? 'Procesando con IA...' : 'Analizar con IA'}</span>
@@ -513,7 +513,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="relative flex-1 py-3.5 px-4 bg-gradient-to-r from-primary to-orange-500 hover:from-primary-hover hover:to-orange-600 text-white font-bold rounded-xl transition-all duration-200 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 overflow-hidden group"
+                  className="relative flex-1 py-3.5 px-4 bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <span className="relative z-10">{loading ? 'Guardando...' : 'Agregar Alimento'}</span>
