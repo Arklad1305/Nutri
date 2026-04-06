@@ -2,25 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { format, startOfDay, endOfDay } from 'date-fns'
-import { es } from 'date-fns/locale'
-import {
-  TrendingUp,
-  Activity,
-  Flame,
-  Apple,
-  Sparkles,
-  Target
-} from 'lucide-react'
-import { MacroCard } from '../components/MacroCard'
 import { FoodLogList } from '../components/FoodLogList'
 import { WaterTracker } from '../components/WaterTracker'
-import { NutrientStatusCard } from '../components/NutrientStatusCard'
 import { MetabolicStateCard } from '../components/MetabolicStateCard'
 import { QuickSleepEditor } from '../components/QuickSleepEditor'
 import { ActivityTracker } from '../components/ActivityTracker'
 import DayTypeSelector from '../components/DayTypeSelector'
-import { Ripple } from '../components/Ripple'
-import { analyzeAllNutrients, NutrientStatus } from '../lib/nutritionStandards'
+import { HeroHeader } from '../components/HeroHeader'
+import { MacroRing } from '../components/MacroRing'
+import { QuickActionsBar } from '../components/QuickActionsBar'
+import { AddFoodModal } from '../components/AddFoodModal'
+import { analyzeAllNutrients } from '../lib/nutritionStandards'
 import { calculateNutritionTargets } from '../lib/nutritionTargetCalculator'
 import { gsap, useGSAP } from '../lib/gsap'
 import { useReducedMotion } from '../hooks/useReducedMotion'
@@ -54,14 +46,10 @@ export function Dashboard() {
   })
   const [waterIntake, setWaterIntake] = useState(0)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [mainTab, setMainTab] = useState<'resumen' | 'biohacking' | 'acciones'>('resumen')
-  const [activeTab, setActiveTab] = useState<'macros' | 'vitamins' | 'minerals' | 'aminos' | 'lipids' | 'bioactive'>('macros')
-  const [nutrientStatuses, setNutrientStatuses] = useState<NutrientStatus[]>([])
-  const [isLoadingStandards, setIsLoadingStandards] = useState(true)
   const [sleepHours, setSleepHours] = useState<number | null>(null)
   const [isTrainingDay, setIsTrainingDay] = useState<boolean>(false)
-  const [diaTipo, setDiaTipo] = useState<string>('')
   const [activities, setActivities] = useState<any[]>([])
+  const [isAddFoodOpen, setIsAddFoodOpen] = useState(false)
   const dashRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
 
@@ -78,7 +66,7 @@ export function Dashboard() {
       duration: 0.6,
       ease: 'power3.out',
     })
-  }, { scope: dashRef, dependencies: [goals, mainTab, reducedMotion], revertOnUpdate: true })
+  }, { scope: dashRef, dependencies: [goals, reducedMotion], revertOnUpdate: true })
 
   useEffect(() => {
     if (user) {
@@ -160,7 +148,6 @@ export function Dashboard() {
         is_training_day: isTrainingDay
       })
 
-      setDiaTipo(targets.dia_tipo)
       setGoals({
         calories: targets.meta_calorias,
         protein_g: targets.macros.proteina_g,
@@ -220,7 +207,6 @@ export function Dashboard() {
       setTotals(totals)
 
       // Analyze nutrients against standards (including from nutritional_matrix)
-      setIsLoadingStandards(true)
 
       // Initialize accumulators for nutritional_matrix nutrients
       let omega3Total = 0
@@ -465,15 +451,13 @@ export function Dashboard() {
         }, 0),
       }
 
-      const statuses = await analyzeAllNutrients(allNutrients, {
+      await analyzeAllNutrients(allNutrients, {
         calories: goals?.calories,
         protein_g: goals?.protein_g,
         carbs_g: goals?.carbs_g,
         fat_g: goals?.fat_g,
         fiber_g: goals?.fiber_g
       })
-      setNutrientStatuses(statuses)
-      setIsLoadingStandards(false)
     }
   }
 
@@ -568,352 +552,97 @@ export function Dashboard() {
     )
   }
 
-  const caloriePercentage = (totals.calories / goals.calories) * 100
-  const proteinPercentage = (totals.protein_g / goals.protein_g) * 100
-  const carbsPercentage = (totals.carbs_g / goals.carbs_g) * 100
-  const fatPercentage = (totals.fat_g / goals.fat_g) * 100
-
-  const leucineStatus = nutrientStatuses.find(s => s.nutrient_key === 'leucine_g')
-
   return (
-    <div ref={dashRef} className="min-h-screen bg-dark-bg pb-20">
+    <div ref={dashRef} className="min-h-screen bg-dark-bg pb-40">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="dash-section mb-6">
-          <h1 className="text-2xl font-bold text-white mb-1">Dashboard</h1>
-          <p className="text-dark-muted">{format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}</p>
+        {/* Hero Header */}
+        <div className="dash-section mb-8">
+          <HeroHeader
+            userName={user?.user_metadata?.first_name || 'Usuario'}
+            totalCalories={totals.calories}
+            goalCalories={goals.calories}
+            metabolicState={isTrainingDay ? 'mTOR_ACTIVE' : 'NEUTRAL'}
+          />
         </div>
 
-        <div className="mb-6 flex gap-2 overflow-x-auto mobile-scroll-hide scroll-smooth-mobile snap-x snap-mandatory">
-          <button
-            onClick={() => setMainTab('resumen')}
-            className={`relative flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap snap-start group overflow-hidden ${
-              mainTab === 'resumen'
-                ? 'bg-gradient-to-br from-cyan-500 via-blue-500 to-cyan-600 text-white shadow-xl shadow-cyan-500/40'
-                : 'bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border text-dark-muted hover:text-white hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/20'
-            }`}
-          >
-            {mainTab === 'resumen' && (
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent animate-shimmer"></div>
-            )}
-            <div className={`p-1.5 rounded-lg transition-all ${
-              mainTab === 'resumen'
-                ? 'bg-white/20'
-                : 'bg-dark-hover group-hover:bg-cyan-500/10'
-            }`}>
-              <Target className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                mainTab === 'resumen' ? 'text-white' : 'text-cyan-400'
-              }`} />
-            </div>
-            <span className="relative z-10">Resumen</span>
-          </button>
-          <button
-            onClick={() => setMainTab('biohacking')}
-            className={`relative flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap snap-start group overflow-hidden ${
-              mainTab === 'biohacking'
-                ? 'bg-gradient-to-br from-purple-500 via-fuchsia-500 to-purple-600 text-white shadow-xl shadow-purple-500/40'
-                : 'bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border text-dark-muted hover:text-white hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20'
-            }`}
-          >
-            {mainTab === 'biohacking' && (
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent animate-shimmer"></div>
-            )}
-            <div className={`p-1.5 rounded-lg transition-all ${
-              mainTab === 'biohacking'
-                ? 'bg-white/20'
-                : 'bg-dark-hover group-hover:bg-purple-500/10'
-            }`}>
-              <Sparkles className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                mainTab === 'biohacking' ? 'text-white' : 'text-purple-400'
-              }`} />
-            </div>
-            <span className="relative z-10">Biohacking</span>
-          </button>
-        </div>
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {/* MacroRing - Large (2x1) */}
+          <div className="dash-section md:col-span-2">
+            <MacroRing
+              calories={totals.calories}
+              calorieGoal={goals.calories}
+              protein={totals.protein_g}
+              proteinGoal={goals.protein_g}
+              carbs={totals.carbs_g}
+              carbsGoal={goals.carbs_g}
+              fat={totals.fat_g}
+              fatGoal={goals.fat_g}
+            />
+          </div>
 
-        {mainTab === 'resumen' && (
-          <div className="space-y-6">
-            <div className="dash-section space-y-4">
-              <DayTypeSelector isTrainingDay={isTrainingDay} onChange={updateDailyActivity} />
-              {diaTipo && (
-                <div className={`p-4 rounded-xl border ${
-                  isTrainingDay
-                    ? 'bg-red-500/5 border-red-500/30'
-                    : 'bg-blue-500/5 border-blue-500/30'
-                }`}>
-                  <p className={`text-sm font-semibold ${
-                    isTrainingDay ? 'text-red-400' : 'text-blue-400'
-                  }`}>
-                    {diaTipo}
-                  </p>
-                </div>
-              )}
-              <MetabolicStateCard />
-              {sleepHours !== null && (
-                <QuickSleepEditor
-                  sleepHours={sleepHours}
-                  onSleepUpdated={handleSleepUpdated}
-                />
-              )}
-              <ActivityTracker
-                activities={activities}
-                onActivityAdded={handleActivityAdded}
+          {/* Metabolic State - Tall (1x2) */}
+          <div className="dash-section md:row-span-2">
+            <MetabolicStateCard />
+          </div>
+
+          {/* Water Tracker */}
+          <div className="dash-section">
+            <WaterTracker
+              current={waterIntake}
+              goal={goals.water_ml}
+              onWaterAdded={handleWaterAdded}
+            />
+          </div>
+
+          {/* Quick Sleep Editor */}
+          <div className="dash-section">
+            {sleepHours !== null && (
+              <QuickSleepEditor
+                sleepHours={sleepHours}
+                onSleepUpdated={handleSleepUpdated}
               />
-            </div>
+            )}
+          </div>
 
-            <div className="dash-section">
-              <h2 className="text-lg font-semibold text-white mb-4">Macros Vitales</h2>
-              <div className="w-layout-grid">
-                <MacroCard
-                  title="Calorías"
-                  current={totals.calories}
-                  goal={goals.calories}
-                  unit="kcal"
-                  icon={Flame}
-                  color="text-orange-500"
-                  percentage={caloriePercentage}
-                />
-                <MacroCard
-                  title="Proteína"
-                  current={totals.protein_g}
-                  goal={goals.protein_g}
-                  unit="g"
-                  icon={Activity}
-                  color="text-blue-500"
-                  percentage={proteinPercentage}
-                />
-                <MacroCard
-                  title="Carbohidratos"
-                  current={totals.carbs_g}
-                  goal={goals.carbs_g}
-                  unit="g"
-                  icon={Apple}
-                  color="text-green-500"
-                  percentage={carbsPercentage}
-                />
-                <MacroCard
-                  title="Grasas"
-                  current={totals.fat_g}
-                  goal={goals.fat_g}
-                  unit="g"
-                  icon={TrendingUp}
-                  color="text-yellow-500"
-                  percentage={fatPercentage}
-                />
-              </div>
-            </div>
-
-            <div className="dash-section grid grid-cols-1 md:grid-cols-2 gap-4">
-              {leucineStatus && <NutrientStatusCard status={leucineStatus} />}
-              <WaterTracker
-                current={waterIntake}
-                goal={goals.water_ml}
-                onWaterAdded={handleWaterAdded}
-              />
-            </div>
-
-            <div className="dash-section bg-dark-card border border-dark-border rounded-xl p-6">
-              <h3 className="text-sm font-semibold text-white mb-4">Últimos Alimentos</h3>
+          {/* Food Log List - Large (full width) */}
+          <div className="dash-section col-span-full lg:col-span-3">
+            <div className="bg-dark-card/40 backdrop-blur-xl border border-dark-border/50 rounded-3xl p-6">
+              <h3 className="text-sm font-semibold text-dark-muted mb-4">Últimos Alimentos</h3>
               <FoodLogList refreshKey={refreshKey} onFoodDeleted={handleFoodDeleted} limit={5} />
             </div>
           </div>
-        )}
+        </div>
 
-        {mainTab === 'biohacking' && (
-          <div className="space-y-6">
-            <div className="relative bg-gradient-to-br from-dark-card to-dark-hover border border-purple-500/20 rounded-2xl p-6 md:p-8 overflow-hidden shadow-xl">
-              <Ripple mainCircleSize={150} mainCircleOpacity={0.6} numCircles={8} />
-
-              <div className="relative z-10 mb-6">
-                <h2 className="text-xl md:text-2xl font-black text-white mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Distribución Nutricional Completa
-                </h2>
-                <p className="text-sm text-dark-muted/80">Análisis detallado basado en estándares ODI de Lieberman</p>
-              </div>
-
-              <div className="flex gap-2 mb-6 overflow-x-auto mobile-scroll-hide scroll-smooth-mobile snap-x snap-mandatory pb-2 relative z-10 -mx-2 px-2">
-                <button
-                  onClick={() => setActiveTab('macros')}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${
-                    activeTab === 'macros'
-                      ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg shadow-primary/50 scale-105'
-                      : 'bg-dark-hover/50 text-dark-muted hover:text-white hover:bg-dark-hover'
-                  }`}
-                >
-                  🍖 Macros
-                </button>
-                <button
-                  onClick={() => setActiveTab('vitamins')}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${
-                    activeTab === 'vitamins'
-                      ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg shadow-primary/50 scale-105'
-                      : 'bg-dark-hover/50 text-dark-muted hover:text-white hover:bg-dark-hover'
-                  }`}
-                >
-                  💊 Vitaminas
-                </button>
-                <button
-                  onClick={() => setActiveTab('minerals')}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${
-                    activeTab === 'minerals'
-                      ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg shadow-primary/50 scale-105'
-                      : 'bg-dark-hover/50 text-dark-muted hover:text-white hover:bg-dark-hover'
-                  }`}
-                >
-                  ⚡ Minerales
-                </button>
-                <button
-                  onClick={() => setActiveTab('aminos')}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${
-                    activeTab === 'aminos'
-                      ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg shadow-primary/50 scale-105'
-                      : 'bg-dark-hover/50 text-dark-muted hover:text-white hover:bg-dark-hover'
-                  }`}
-                >
-                  🧬 Aminoácidos
-                </button>
-                <button
-                  onClick={() => setActiveTab('lipids')}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${
-                    activeTab === 'lipids'
-                      ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg shadow-primary/50 scale-105'
-                      : 'bg-dark-hover/50 text-dark-muted hover:text-white hover:bg-dark-hover'
-                  }`}
-                >
-                  🥑 Lípidos
-                </button>
-                <button
-                  onClick={() => setActiveTab('bioactive')}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${
-                    activeTab === 'bioactive'
-                      ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg shadow-primary/50 scale-105'
-                      : 'bg-dark-hover/50 text-dark-muted hover:text-white hover:bg-dark-hover'
-                  }`}
-                >
-                  🌿 Bioactivos
-                </button>
-              </div>
-
-              <div className="relative z-10 min-h-[400px]">
-                {isLoadingStandards ? (
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
-                    <p className="text-dark-muted font-medium">Analizando nutrientes...</p>
-                  </div>
-                ) : (
-                  <>
-                    {activeTab === 'macros' && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 animate-in fade-in duration-300">
-                        {nutrientStatuses
-                          .filter(status => ['calories', 'protein_g', 'carbs_g', 'fat_g', 'fiber_g', 'sugar_g'].includes(status.nutrient_key))
-                          .map((status, idx) => (
-                            <div key={status.nutrient_key} className="animate-in slide-in-from-bottom duration-300" style={{ animationDelay: `${idx * 50}ms` }}>
-                              <NutrientStatusCard status={status} />
-                            </div>
-                          ))}
-                        {nutrientStatuses.filter(status => ['calories', 'protein_g', 'carbs_g', 'fat_g', 'fiber_g', 'sugar_g'].includes(status.nutrient_key)).length === 0 && (
-                          <div className="col-span-2 text-center py-16 bg-dark-hover/30 rounded-xl border border-dashed border-dark-border">
-                            <p className="text-dark-muted">No hay datos de macros disponibles para hoy</p>
-                            <p className="text-xs text-dark-muted/60 mt-1">Registra tu primera comida para comenzar</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {activeTab === 'vitamins' && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 animate-in fade-in duration-300">
-                        {nutrientStatuses
-                          .filter(status => ['vit_a_iu', 'vit_c_mg', 'vit_d3_iu', 'vit_e_iu', 'vit_k2_mcg', 'b12_mcg', 'folate_mcg'].includes(status.nutrient_key))
-                          .map((status, idx) => (
-                            <div key={status.nutrient_key} className="animate-in slide-in-from-bottom duration-300" style={{ animationDelay: `${idx * 50}ms` }}>
-                              <NutrientStatusCard status={status} />
-                            </div>
-                          ))}
-                        {nutrientStatuses.filter(status => ['vit_a_iu', 'vit_c_mg', 'vit_d3_iu', 'vit_e_iu', 'vit_k2_mcg', 'b12_mcg', 'folate_mcg'].includes(status.nutrient_key)).length === 0 && (
-                          <div className="col-span-2 text-center py-16 bg-dark-hover/30 rounded-xl border border-dashed border-dark-border">
-                            <p className="text-dark-muted mb-2">No hay datos de vitaminas disponibles para hoy</p>
-                            <p className="text-xs text-dark-muted/60">Lieberman ODI recomienda dosis significativamente mayores que RDA</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {activeTab === 'minerals' && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 animate-in fade-in duration-300">
-                        {nutrientStatuses
-                          .filter(status => ['magnesium_mg', 'zinc_mg', 'potassium_mg', 'sodium_mg', 'selenium_mcg', 'iron_mg', 'chromium_mcg'].includes(status.nutrient_key))
-                          .map((status, idx) => (
-                            <div key={status.nutrient_key} className="animate-in slide-in-from-bottom duration-300" style={{ animationDelay: `${idx * 50}ms` }}>
-                              <NutrientStatusCard status={status} />
-                            </div>
-                          ))}
-                        {nutrientStatuses.filter(status => ['magnesium_mg', 'zinc_mg', 'potassium_mg', 'sodium_mg', 'selenium_mcg', 'iron_mg', 'chromium_mcg'].includes(status.nutrient_key)).length === 0 && (
-                          <div className="col-span-2 text-center py-16 bg-dark-hover/30 rounded-xl border border-dashed border-dark-border">
-                            <p className="text-dark-muted">No hay datos de minerales disponibles para hoy</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {activeTab === 'aminos' && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 animate-in fade-in duration-300">
-                        {nutrientStatuses
-                          .filter(status => ['leucine_g', 'glycine_g', 'methionine_g', 'taurine_mg', 'tryptophan_g'].includes(status.nutrient_key))
-                          .map((status, idx) => (
-                            <div key={status.nutrient_key} className="animate-in slide-in-from-bottom duration-300" style={{ animationDelay: `${idx * 50}ms` }}>
-                              <NutrientStatusCard status={status} />
-                            </div>
-                          ))}
-                        {nutrientStatuses.filter(status => ['leucine_g', 'glycine_g', 'methionine_g', 'taurine_mg', 'tryptophan_g'].includes(status.nutrient_key)).length === 0 && (
-                          <div className="col-span-2 text-center py-16 bg-dark-hover/30 rounded-xl border border-dashed border-dark-border">
-                            <p className="text-dark-muted mb-2">No hay datos de aminoácidos disponibles para hoy</p>
-                            <p className="text-xs text-dark-muted/60">Rastreados desde carnes, huevos, pescado, lácteos y proteína en polvo</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {activeTab === 'lipids' && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 animate-in fade-in duration-300">
-                        {nutrientStatuses
-                          .filter(status => ['omega_3_total_g', 'omega_3_epa_dha_g', 'omega_6_g', 'sat_fat_g', 'cholesterol_mg'].includes(status.nutrient_key))
-                          .map((status, idx) => (
-                            <div key={status.nutrient_key} className="animate-in slide-in-from-bottom duration-300" style={{ animationDelay: `${idx * 50}ms` }}>
-                              <NutrientStatusCard status={status} />
-                            </div>
-                          ))}
-                        {nutrientStatuses.filter(status => ['omega_3_total_g', 'omega_3_epa_dha_g', 'omega_6_g', 'sat_fat_g', 'cholesterol_mg'].includes(status.nutrient_key)).length === 0 && (
-                          <div className="col-span-2 text-center py-16 bg-dark-hover/30 rounded-xl border border-dashed border-dark-border">
-                            <p className="text-dark-muted mb-2">No hay datos de lípidos disponibles para hoy</p>
-                            <p className="text-xs text-dark-muted/60">Lieberman enfatiza el ratio óptimo Omega-6:Omega-3</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {activeTab === 'bioactive' && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 animate-in fade-in duration-300">
-                        {nutrientStatuses
-                          .filter(status => ['polyphenols_total_mg'].includes(status.nutrient_key))
-                          .map((status, idx) => (
-                            <div key={status.nutrient_key} className="animate-in slide-in-from-bottom duration-300" style={{ animationDelay: `${idx * 50}ms` }}>
-                              <NutrientStatusCard status={status} />
-                            </div>
-                          ))}
-                        {nutrientStatuses.filter(status => ['polyphenols_total_mg'].includes(status.nutrient_key)).length === 0 && (
-                          <div className="col-span-2 text-center py-16 bg-dark-hover/30 rounded-xl border border-dashed border-dark-border">
-                            <p className="text-dark-muted mb-2">No hay datos de bioactivos disponibles para hoy</p>
-                            <p className="text-xs text-dark-muted/60">Los polifenoles se encuentran en té verde, cacao, frutos rojos y aceite de oliva</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
+        {/* Activity & Training Day Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="dash-section">
+            <DayTypeSelector isTrainingDay={isTrainingDay} onChange={updateDailyActivity} />
           </div>
-        )}
+          <div className="dash-section">
+            <ActivityTracker
+              activities={activities}
+              onActivityAdded={handleActivityAdded}
+            />
+          </div>
+        </div>
       </div>
+
+      {/* Quick Actions Bar */}
+      <QuickActionsBar
+        onOpenAddFood={() => setIsAddFoodOpen(true)}
+        onWaterAdded={handleWaterAdded}
+      />
+
+      {/* Add Food Modal */}
+      <AddFoodModal
+        isOpen={isAddFoodOpen}
+        onClose={() => setIsAddFoodOpen(false)}
+        onSuccess={() => {
+          setIsAddFoodOpen(false)
+          setRefreshKey(prev => prev + 1)
+        }}
+      />
     </div>
   )
 }
