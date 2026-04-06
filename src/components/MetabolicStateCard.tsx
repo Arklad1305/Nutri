@@ -123,13 +123,11 @@ export function MetabolicStateCard() {
     <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
       <div className={`absolute inset-0 bg-gradient-to-br ${metabolicState.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
 
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl"></div>
-
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-xl bg-gradient-to-br ${metabolicState.gradient} ${metabolicState.glowColor} shadow-lg`}>
-              <Icon className="w-6 h-6 text-white" />
+            <div className={`p-2.5 rounded-xl bg-gradient-to-br ${metabolicState.gradient} ${metabolicState.glowColor} shadow-md`}>
+              <Icon className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-white flex items-center gap-2">

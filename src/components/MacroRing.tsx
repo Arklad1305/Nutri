@@ -75,7 +75,6 @@ export function MacroRing({
   return (
     <div className="macro-ring-container relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border/50 rounded-3xl p-6 md:p-8 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full blur-3xl" />
 
       <div className="relative z-10">
         <h3 className="text-sm font-semibold text-dark-muted mb-6">Macronutrientes del Día</h3>

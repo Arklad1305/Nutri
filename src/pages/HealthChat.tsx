@@ -43,7 +43,7 @@ export function HealthChat() {
         console.log('[HealthChat] No user found, showing welcome message')
         const welcomeMessage: Message = {
           id: '0',
-          content: '¡Hola! 👋 Soy tu asistente nutricional con IA. Puedo ayudarte a analizar alimentos, calcular macros y responder tus dudas sobre nutrición.\n\n📅 Mostrando conversaciones de hoy.\n\n¿Qué te gustaría saber?',
+          content: 'Hola, soy tu asistente nutricional con IA. Puedo ayudarte a analizar alimentos, calcular macros y responder tus dudas sobre nutrición.\n\nMostrando conversaciones de hoy.\n\n¿Qué te gustaría saber?',
           sender: 'assistant',
           timestamp: new Date(),
         }
@@ -69,7 +69,7 @@ export function HealthChat() {
         console.log('[HealthChat] No messages found, showing welcome message')
         const welcomeMessage: Message = {
           id: '0',
-          content: '¡Hola! 👋 Soy tu asistente nutricional con IA. Puedo ayudarte a analizar alimentos, calcular macros y responder tus dudas sobre nutrición.\n\n📅 Mostrando conversaciones de hoy.\n\n¿Qué te gustaría saber?',
+          content: 'Hola, soy tu asistente nutricional con IA. Puedo ayudarte a analizar alimentos, calcular macros y responder tus dudas sobre nutrición.\n\nMostrando conversaciones de hoy.\n\n¿Qué te gustaría saber?',
           sender: 'assistant',
           timestamp: new Date(),
         }
@@ -79,7 +79,7 @@ export function HealthChat() {
       console.error('[HealthChat] Error loading history:', error)
       const welcomeMessage: Message = {
         id: '0',
-        content: '¡Hola! 👋 Soy tu asistente nutricional con IA. Puedo ayudarte a analizar alimentos, calcular macros y responder tus dudas sobre nutrición.\n\n📅 Mostrando conversaciones de hoy.\n\n¿Qué te gustaría saber?',
+        content: 'Hola, soy tu asistente nutricional con IA. Puedo ayudarte a analizar alimentos, calcular macros y responder tus dudas sobre nutrición.\n\nMostrando conversaciones de hoy.\n\n¿Qué te gustaría saber?',
         sender: 'assistant',
         timestamp: new Date(),
       }
@@ -216,7 +216,7 @@ export function HealthChat() {
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: type === 'audio' ? '🎤 Audio enviado para análisis' : '📷 Imagen enviada para análisis',
+      content: type === 'audio' ? 'Audio enviado para análisis' : 'Imagen enviada para análisis',
       sender: 'user',
       timestamp: new Date(),
     }
@@ -248,7 +248,7 @@ export function HealthChat() {
       setMessages(prev => prev.filter(msg => !msg.isTyping))
 
       if (result.success && result.data) {
-        const replyText = result.data.reply_text || `✅ ${result.data.food_name || 'Alimento'} registrado correctamente`
+        const replyText = result.data.reply_text || `${result.data.food_name || 'Alimento'} registrado correctamente`
 
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -317,11 +317,11 @@ export function HealthChat() {
 
   return (
     <div className="flex flex-col h-screen bg-dark-bg">
-      <div className="sticky top-0 z-10 bg-dark-card border-b border-dark-border">
+      <div className="sticky top-0 z-10 bg-dark-card/90 backdrop-blur-xl border-b border-dark-border/50">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <Bot className="w-6 h-6 text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center shadow-md shadow-primary/30">
+              <Bot className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
               <h1 className="text-lg font-semibold text-white">Asistente de Salud</h1>
@@ -330,7 +330,7 @@ export function HealthChat() {
                   processingMessage
                 ) : (
                   <>
-                    <span className="text-primary">📅 {format(new Date(), "d 'de' MMMM", { locale: es })}</span>
+                    <span className="text-primary">{format(new Date(), "d 'de' MMMM", { locale: es })}</span>
                     <span className="text-dark-muted/50 mx-1.5">•</span>
                     <span>Conversaciones de hoy</span>
                   </>
@@ -346,7 +346,7 @@ export function HealthChat() {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-32 mobile-scroll-hide scroll-smooth-mobile">
+      <div className="flex-1 overflow-y-auto pb-24 mobile-scroll-hide scroll-smooth-mobile">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="space-y-4">
             {messages.map((message) => (
@@ -404,8 +404,8 @@ export function HealthChat() {
         </div>
       </div>
 
-      <div className="fixed bottom-16 left-0 right-0 bg-dark-bg border-t border-dark-border">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="fixed bottom-16 left-0 right-0 bg-dark-card/90 backdrop-blur-xl border-t border-dark-border/50">
+        <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-end gap-2">
             <AudioRecorder
               onAnalysisComplete={(result) => handleMultimediaAnalysis(result, 'audio')}
@@ -434,14 +434,14 @@ export function HealthChat() {
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}
-              className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-primary text-white rounded-full hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gradient-to-r from-primary to-orange-500 text-white rounded-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-primary/30"
             >
               <Send className="w-5 h-5" />
             </button>
           </div>
 
           <p className="text-xs text-dark-muted text-center mt-2">
-            Escribe, graba audio 🎤 o sube foto 📷 de tus alimentos
+            Escribe, graba audio o sube foto de tus alimentos
           </p>
         </div>
       </div>

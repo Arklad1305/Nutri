@@ -112,13 +112,11 @@ export function WaterTracker({ current, goal, onWaterAdded }: WaterTrackerProps)
     <div ref={cardRef} className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-5 group-hover:opacity-10 transition-opacity duration-500"></div>
 
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
-
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 shadow-blue-500/50 shadow-lg">
-              <Droplet className="w-6 h-6 text-white" />
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 shadow-blue-500/30 shadow-md">
+              <Droplet className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">Hidratación</h3>
@@ -208,42 +206,39 @@ export function WaterTracker({ current, goal, onWaterAdded }: WaterTrackerProps)
         </div>
 
         <div className="space-y-3">
-          <p className="text-xs text-dark-muted font-bold">Agregar agua rápido:</p>
-          <div className="grid grid-cols-3 gap-3">
+          <p className="text-xs text-dark-muted font-semibold">Agregar agua:</p>
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => addWater(250)}
               disabled={loading}
-              className="group relative flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 hover:from-blue-500/20 hover:to-cyan-500/20 border border-blue-500/30 hover:border-blue-400 rounded-xl transition-all duration-300 disabled:opacity-50 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 active:scale-95 overflow-hidden"
+              className="flex flex-col items-center gap-1 py-3 px-2 bg-dark-hover/60 border border-dark-border/50 hover:border-blue-500/40 rounded-xl transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Plus className="w-5 h-5 text-blue-400 group-hover:scale-125 transition-transform duration-300 relative z-10" />
-              <div className="text-center relative z-10">
-                <p className="text-sm font-black text-white">250</p>
-                <p className="text-xs text-dark-muted">ml</p>
+              <Plus className="w-4 h-4 text-blue-400" />
+              <div className="text-center">
+                <p className="text-sm font-bold text-white">250</p>
+                <p className="text-[10px] text-dark-muted">ml</p>
               </div>
             </button>
             <button
               onClick={() => addWater(500)}
               disabled={loading}
-              className="group relative flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 border border-cyan-500/30 hover:border-cyan-400 rounded-xl transition-all duration-300 disabled:opacity-50 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20 active:scale-95 overflow-hidden"
+              className="flex flex-col items-center gap-1 py-3 px-2 bg-dark-hover/60 border border-dark-border/50 hover:border-blue-500/40 rounded-xl transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Plus className="w-5 h-5 text-cyan-400 group-hover:scale-125 transition-transform duration-300 relative z-10" />
-              <div className="text-center relative z-10">
-                <p className="text-sm font-black text-white">500</p>
-                <p className="text-xs text-dark-muted">ml</p>
+              <Plus className="w-4 h-4 text-cyan-400" />
+              <div className="text-center">
+                <p className="text-sm font-bold text-white">500</p>
+                <p className="text-[10px] text-dark-muted">ml</p>
               </div>
             </button>
             <button
               onClick={() => addWater(1000)}
               disabled={loading}
-              className="group relative flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-blue-600/10 to-cyan-600/10 hover:from-blue-600/20 hover:to-cyan-600/20 border border-blue-600/30 hover:border-blue-500 rounded-xl transition-all duration-300 disabled:opacity-50 hover:scale-105 hover:shadow-lg hover:shadow-blue-600/20 active:scale-95 overflow-hidden"
+              className="flex flex-col items-center gap-1 py-3 px-2 bg-dark-hover/60 border border-dark-border/50 hover:border-blue-500/40 rounded-xl transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Plus className="w-5 h-5 text-blue-400 group-hover:scale-125 transition-transform duration-300 relative z-10" />
-              <div className="text-center relative z-10">
-                <p className="text-sm font-black text-white">1</p>
-                <p className="text-xs text-dark-muted">litro</p>
+              <Plus className="w-4 h-4 text-blue-400" />
+              <div className="text-center">
+                <p className="text-sm font-bold text-white">1</p>
+                <p className="text-[10px] text-dark-muted">litro</p>
               </div>
             </button>
           </div>

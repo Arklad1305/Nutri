@@ -80,7 +80,7 @@ export function HeroHeader({ userName, totalCalories, goalCalories, metabolicSta
           </div>
           <div className="flex items-center justify-between text-xs text-dark-muted">
             <span>{Math.round(calPercentage)}% completado</span>
-            <span>{remaining > 0 ? `${remaining} kcal restantes` : '✓ Meta alcanzada'}</span>
+            <span>{remaining > 0 ? `${remaining} kcal restantes` : 'Meta alcanzada'}</span>
           </div>
         </div>
       </div>

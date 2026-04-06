@@ -177,16 +177,12 @@ export function BiohackerNutrients({ nutrients, targets }: BiohackerNutrientsPro
       {/* Ambient gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-blue-500/5 opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
 
-      {/* Decorative blur effects */}
-      <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-purple-500/10 to-transparent rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
-
       <div className="relative z-10">
         {/* Header section */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500 via-purple-500 to-blue-500 shadow-lg shadow-cyan-500/50">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-500 via-purple-500 to-blue-500 shadow-md shadow-cyan-500/30">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">Nutrientes Biohacker</h3>

@@ -386,12 +386,12 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                           )}
                           {ingredient.category && (
                             <span className="inline-block mt-2 px-2 py-0.5 bg-current/20 rounded text-[10px] font-semibold uppercase tracking-wide">
-                              {ingredient.category === 'protein' && '🥩 Proteína'}
-                              {ingredient.category === 'carbs' && '🌾 Carbohidrato'}
-                              {ingredient.category === 'fats' && '🥑 Grasa Saludable'}
-                              {ingredient.category === 'vegetables' && '🥬 Vegetal'}
-                              {ingredient.category === 'seasoning' && '🧂 Condimento'}
-                              {ingredient.category === 'other' && '📦 Otro'}
+                              {ingredient.category === 'protein' && 'Proteína'}
+                              {ingredient.category === 'carbs' && 'Carbohidrato'}
+                              {ingredient.category === 'fats' && 'Grasa'}
+                              {ingredient.category === 'vegetables' && 'Vegetal'}
+                              {ingredient.category === 'seasoning' && 'Condimento'}
+                              {ingredient.category === 'other' && 'Otro'}
                             </span>
                           )}
                         </div>

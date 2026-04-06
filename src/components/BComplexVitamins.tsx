@@ -105,7 +105,7 @@ export function BComplexVitamins({ vitamins }: BComplexVitaminsProps) {
   const Icon = status.icon
 
   // Calculate circular progress for overall B Complex status
-  const circumference = 2 * Math.PI * 54
+  const circumference = 2 * Math.PI * 40
   const strokeDashoffset = circumference - (Math.min(totalPercentage, 100) / 100) * circumference
 
   return (
@@ -113,15 +113,12 @@ export function BComplexVitamins({ vitamins }: BComplexVitaminsProps) {
       {/* Ambient gradient overlay */}
       <div className={`absolute inset-0 bg-gradient-to-br ${status.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
 
-      {/* Decorative blur effect */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-500/10 to-transparent rounded-full blur-3xl"></div>
-
       <div className="relative z-10">
         {/* Header section with energy status */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-xl bg-gradient-to-br ${status.gradient} ${status.glowColor} shadow-lg`}>
-              <Icon className="w-6 h-6 text-white" />
+            <div className={`p-2.5 rounded-xl bg-gradient-to-br ${status.gradient} ${status.glowColor} shadow-md`}>
+              <Icon className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -135,24 +132,22 @@ export function BComplexVitamins({ vitamins }: BComplexVitaminsProps) {
         {/* Circular progress and energy metrics */}
         <div className="flex items-center gap-8 mb-6">
           <div className="relative">
-            <svg className="transform -rotate-90 w-32 h-32">
-              {/* Background circle */}
+            <svg className="transform -rotate-90 w-24 h-24" viewBox="0 0 96 96">
               <circle
-                cx="64"
-                cy="64"
-                r="54"
+                cx="48"
+                cy="48"
+                r="40"
                 stroke="currentColor"
-                strokeWidth="8"
+                strokeWidth="6"
                 fill="none"
                 className="text-dark-border"
               />
-              {/* Animated progress circle with gradient */}
               <circle
-                cx="64"
-                cy="64"
-                r="54"
+                cx="48"
+                cy="48"
+                r="40"
                 stroke="url(#bComplexGradient)"
-                strokeWidth="8"
+                strokeWidth="6"
                 fill="none"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
