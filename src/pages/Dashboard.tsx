@@ -632,6 +632,7 @@ export function Dashboard() {
       <QuickActionsBar
         onOpenAddFood={() => setIsAddFoodOpen(true)}
         onWaterAdded={handleWaterAdded}
+        onFoodAdded={() => setRefreshKey(prev => prev + 1)}
       />
 
       {/* Add Food Modal */}
