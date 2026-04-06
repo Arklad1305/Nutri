@@ -70,8 +70,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
         throw new Error(error.error || 'Error al procesar con IA')
       }
 
-      const result = await response.json()
-      console.log('Alimento procesado con IA:', result)
+      await response.json()
 
       setAiDescription('')
       onSuccess()

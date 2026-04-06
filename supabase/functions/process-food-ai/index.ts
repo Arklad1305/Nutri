@@ -1,8 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") || "*";
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, apikey",
 };
@@ -257,6 +258,39 @@ Deno.serve(async (req: Request) => {
 
     const { message, audioBase64, imageBase64, mimeType } = await req.json();
 
+    // Validar longitud del mensaje
+    if (message && message.length > 5000) {
+      return new Response(
+        JSON.stringify({ success: false, error: "El mensaje es demasiado largo (máximo 5000 caracteres)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validar mimeType permitido
+    const ALLOWED_AUDIO_TYPES = ["audio/webm", "audio/wav", "audio/mpeg", "audio/ogg", "audio/mp4"];
+    const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (mimeType && !ALLOWED_AUDIO_TYPES.includes(mimeType) && !ALLOWED_IMAGE_TYPES.includes(mimeType)) {
+      return new Response(
+        JSON.stringify({ success: false, error: `Tipo de archivo no permitido: ${mimeType}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validar tamaño base64 (máximo 10MB)
+    const MAX_BASE64_SIZE = 10 * 1024 * 1024;
+    if (audioBase64 && audioBase64.length > MAX_BASE64_SIZE) {
+      return new Response(
+        JSON.stringify({ success: false, error: "El archivo de audio es demasiado grande (máximo 10MB)" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (imageBase64 && imageBase64.length > MAX_BASE64_SIZE) {
+      return new Response(
+        JSON.stringify({ success: false, error: "La imagen es demasiado grande (máximo 10MB)" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (!message && !audioBase64 && !imageBase64) {
       return new Response(
         JSON.stringify({
@@ -510,8 +544,7 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || "Internal server error",
-        stack: error.stack
+        error: "Internal server error"
       }),
       {
         status: 500,

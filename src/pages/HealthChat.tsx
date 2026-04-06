@@ -51,23 +51,10 @@ export function HealthChat() {
         return
       }
 
-      console.log('[HealthChat] Loading history for user:', user.id)
       const result = await loadChatHistory(user.id, 50)
-      console.log('[HealthChat] History result:', {
-        success: result.success,
-        messageCount: result.messages?.length || 0,
-        messages: result.messages
-      })
 
       if (result.success && result.messages && result.messages.length > 0) {
         const loadedMessages: Message[] = result.messages.map(msg => {
-          console.log('[HealthChat] Processing message:', {
-            id: msg.id,
-            sender: msg.sender,
-            content: msg.content.substring(0, 50) + '...',
-            hasMetadata: !!msg.metadata,
-            metadata: msg.metadata
-          })
           return {
             id: msg.id.toString(),
             content: msg.content,

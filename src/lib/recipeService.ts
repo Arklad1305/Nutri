@@ -53,14 +53,6 @@ export async function generateRecipeWithAI(
       return { success: false, error: 'Sesión inválida: sin ID de usuario' }
     }
 
-    console.log('[recipeService] Generating recipe with AI', {
-      deficitCount: params.deficits.length,
-      dietType: params.dietType,
-      hasToken: !!session.access_token,
-      userId: session.user.id,
-      tokenExpires: session.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'unknown'
-    })
-
     const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-recipes`
 
     // Preparar headers con autenticación del usuario y API key (case-sensitive)
@@ -69,14 +61,6 @@ export async function generateRecipeWithAI(
       'Content-Type': 'application/json',
       'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
     }
-
-    console.log('[recipeService] Request headers prepared', {
-      hasAuth: !!headers.Authorization,
-      hasContentType: !!headers['Content-Type'],
-      hasApikey: !!headers.apikey,
-      authPreview: headers.Authorization ? headers.Authorization.substring(0, 20) + '...' : 'MISSING',
-      apikeyPreview: headers.apikey ? headers.apikey.substring(0, 20) + '...' : 'MISSING',
-    })
 
     // Limpiar userContext: solo enviar propiedades con valores reales
     const cleanUserContext = params.userContext ?

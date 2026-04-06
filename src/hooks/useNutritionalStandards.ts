@@ -2,17 +2,9 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { createPersonalizedCalculator } from '../lib/personalizedNutritionCalculator'
+import type { NutritionalStandard } from '../lib/nutritionStandards'
 
-export interface NutritionalStandard {
-  nutrient_key: string
-  label: string
-  unit: string
-  category: string
-  min_survival_value: number
-  min_optimal_value: number
-  max_optimal_value: number | null
-  description: string
-}
+export type { NutritionalStandard }
 
 export interface PersonalizedTarget {
   min: number
@@ -42,14 +34,16 @@ export function useNutritionalStandards() {
           const standardsMap = new Map<string, NutritionalStandard>()
           standardsResult.data.forEach((standard: any) => {
             standardsMap.set(standard.nutrient_key, {
+              id: standard.id,
               nutrient_key: standard.nutrient_key,
               label: standard.label,
               unit: standard.unit,
               category: standard.category,
+              color_code: standard.color_code ?? '',
               min_survival_value: Number(standard.min_survival_value),
-              min_optimal_value: Number(standard.min_optimal_value),
-              max_optimal_value: standard.max_optimal_value ? Number(standard.max_optimal_value) : null,
-              description: standard.description,
+              min_optimal_value: standard.min_optimal_value != null ? Number(standard.min_optimal_value) : null,
+              max_optimal_value: standard.max_optimal_value != null ? Number(standard.max_optimal_value) : null,
+              description: standard.description ?? null,
             })
           })
           setStandards(standardsMap)
@@ -83,7 +77,7 @@ export function useNutritionalStandards() {
     if (!userProfile) {
       return {
         min: standard.min_survival_value,
-        optimal: standard.min_optimal_value,
+        optimal: standard.min_optimal_value ?? standard.min_survival_value,
       }
     }
 
@@ -99,7 +93,7 @@ export function useNutritionalStandards() {
     const personalizedTargets = calculator.calculateMicronutrients(
       nutrientKey,
       standard.min_survival_value,
-      standard.min_optimal_value
+      standard.min_optimal_value ?? standard.min_survival_value
     )
 
     return personalizedTargets
