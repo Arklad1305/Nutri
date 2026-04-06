@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { format, startOfDay, endOfDay } from 'date-fns'
 import { Trash2, Clock, Eye } from 'lucide-react'
 import { Database } from '../lib/database.types'
 import FoodDetailsModal from './FoodDetailsModal'
+import { gsap, ScrollTrigger, useGSAP } from '../lib/gsap'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 type FoodLog = Database['public']['Tables']['food_logs']['Row']
 
@@ -19,6 +21,8 @@ export function FoodLogList({ refreshKey, onFoodDeleted, limit }: FoodLogListPro
   const [logs, setLogs] = useState<FoodLog[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedFood, setSelectedFood] = useState<FoodLog | null>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     if (user) {
@@ -53,6 +57,29 @@ export function FoodLogList({ refreshKey, onFoodDeleted, limit }: FoodLogListPro
     onFoodDeleted()
   }
 
+  useGSAP(() => {
+    if (reducedMotion || loading || logs.length === 0 || !listRef.current) return
+
+    const items = listRef.current.querySelectorAll('.food-log-item')
+    if (items.length === 0) return
+
+    gsap.set(items, { opacity: 0, y: 20 })
+
+    ScrollTrigger.batch(items, {
+      onEnter: (elements) => {
+        gsap.to(elements, {
+          opacity: 1,
+          y: 0,
+          stagger: 0.08,
+          duration: 0.5,
+          ease: 'power2.out',
+          overwrite: true,
+        })
+      },
+      start: 'top 90%',
+      once: true,
+    })
+  }, { scope: listRef, dependencies: [logs, loading, reducedMotion], revertOnUpdate: true })
 
   if (loading) {
     return <div className="text-center text-dark-muted py-8">Cargando...</div>
@@ -70,11 +97,11 @@ export function FoodLogList({ refreshKey, onFoodDeleted, limit }: FoodLogListPro
 
   return (
     <>
-      <div className="space-y-3">
+      <div ref={listRef} className="space-y-3">
         {displayedLogs.map((log) => (
           <div
             key={log.id}
-            className="bg-dark-hover border border-dark-border rounded-lg p-4 hover:border-primary/50 transition-colors"
+            className="food-log-item bg-dark-hover border border-dark-border rounded-lg p-4 hover:border-primary/50 transition-colors"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">
