@@ -144,12 +144,6 @@ export async function sendMessageToAI(
       return { success: false, error: 'Sesión inválida. Por favor, cierra sesión e inicia nuevamente.' }
     }
 
-    console.log('[chatService] Sending message to AI (session refreshed)', {
-      messageLength: message.length,
-      hasToken: !!session.access_token,
-      expiresAt: session.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'N/A'
-    })
-
     const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-food-ai`
 
     const headers = {
@@ -157,12 +151,6 @@ export async function sendMessageToAI(
       'Content-Type': 'application/json',
       'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
     }
-
-    console.log('[chatService] Request headers prepared', {
-      hasAuth: !!headers.Authorization,
-      hasContentType: !!headers['Content-Type'],
-      hasApikey: !!headers.apikey,
-    })
 
     const response = await fetch(apiUrl, {
       method: 'POST',

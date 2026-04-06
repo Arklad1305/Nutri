@@ -1,2 +1,8 @@
 node_modules/
 .env
+.env.*
+dist/
+test-*.html
+test-*.sh
+test-*.http
+*.log

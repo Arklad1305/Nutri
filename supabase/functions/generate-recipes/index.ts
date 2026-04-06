@@ -1,8 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") || "*";
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, apikey",
 };
@@ -182,6 +183,14 @@ Deno.serve(async (req: Request) => {
 
     const { deficits, dietType, customRequest, userContext } = requestBody;
 
+    // Validar tamaño del array de déficits
+    if (deficits && deficits.length > 50) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Demasiados déficits en la solicitud (máximo 50)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (!deficits || !Array.isArray(deficits)) {
       console.error("[generate-recipes] Invalid deficits", {
         deficits: deficits,
@@ -246,7 +255,12 @@ Deno.serve(async (req: Request) => {
     }
 
     if (customRequest) {
-      userPrompt += `\nREQUERIMIENTO ESPECIAL DEL USUARIO: ${customRequest}`;
+      // Sanitizar input del usuario para mitigar prompt injection
+      const sanitizedRequest = String(customRequest)
+        .replace(/\bignore\b.*\binstructions?\b/gi, "[filtrado]")
+        .replace(/\bsystem\b.*\bprompt\b/gi, "[filtrado]")
+        .substring(0, 500);
+      userPrompt += `\nREQUERIMIENTO ESPECIAL DEL USUARIO: ${sanitizedRequest}`;
     }
 
     userPrompt += `\n\nGenera UNA receta que ayude a cubrir estos déficits considerando el perfil del usuario. Sé creativo, práctico y asegúrate de que sea deliciosa.`;
@@ -412,8 +426,7 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || "Internal server error",
-        stack: error.stack
+        error: "Internal server error"
       }),
       {
         status: 500,

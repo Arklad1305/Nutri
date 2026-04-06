@@ -7,8 +7,6 @@ interface CompactNutritionCardProps {
 export function CompactNutritionCard({ data }: CompactNutritionCardProps) {
   if (!data) return null
 
-  console.log('[CompactNutritionCard] Received data:', data)
-
   const foodName = data.food_name || data.name || 'Alimento'
   const calories = data.calories || 0
 
@@ -16,19 +14,10 @@ export function CompactNutritionCard({ data }: CompactNutritionCardProps) {
   const carbs = data.carbs_g || data.macros?.carbs_g || 0
   const fat = data.fat_g || data.macros?.fat_g || 0
 
-  console.log('[CompactNutritionCard] Basic macros:', { protein, carbs, fat, calories })
-
   const motor = data.nutritional_matrix?.motor || {}
   const cognitive = data.nutritional_matrix?.cognitive || {}
   const hormonal = data.nutritional_matrix?.hormonal || {}
   const inflammation = data.nutritional_matrix?.inflammation || {}
-
-  console.log('[CompactNutritionCard] Nutritional matrix groups:', {
-    hasMotor: Object.keys(motor).length > 0,
-    hasCognitive: Object.keys(cognitive).length > 0,
-    hasHormonal: Object.keys(hormonal).length > 0,
-    hasInflammation: Object.keys(inflammation).length > 0,
-  })
 
   const micros = {
     vitamin_c_mg: cognitive.energy_vitamins?.vit_c_mg || data.micros?.vitamin_c_mg || 0,
@@ -40,8 +29,6 @@ export function CompactNutritionCard({ data }: CompactNutritionCardProps) {
     zinc_mg: data.zinc_mg || hormonal.thyroid_insulin?.zinc_mg || motor.structure_minerals?.zinc_mg || data.micros?.zinc_mg || 0,
     omega3_g: (data.omega_3_total_g || (inflammation.omega?.omega_3_total_mg / 1000) || data.micros?.omega3_g || 0),
   }
-
-  console.log('[CompactNutritionCard] Extracted micros:', micros)
 
   const relevantMicros = [
     { label: 'Vit C', value: micros.vitamin_c_mg, unit: 'mg', icon: '🍊', show: micros.vitamin_c_mg && micros.vitamin_c_mg > 5 },
