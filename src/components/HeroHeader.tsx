@@ -69,6 +69,26 @@ function SunArc() {
   )
 }
 
+function getWeatherIcon(hour: number): string {
+  if (hour >= 6 && hour < 7) return '/weather-icons/sunrise.svg'
+  if (hour >= 7 && hour < 10) return '/weather-icons/clear-day.svg'
+  if (hour >= 10 && hour < 16) return '/weather-icons/partly-cloudy-day.svg'
+  if (hour >= 16 && hour < 18) return '/weather-icons/haze-day.svg'
+  if (hour >= 18 && hour < 19) return '/weather-icons/sunset.svg'
+  if (hour >= 19 && hour < 21) return '/weather-icons/clear-night.svg'
+  return '/weather-icons/starry-night.svg'
+}
+
+function getWeatherLabel(hour: number): string {
+  if (hour >= 6 && hour < 7) return 'Amanecer'
+  if (hour >= 7 && hour < 10) return 'Mañana despejada'
+  if (hour >= 10 && hour < 16) return 'Parcialmente nublado'
+  if (hour >= 16 && hour < 18) return 'Atardecer'
+  if (hour >= 18 && hour < 19) return 'Puesta de sol'
+  if (hour >= 19 && hour < 21) return 'Noche despejada'
+  return 'Noche estrellada'
+}
+
 export function HeroHeader({ userName, totalCalories, goalCalories }: HeroHeaderProps) {
   const [currentHour, setCurrentHour] = useState(new Date().getHours())
   const [bgImage, setBgImage] = useState<string | null>(null)
@@ -106,6 +126,9 @@ export function HeroHeader({ userName, totalCalories, goalCalories }: HeroHeader
     return 'Buenas noches'
   }, [currentHour])
 
+  const weatherIcon = useMemo(() => getWeatherIcon(currentHour), [currentHour])
+  const weatherLabel = useMemo(() => getWeatherLabel(currentHour), [currentHour])
+
   const calPercentage = goalCalories > 0 ? (totalCalories / goalCalories) * 100 : 0
   const remaining = Math.max(0, goalCalories - totalCalories)
 
@@ -130,12 +153,22 @@ export function HeroHeader({ userName, totalCalories, goalCalories }: HeroHeader
           <ImagePlus className="w-3.5 h-3.5" />
         </button>
 
-        {/* Greeting + date */}
-        <div className="mb-3">
-          <h1 className="text-xl md:text-2xl font-bold text-dark-text tracking-tight">
-            {greeting}, <span className="text-primary">{userName}</span>
-          </h1>
-          <p className="text-[11px] text-dark-muted mt-0.5 capitalize">{format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}</p>
+        {/* Greeting + weather icon + date */}
+        <div className="flex items-start gap-4 mb-3">
+          <div className="flex-1">
+            <h1 className="text-xl md:text-2xl font-bold text-dark-text tracking-tight">
+              {greeting}, <span className="text-primary">{userName}</span>
+            </h1>
+            <p className="text-[11px] text-dark-muted mt-0.5 capitalize">{format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}</p>
+          </div>
+          <div className="flex flex-col items-center gap-0.5 shrink-0">
+            <img
+              src={weatherIcon}
+              alt={weatherLabel}
+              className="w-14 h-14 md:w-16 md:h-16 drop-shadow-lg"
+            />
+            <span className="text-[9px] text-dark-muted font-medium">{weatherLabel}</span>
+          </div>
         </div>
 
         {/* Sun arc */}
