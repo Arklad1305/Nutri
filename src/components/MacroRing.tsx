@@ -223,6 +223,22 @@ export function MacroRing({
               </div>
             </div>
           </div>
+
+          {/* Leyenda de arcos internos */}
+          <div className="flex items-center justify-center gap-4 mt-2.5">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_4px_rgba(59,130,246,0.4)]" />
+              <span className="text-[9px] text-white/40 font-medium">Prot</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_4px_rgba(16,185,129,0.4)]" />
+              <span className="text-[9px] text-white/40 font-medium">Carbs</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_4px_rgba(245,158,11,0.4)]" />
+              <span className="text-[9px] text-white/40 font-medium">Grasas</span>
+            </div>
+          </div>
         </div>
 
         {/* Grid de macros — 3 mini-tarjetas con arco individual */}
