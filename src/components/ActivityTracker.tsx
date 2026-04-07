@@ -309,10 +309,11 @@ export function ActivityTracker({ activities, onActivityAdded }: ActivityTracker
                 className="w-full h-2 bg-dark-border rounded-lg appearance-none cursor-pointer slider-activity"
                 style={{
                   background: `linear-gradient(to right,
-                    rgb(59 130 246) 0%,
-                    rgb(249 115 22) 50%,
-                    rgb(239 68 68) ${(duration / 120) * 100}%,
-                    rgb(30 41 59) ${(duration / 120) * 100}%)`
+                    rgb(245 158 11) 0%,
+                    rgb(249 115 22) ${((duration - 5) / 115) * 100 * 0.5}%,
+                    rgb(239 68 68) ${((duration - 5) / 115) * 100}%,
+                    rgb(30 41 59) ${((duration - 5) / 115) * 100}%,
+                    rgb(30 41 59) 100%)`
                 }}
               />
               <div className="flex justify-between text-xs text-dark-muted mt-2">
