@@ -27,7 +27,8 @@ interface BiohackerNutrientsProps {
 interface NutrientItem {
   name: string
   value: number
-  target: number
+  target: number      // ODI optimal target
+  rdaTarget?: number  // RDA minimum target
   unit: string
   description: string
   format?: (val: number) => string
