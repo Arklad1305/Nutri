@@ -60,59 +60,34 @@ export function Dashboard() {
 
   const toggleCard = (id: string) => setExpandedCard(prev => prev === id ? null : id)
 
-  // Water wave + bubble animation
+  // Water bubble animation (waves use CSS keyframes)
   useGSAP(() => {
     if (reducedMotion || !waterCardRef.current) return
 
-    // Animate waves
-    const waves = waterCardRef.current.querySelectorAll('.water-wave')
-    waves.forEach((wave, i) => {
-      gsap.to(wave, {
-        x: i % 2 === 0 ? '-50%' : '50%',
-        duration: 2.5 + i * 1.2,
-        ease: 'sine.inOut',
-        repeat: -1,
-        yoyo: true,
-      })
-    })
-
-    // Animate bubbles
     const bubbles = waterCardRef.current.querySelectorAll('.water-bubble')
-    bubbles.forEach((bubble, i) => {
-      const delay = i * 0.8
-      gsap.set(bubble, { y: 0, opacity: 0, scale: 0 })
-      gsap.to(bubble, {
-        y: -60,
-        opacity: 0.7,
-        scale: 1,
-        duration: 2 + Math.random() * 1.5,
-        ease: 'power1.out',
-        repeat: -1,
-        delay,
-        onRepeat: function() {
-          gsap.set(bubble, { x: Math.random() * 20 - 10 })
-        },
-      })
-      gsap.to(bubble, {
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power2.in',
-        repeat: -1,
-        delay: delay + 1.5 + Math.random(),
-      })
+    bubbles.forEach((bubble) => {
+      const startX = parseFloat(bubble.getAttribute('data-x') || '0')
+      gsap.fromTo(bubble,
+        { y: 0, opacity: 0, scale: 0.3 },
+        {
+          y: -55,
+          opacity: 0.8,
+          scale: 1,
+          duration: 2.5 + Math.random() * 2,
+          ease: 'power1.out',
+          repeat: -1,
+          delay: Math.random() * 4,
+          repeatDelay: Math.random() * 3,
+          x: `+=${Math.sin(startX) * 8}`,
+          modifiers: {
+            opacity: (val: string) => {
+              const v = parseFloat(val)
+              return String(v > 0.6 ? v * 0.5 : v)
+            }
+          }
+        }
+      )
     })
-
-    // Surface shimmer
-    const shimmer = waterCardRef.current.querySelector('.water-shimmer')
-    if (shimmer) {
-      gsap.to(shimmer, {
-        x: '100%',
-        duration: 3,
-        ease: 'power1.inOut',
-        repeat: -1,
-        repeatDelay: 2,
-      })
-    }
   }, { dependencies: [reducedMotion] })
 
   useGSAP(() => {
@@ -667,6 +642,24 @@ export function Dashboard() {
 
           {/* Hydration */}
           <div className="dash-section" ref={waterCardRef}>
+            <style>{`
+              @keyframes wave-drift-1 {
+                0%, 100% { transform: translateX(0); }
+                50% { transform: translateX(-25%); }
+              }
+              @keyframes wave-drift-2 {
+                0%, 100% { transform: translateX(-10%); }
+                50% { transform: translateX(15%); }
+              }
+              @keyframes wave-drift-3 {
+                0%, 100% { transform: translateX(5%); }
+                50% { transform: translateX(-20%); }
+              }
+              @keyframes shimmer-sweep {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(400%); }
+              }
+            `}</style>
             <button
               onClick={() => toggleCard('water')}
               className="relative w-full text-left rounded-2xl overflow-hidden border border-cyan-500/15 bg-[#0a1628] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-cyan-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
@@ -675,45 +668,55 @@ export function Dashboard() {
               <div className="absolute inset-0 overflow-hidden rounded-2xl">
                 <div
                   className="absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out"
-                  style={{ height: `${Math.max(Math.min(waterPercentage, 100), 8)}%` }}
+                  style={{ height: `${Math.max(Math.min(waterPercentage, 100), 12)}%` }}
                 >
                   {/* Deep water body */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-600/50 via-cyan-500/35 to-cyan-400/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-600/60 via-cyan-500/40 to-cyan-400/25" />
 
-                  {/* Wave SVG */}
+                  {/* Wave 1 */}
                   <svg
-                    className="absolute -top-3 left-0 w-[200%] h-8"
-                    viewBox="0 0 800 40"
+                    className="absolute -top-2 left-0 w-[200%] h-6"
+                    viewBox="0 0 800 30"
                     preserveAspectRatio="none"
+                    style={{ animation: 'wave-drift-1 4s ease-in-out infinite' }}
                   >
-                    <path
-                      className="water-wave"
-                      d="M0,20 C80,8 160,32 320,20 C480,8 560,32 800,20 L800,40 L0,40 Z"
-                      fill="rgba(6,182,212,0.5)"
-                    />
-                    <path
-                      className="water-wave"
-                      d="M0,24 C120,12 200,36 400,24 C600,12 720,32 800,24 L800,40 L0,40 Z"
-                      fill="rgba(34,211,238,0.35)"
-                    />
-                    <path
-                      className="water-wave"
-                      d="M0,28 C100,18 250,38 400,28 C550,18 700,34 800,28 L800,40 L0,40 Z"
-                      fill="rgba(8,145,178,0.45)"
-                    />
+                    <path d="M0,15 C100,5 200,25 400,15 C600,5 700,25 800,15 L800,30 L0,30 Z" fill="rgba(6,182,212,0.6)" />
                   </svg>
 
-                  {/* Bubbles */}
+                  {/* Wave 2 */}
+                  <svg
+                    className="absolute -top-1 left-0 w-[200%] h-5"
+                    viewBox="0 0 800 25"
+                    preserveAspectRatio="none"
+                    style={{ animation: 'wave-drift-2 5.5s ease-in-out infinite' }}
+                  >
+                    <path d="M0,12 C150,4 250,20 400,12 C550,4 700,18 800,12 L800,25 L0,25 Z" fill="rgba(34,211,238,0.4)" />
+                  </svg>
+
+                  {/* Wave 3 */}
+                  <svg
+                    className="absolute -top-1 left-0 w-[200%] h-4"
+                    viewBox="0 0 800 20"
+                    preserveAspectRatio="none"
+                    style={{ animation: 'wave-drift-3 7s ease-in-out infinite' }}
+                  >
+                    <path d="M0,10 C120,4 280,16 400,10 C520,4 680,14 800,10 L800,20 L0,20 Z" fill="rgba(8,145,178,0.5)" />
+                  </svg>
+
+                  {/* Bubbles (GSAP animated) */}
                   <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 100 60">
-                    <circle className="water-bubble" cx="15" cy="50" r="1.5" fill="rgba(165,243,252,0.5)" />
-                    <circle className="water-bubble" cx="35" cy="55" r="1" fill="rgba(165,243,252,0.4)" />
-                    <circle className="water-bubble" cx="55" cy="48" r="2" fill="rgba(165,243,252,0.35)" />
-                    <circle className="water-bubble" cx="75" cy="52" r="1.2" fill="rgba(165,243,252,0.45)" />
-                    <circle className="water-bubble" cx="90" cy="50" r="1.8" fill="rgba(165,243,252,0.3)" />
+                    <circle className="water-bubble" data-x="1" cx="12" cy="50" r="1.8" fill="rgba(165,243,252,0.6)" />
+                    <circle className="water-bubble" data-x="2" cx="30" cy="55" r="1.2" fill="rgba(165,243,252,0.5)" />
+                    <circle className="water-bubble" data-x="3" cx="50" cy="48" r="2.2" fill="rgba(165,243,252,0.45)" />
+                    <circle className="water-bubble" data-x="4" cx="72" cy="52" r="1.5" fill="rgba(165,243,252,0.55)" />
+                    <circle className="water-bubble" data-x="5" cx="88" cy="50" r="2" fill="rgba(165,243,252,0.4)" />
                   </svg>
 
                   {/* Surface shimmer */}
-                  <div className="absolute top-0 left-0 w-1/3 h-1 water-shimmer bg-gradient-to-r from-transparent via-cyan-300/40 to-transparent" style={{ transform: 'translateX(-100%)' }} />
+                  <div
+                    className="absolute top-0 left-0 w-1/4 h-[2px] bg-gradient-to-r from-transparent via-cyan-200/50 to-transparent"
+                    style={{ animation: 'shimmer-sweep 4s ease-in-out infinite 2s' }}
+                  />
                 </div>
               </div>
 
