@@ -612,15 +612,15 @@ export function Dashboard() {
           <div className="dash-section">
             <button
               onClick={() => toggleCard('water')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-cyan-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-cyan-500/25 hover:shadow-cyan-500/5 transition-all duration-300 group"
+              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-cyan-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-cyan-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
             >
               <div className="flex items-center gap-4 p-4 relative">
                 {/* Decorative image */}
-                <img src="/weather-icons/humidity.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+                <img src="https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita.png" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-20 h-20 opacity-[0.18] group-hover:opacity-30 transition-opacity duration-500 drop-shadow-lg" />
 
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
-                    <img src="/weather-icons/humidity.svg" alt="" className="w-8 h-8" />
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
+                    <img src="https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita.png" alt="" className="w-8 h-8 drop-shadow-md" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 relative">
@@ -648,13 +648,13 @@ export function Dashboard() {
             <div className="dash-section">
               <button
                 onClick={() => toggleCard('sleep')}
-                className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-indigo-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-indigo-500/25 hover:shadow-indigo-500/5 transition-all duration-300 group"
+                className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-indigo-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(99,102,241,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-indigo-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
               >
                 <div className="flex items-center gap-4 p-4 relative">
                   <img src="/weather-icons/moon-waxing-gibbous.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
 
                   <div className="relative shrink-0">
-                    <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
+                    <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
                       <Moon className="w-5 h-5 text-indigo-400" />
                     </div>
                   </div>
@@ -685,13 +685,13 @@ export function Dashboard() {
           <div className="dash-section">
             <button
               onClick={() => toggleCard('metabolic')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-emerald-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-emerald-500/25 hover:shadow-emerald-500/5 transition-all duration-300 group"
+              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-emerald-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(16,185,129,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-emerald-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
             >
               <div className="flex items-center gap-4 p-4 relative">
                 <img src="/weather-icons/thermometer-raindrop.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
 
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
                     <Activity className="w-5 h-5 text-emerald-400" />
                   </div>
                 </div>
@@ -716,13 +716,13 @@ export function Dashboard() {
           <div className="dash-section">
             <button
               onClick={() => toggleCard('activity')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-amber-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-amber-500/25 hover:shadow-amber-500/5 transition-all duration-300 group"
+              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-amber-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(245,158,11,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-amber-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
             >
               <div className="flex items-center gap-4 p-4 relative">
                 <img src="/weather-icons/lightning-bolt.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
 
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
                     <Dumbbell className="w-5 h-5 text-amber-400" />
                   </div>
                 </div>
@@ -752,13 +752,13 @@ export function Dashboard() {
           <div className="dash-section">
             <button
               onClick={() => toggleCard('daytype')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-slate-900/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-slate-400/20 transition-all duration-300 group"
+              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-slate-900/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(148,163,184,0.1),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-slate-400/20 hover:-translate-y-0.5 transition-all duration-300 group"
             >
               <div className="flex items-center gap-4 p-4 relative">
                 <img src={isTrainingDay ? '/weather-icons/thermometer-sun.svg' : '/weather-icons/wind.svg'} alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
 
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-inner">
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
                     <Zap className={`w-5 h-5 ${isTrainingDay ? 'text-red-400' : 'text-slate-400'}`} />
                   </div>
                 </div>
