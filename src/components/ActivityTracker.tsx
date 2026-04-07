@@ -308,12 +308,18 @@ export function ActivityTracker({ activities, onActivityAdded }: ActivityTracker
                 step="5"
                 className="w-full h-2 bg-dark-border rounded-lg appearance-none cursor-pointer slider-activity"
                 style={{
-                  background: `linear-gradient(to right,
-                    rgb(245 158 11) 0%,
-                    rgb(249 115 22) ${((duration - 5) / 115) * 100 * 0.5}%,
-                    rgb(239 68 68) ${((duration - 5) / 115) * 100}%,
-                    rgb(30 41 59) ${((duration - 5) / 115) * 100}%,
-                    rgb(30 41 59) 100%)`
+                  background: (() => {
+                    const pct = ((duration - 5) / 115) * 100
+                    if (pct <= 0) return 'rgb(30 41 59)'
+                    const stops = [
+                      `rgb(245 158 11) 0%`,
+                      `rgb(249 115 22) ${pct * 0.5}%`,
+                      `rgb(239 68 68) ${pct}%`,
+                      `rgb(30 41 59) ${pct}%`,
+                      `rgb(30 41 59) 100%`,
+                    ]
+                    return `linear-gradient(to right, ${stops.join(', ')})`
+                  })()
                 }}
               />
               <div className="flex justify-between text-xs text-dark-muted mt-2">

@@ -205,12 +205,20 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
                 step="0.5"
                 className="w-full h-2 bg-dark-border rounded-lg appearance-none cursor-pointer slider-sleep"
                 style={{
-                  background: `linear-gradient(to right,
-                    rgb(239 68 68) 0%,
-                    rgb(234 179 8) 30%,
-                    rgb(59 130 246) 60%,
-                    rgb(34 197 94) ${(tempHours / 12) * 100}%,
-                    rgb(30 41 59) ${(tempHours / 12) * 100}%)`
+                  background: (() => {
+                    const pct = (tempHours / 12) * 100
+                    if (pct <= 0) return 'rgb(30 41 59)'
+                    // Color stops proportional to fill: red(0%) → amber(40%) → blue(65%) → green(85%) → slate(pct%+)
+                    const stops = [
+                      `rgb(239 68 68) 0%`,
+                      `rgb(234 179 8) ${pct * 0.4}%`,
+                      `rgb(59 130 246) ${pct * 0.65}%`,
+                      `rgb(34 197 94) ${pct}%`,
+                      `rgb(30 41 59) ${pct}%`,
+                      `rgb(30 41 59) 100%`,
+                    ]
+                    return `linear-gradient(to right, ${stops.join(', ')})`
+                  })()
                 }}
               />
               <div className="flex justify-between text-xs text-dark-muted mt-2">
