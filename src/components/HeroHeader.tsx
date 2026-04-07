@@ -28,28 +28,26 @@ function SunArc() {
   const sunSize = isDay ? 5 : 3.5
 
   return (
-    <svg viewBox={`0 0 ${arcWidth} ${arcHeight + 14}`} className="w-full h-20 md:h-24" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={isDay ? '#0c4a6e' : '#0f172a'} stopOpacity="0.12" />
-          <stop offset="100%" stopColor="transparent" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width={arcWidth} height={arcHeight + 2} rx="8" fill="url(#skyGrad)" />
+    <svg viewBox={`0 0 ${arcWidth} ${arcHeight + 14}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+      {/* Dashed arc path */}
       <path
         d={`M 10 ${arcHeight + 2} Q ${arcWidth / 2} ${-arcHeight * 0.6} ${arcWidth - 10} ${arcHeight + 2}`}
         fill="none"
-        stroke="#21262d"
+        stroke="rgba(255,255,255,0.12)"
         strokeWidth="0.8"
         strokeDasharray="4 4"
       />
-      <line x1="0" y1={arcHeight + 2} x2={arcWidth} y2={arcHeight + 2} stroke="#21262d" strokeWidth="0.5" />
-      {isDay && <circle cx={cx} cy={cy} r={sunSize * 3} fill={sunColor} opacity="0.08" />}
-      {isDay && <circle cx={cx} cy={cy} r={sunSize * 1.8} fill={sunColor} opacity="0.15" />}
+      {/* Horizon line */}
+      <line x1="0" y1={arcHeight + 2} x2={arcWidth} y2={arcHeight + 2} stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+      {/* Sun glow halos */}
+      {isDay && <circle cx={cx} cy={cy} r={sunSize * 4} fill={sunColor} opacity="0.06" />}
+      {isDay && <circle cx={cx} cy={cy} r={sunSize * 2.2} fill={sunColor} opacity="0.15" />}
+      {/* Sun dot */}
       <circle cx={cx} cy={cy} r={sunSize} fill={sunColor} />
-      <text x="6" y={arcHeight + 12} fontSize="7" fill="#7d8590" fontFamily="inherit" fontWeight="500">6:00</text>
-      <text x={arcWidth / 2 - 8} y="10" fontSize="7" fill="#7d8590" fontFamily="inherit" fontWeight="500">12:00</text>
-      <text x={arcWidth - 28} y={arcHeight + 12} fontSize="7" fill="#7d8590" fontFamily="inherit" fontWeight="500">20:00</text>
+      {/* Time labels */}
+      <text x="6" y={arcHeight + 12} fontSize="7" fill="rgba(255,255,255,0.45)" fontFamily="inherit" fontWeight="600">6:00</text>
+      <text x={arcWidth / 2 - 8} y="10" fontSize="7" fill="rgba(255,255,255,0.45)" fontFamily="inherit" fontWeight="600">12:00</text>
+      <text x={arcWidth - 28} y={arcHeight + 12} fontSize="7" fill="rgba(255,255,255,0.45)" fontFamily="inherit" fontWeight="600">20:00</text>
     </svg>
   )
 }
@@ -163,9 +161,14 @@ export function HeroHeader({ userName }: HeroHeaderProps) {
       {/* Dynamic landscape */}
       <Landscape timeOfDay={timeOfDay} />
 
-      <div className="relative z-10 p-5 md:p-6">
-        {/* Greeting + weather icon + date */}
-        <div className="flex items-start gap-4 mb-3">
+      {/* Sun arc — directly over the landscape */}
+      <div className="absolute inset-x-0 bottom-0 z-[5] h-[55%] px-6 pb-2 pointer-events-none">
+        <SunArc />
+      </div>
+
+      {/* Greeting overlay */}
+      <div className="relative z-10 p-5 md:p-6 pb-20 md:pb-24">
+        <div className="flex items-start gap-4">
           <div className="flex-1">
             <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
               {greeting}, <span className="text-primary-300 drop-shadow-[0_0_12px_rgba(13,148,136,0.4)]">{userName}</span>
@@ -183,11 +186,6 @@ export function HeroHeader({ userName }: HeroHeaderProps) {
               className="w-14 h-14 md:w-16 md:h-16 drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
             />
           </div>
-        </div>
-
-        {/* Sun arc */}
-        <div className="rounded-xl overflow-hidden bg-black/20 backdrop-blur-sm">
-          <SunArc />
         </div>
       </div>
     </div>
