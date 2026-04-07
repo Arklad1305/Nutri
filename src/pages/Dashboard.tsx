@@ -614,14 +614,57 @@ export function Dashboard() {
               onClick={() => toggleCard('water')}
               className="relative w-full text-left rounded-2xl overflow-hidden border border-cyan-500/15 bg-[#0a1628] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-cyan-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
             >
-              {/* Water background image */}
+              {/* Animated water */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                <img
-                  src="https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita358.png"
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 transition-opacity duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628]/80 via-[#0a1628]/50 to-transparent" />
+                {/* Water body that rises with percentage */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out"
+                  style={{ height: `${Math.max(Math.min(waterPercentage, 100), 15)}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/50 via-cyan-500/30 to-cyan-400/10" />
+                </div>
+
+                {/* Wave 1 — large, slow */}
+                <div
+                  className="absolute left-0 right-0 h-12 animate-[wave-move-1_6s_ease-in-out_infinite]"
+                  style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15) - 14}%` }}
+                >
+                  <div
+                    className="absolute inset-0 w-[200%]"
+                    style={{
+                      background: 'repeating-linear-gradient(90deg, transparent, rgba(6,182,212,0.45) 25%, transparent 50%)',
+                      borderRadius: '40%',
+                    }}
+                  />
+                </div>
+
+                {/* Wave 2 — medium, opposite direction */}
+                <div
+                  className="absolute left-0 right-0 h-10 animate-[wave-move-2_5s_ease-in-out_infinite]"
+                  style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15) - 12}%` }}
+                >
+                  <div
+                    className="absolute inset-0 w-[200%]"
+                    style={{
+                      background: 'repeating-linear-gradient(90deg, transparent, rgba(34,211,238,0.3) 25%, transparent 50%)',
+                      borderRadius: '45%',
+                    }}
+                  />
+                </div>
+
+                {/* Wave 3 — small, fast shimmer */}
+                <div
+                  className="absolute left-0 right-0 h-8 animate-[wave-move-3_4s_ease-in-out_infinite]"
+                  style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15) - 10}%` }}
+                >
+                  <div
+                    className="absolute inset-0 w-[200%]"
+                    style={{
+                      background: 'repeating-linear-gradient(90deg, transparent, rgba(165,243,252,0.2) 25%, transparent 50%)',
+                      borderRadius: '42%',
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="flex items-center gap-4 p-4 relative z-10">

@@ -360,4 +360,20 @@
   .animate-slide-in-up {
     animation: slideInUp 0.5s ease-out;
   }
+
+  /* Water wave animations */
+  @keyframes wave-move-1 {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    50% { transform: translateX(-25%) rotate(2deg); }
+  }
+
+  @keyframes wave-move-2 {
+    0%, 100% { transform: translateX(-10%) rotate(0deg); }
+    50% { transform: translateX(15%) rotate(-2deg); }
+  }
+
+  @keyframes wave-move-3 {
+    0%, 100% { transform: translateX(5%) rotate(1deg); }
+    50% { transform: translateX(-20%) rotate(-1deg); }
+  }
 }
