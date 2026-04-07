@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Flame, Zap } from 'lucide-react'
 import { gsap, useGSAP } from '../lib/gsap'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 
@@ -29,12 +30,14 @@ export function MacroRing({
   const [hasAnimated, setHasAnimated] = useState(false)
 
   const caloriePercentage = Math.min((calories / calorieGoal) * 100, 100)
-  const proteinPercentage = (protein / proteinGoal) * 100
-  const carbsPercentage = (carbs / carbsGoal) * 100
-  const fatPercentage = (fat / fatGoal) * 100
+  const proteinPercentage = Math.min((protein / proteinGoal) * 100, 100)
+  const carbsPercentage = Math.min((carbs / carbsGoal) * 100, 100)
+  const fatPercentage = Math.min((fat / fatGoal) * 100, 100)
 
   const circumference = 2 * Math.PI * 70
   const targetOffset = circumference - (caloriePercentage / 100) * circumference
+
+  const remaining = Math.max(0, calorieGoal - calories)
 
   useGSAP(() => {
     if (reducedMotion || !ringRef.current || !calorieRef.current) return
@@ -72,56 +75,88 @@ export function MacroRing({
     })
   }, { dependencies: [calories, calorieGoal, reducedMotion], revertOnUpdate: true })
 
+  const macros = [
+    {
+      label: 'Proteína',
+      value: Math.round(protein),
+      goal: Math.round(proteinGoal),
+      pct: proteinPercentage,
+      unit: 'g',
+      color: 'blue',
+      gradient: 'from-blue-500 to-blue-400',
+      bg: 'from-blue-500/10 to-blue-600/5',
+      border: 'border-blue-500/15',
+      text: 'text-blue-400',
+      bar: 'bg-gradient-to-r from-blue-500 to-blue-400',
+      glow: 'rgba(59,130,246,0.3)',
+    },
+    {
+      label: 'Carbos',
+      value: Math.round(carbs),
+      goal: Math.round(carbsGoal),
+      pct: carbsPercentage,
+      unit: 'g',
+      color: 'emerald',
+      gradient: 'from-emerald-500 to-emerald-400',
+      bg: 'from-emerald-500/10 to-emerald-600/5',
+      border: 'border-emerald-500/15',
+      text: 'text-emerald-400',
+      bar: 'bg-gradient-to-r from-emerald-500 to-emerald-400',
+      glow: 'rgba(16,185,129,0.3)',
+    },
+    {
+      label: 'Grasas',
+      value: Math.round(fat),
+      goal: Math.round(fatGoal),
+      pct: fatPercentage,
+      unit: 'g',
+      color: 'amber',
+      gradient: 'from-amber-500 to-amber-400',
+      bg: 'from-amber-500/10 to-amber-600/5',
+      border: 'border-amber-500/15',
+      text: 'text-amber-400',
+      bar: 'bg-gradient-to-r from-amber-500 to-amber-400',
+      glow: 'rgba(245,158,11,0.3)',
+    },
+  ]
+
   return (
-    <div className="macro-ring-container relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border/50 rounded-3xl p-6 md:p-8 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    <div className="macro-ring-container relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#060a0d]">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Subtle radial glow behind ring */}
+        <div
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/4 w-48 h-48 rounded-full animate-[pulse-glow_5s_ease-in-out_infinite]"
+          style={{ background: 'radial-gradient(circle, rgba(13,148,136,0.12), transparent 70%)', filter: 'blur(20px)' }}
+        />
+        {/* Ambient particles */}
+        <div className="absolute w-1 h-1 rounded-full bg-primary/20 animate-[star-twinkle_4s_ease-in-out_infinite]" style={{ top: '15%', left: '10%' }} />
+        <div className="absolute w-0.5 h-0.5 rounded-full bg-blue-400/15 animate-[star-twinkle_5s_ease-in-out_infinite_1.5s]" style={{ top: '20%', right: '15%' }} />
+        <div className="absolute w-0.5 h-0.5 rounded-full bg-emerald-400/15 animate-[star-twinkle_3.5s_ease-in-out_infinite_2.5s]" style={{ bottom: '30%', left: '8%' }} />
+      </div>
 
-      <div className="relative z-10">
-        <h3 className="text-sm font-semibold text-dark-muted mb-6">Macronutrientes del Día</h3>
+      <div className="relative z-10 p-6 md:p-8">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(13,148,136,0.1)]">
+            <Zap className="w-4 h-4 text-primary drop-shadow-[0_0_6px_rgba(13,148,136,0.5)]" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-white drop-shadow-[0_0_8px_rgba(13,148,136,0.2)]">Macronutrientes del Día</h3>
+            <p className="text-[10px] text-dark-muted">{remaining > 0 ? `${remaining} kcal restantes` : 'Meta alcanzada'}</p>
+          </div>
+        </div>
 
-        <div className="flex items-center justify-center mb-8">
-          {/* SVG Ring */}
+        {/* Ring + center */}
+        <div className="flex items-center justify-center mb-6">
           <div className="relative">
-            <svg width="160" height="160" viewBox="0 0 160 160" className="transform -rotate-90">
+            <svg width="180" height="180" viewBox="0 0 160 160" className="transform -rotate-90">
               {/* Background ring */}
-              <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="none" className="text-dark-border" />
+              <circle cx="80" cy="80" r="70" stroke="rgba(255,255,255,0.06)" strokeWidth="10" fill="none" />
 
-              {/* Colored segments for each macro */}
-              <circle
-                cx="80"
-                cy="80"
-                r="70"
-                stroke="url(#proteinGradient)"
-                strokeWidth="8"
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference - (proteinPercentage / 100) * circumference}
-                strokeLinecap="round"
-                opacity="0.3"
-              />
-              <circle
-                cx="80"
-                cy="80"
-                r="70"
-                stroke="url(#carbsGradient)"
-                strokeWidth="8"
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference - (carbsPercentage / 100) * circumference}
-                strokeLinecap="round"
-                opacity="0.3"
-              />
-              <circle
-                cx="80"
-                cy="80"
-                r="70"
-                stroke="url(#fatGradient)"
-                strokeWidth="8"
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference - (fatPercentage / 100) * circumference}
-                strokeLinecap="round"
-                opacity="0.3"
+              {/* Track marks */}
+              <circle cx="80" cy="80" r="70" stroke="rgba(255,255,255,0.03)" strokeWidth="10" fill="none"
+                strokeDasharray="2 8"
               />
 
               {/* Main calorie ring */}
@@ -130,66 +165,59 @@ export function MacroRing({
                 cx="80"
                 cy="80"
                 r="70"
-                stroke="url(#calorieGradient)"
-                strokeWidth="8"
+                stroke="url(#calorieGrad)"
+                strokeWidth="10"
                 fill="none"
                 strokeDasharray={circumference}
                 strokeDashoffset={reducedMotion || hasAnimated ? targetOffset : circumference}
                 strokeLinecap="round"
+                style={{ filter: 'drop-shadow(0 0 6px rgba(13,148,136,0.4))' }}
               />
 
               <defs>
-                <linearGradient id="calorieGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="calorieGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#0d9488" />
-                  <stop offset="100%" stopColor="#2dd4bf" />
-                </linearGradient>
-                <linearGradient id="proteinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#3b82f6" />
-                  <stop offset="100%" stopColor="#60a5fa" />
-                </linearGradient>
-                <linearGradient id="carbsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#059669" />
-                  <stop offset="100%" stopColor="#34d399" />
-                </linearGradient>
-                <linearGradient id="fatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#d97706" />
-                  <stop offset="100%" stopColor="#fbbf24" />
+                  <stop offset="50%" stopColor="#2dd4bf" />
+                  <stop offset="100%" stopColor="#0d9488" />
                 </linearGradient>
               </defs>
             </svg>
 
             {/* Center display */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div ref={calorieRef} className="text-4xl font-black text-primary-400">
+              <Flame className="w-4 h-4 text-primary/40 mb-1" />
+              <div ref={calorieRef} className="text-4xl font-black text-white drop-shadow-[0_0_12px_rgba(13,148,136,0.3)]">
                 {Math.round(calories)}
               </div>
-              <div className="text-xs text-dark-muted mt-1">kcal</div>
+              <div className="text-[10px] text-dark-muted font-medium mt-0.5">de {calorieGoal} kcal</div>
+              <div className="mt-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                <span className="text-[10px] font-bold text-primary">{Math.round(caloriePercentage)}%</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Macro pills */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 text-center">
-            <div className="text-xs text-dark-muted mb-1">Proteína</div>
-            <div className="text-lg font-bold text-blue-400">{Math.round(protein)}g</div>
-            <div className="text-xs text-dark-muted">{Math.round(proteinPercentage)}%</div>
-          </div>
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-center">
-            <div className="text-xs text-dark-muted mb-1">Carbos</div>
-            <div className="text-lg font-bold text-green-400">{Math.round(carbs)}g</div>
-            <div className="text-xs text-dark-muted">{Math.round(carbsPercentage)}%</div>
-          </div>
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-center">
-            <div className="text-xs text-dark-muted mb-1">Grasas</div>
-            <div className="text-lg font-bold text-amber-400">{Math.round(fat)}g</div>
-            <div className="text-xs text-dark-muted">{Math.round(fatPercentage)}%</div>
-          </div>
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-center">
-            <div className="text-xs text-dark-muted mb-1">Objetivo</div>
-            <div className="text-lg font-bold text-amber-400">{calorieGoal}</div>
-            <div className="text-xs text-dark-muted">{Math.round(caloriePercentage)}%</div>
-          </div>
+        {/* Macro bars */}
+        <div className="space-y-3">
+          {macros.map((m) => (
+            <div key={m.label} className={`rounded-xl border ${m.border} bg-gradient-to-r ${m.bg} p-3`}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-semibold text-white/70">{m.label}</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-black ${m.text}`} style={{ textShadow: `0 0 8px ${m.glow}` }}>
+                    {m.value}{m.unit}
+                  </span>
+                  <span className="text-[10px] text-dark-muted">/ {m.goal}{m.unit}</span>
+                </div>
+              </div>
+              <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${m.bar} transition-all duration-700`}
+                  style={{ width: `${Math.min(m.pct, 100)}%` }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
