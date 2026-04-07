@@ -610,6 +610,11 @@ export function Dashboard() {
             <button
               onClick={() => toggleCard('water')}
               className="relative w-full text-left rounded-2xl overflow-hidden border border-cyan-500/15 bg-[#060d18] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-cyan-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+              style={{
+                backgroundImage: 'url(https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
             >
               {/* Water fill */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl">
