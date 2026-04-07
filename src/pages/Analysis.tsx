@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import { TrendingUp, Activity, Send, Sparkles, Loader2, BarChart3, Flame, Droplets, Zap, Target } from 'lucide-react'
+import { TrendingUp, Activity, Send, Sparkles, Loader2, BarChart3, Flame, Droplets, Zap, Target, ChevronRight, Dna, Layers, Battery, Brain } from 'lucide-react'
 import { submitHealthData } from '../lib/n8n'
 import { BiohackerNutrients } from '../components/BiohackerNutrients'
 import { BComplexVitamins } from '../components/BComplexVitamins'
@@ -26,6 +26,9 @@ export function Analysis() {
   const [weeklyData, setWeeklyData] = useState<DailyData[]>([])
   const [loading, setLoading] = useState(true)
   const [averages, setAverages] = useState({ calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 })
+
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const toggleSection = (id: string) => setExpandedSection(prev => prev === id ? null : id)
 
   const [userMessage, setUserMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -450,21 +453,160 @@ export function Analysis() {
           </ResponsiveContainer>
         </div>
 
-        {/* ── Deep Nutrient Sections ── */}
-        <div className="analysis-section bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-5">
-          <BiohackerNutrients nutrients={biohackerNutrients} />
+        {/* ── Deep Nutrient Sections — Collapsible ── */}
+
+        {/* Biohacker Nutrients — Purple */}
+        <div className="analysis-section">
+          <button
+            onClick={() => toggleSection('biohacker')}
+            className="relative w-full text-left rounded-2xl overflow-hidden border border-violet-500/15 bg-[#0a0614] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(139,92,246,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-violet-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+          >
+            {/* Glow orbs */}
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-violet-500/10 blur-2xl" />
+              <div className="absolute top-2 left-1/3 w-16 h-8 rounded-full bg-purple-400/8 blur-xl" />
+              <div className="absolute bottom-0 right-1/4 w-20 h-12 rounded-full bg-violet-600/8 blur-2xl" />
+            </div>
+            <div className="relative z-10 flex items-center gap-4 p-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-600/10 border border-violet-500/20 flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.15)]">
+                <Brain className="w-5 h-5 text-violet-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-violet-200 drop-shadow-[0_0_8px_rgba(139,92,246,0.3)]">Nutrientes Biohacker</h3>
+                <p className="text-xs text-violet-100/40 truncate">Omega-3, colina, antioxidantes, probióticos</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-violet-300/70 bg-violet-500/10 border border-violet-500/20 px-2 py-1 rounded-lg">
+                    Ω3 {biohackerNutrients.omega_3_mg}mg
+                  </span>
+                  <span className="text-[10px] font-bold text-purple-300/70 bg-purple-500/10 border border-purple-500/20 px-2 py-1 rounded-lg">
+                    Col {biohackerNutrients.choline_mg}mg
+                  </span>
+                </div>
+                <ChevronRight className={`w-4 h-4 text-violet-400/60 transition-transform duration-300 ${expandedSection === 'biohacker' ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
+          </button>
+          {expandedSection === 'biohacker' && (
+            <div className="mt-2 bg-dark-card/40 backdrop-blur-sm border border-violet-500/10 rounded-2xl p-5">
+              <BiohackerNutrients nutrients={biohackerNutrients} />
+            </div>
+          )}
         </div>
 
-        <div className="analysis-section bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl overflow-hidden">
-          <BComplexVitamins vitamins={bComplexVitamins} />
+        {/* B Complex Vitamins — Yellow/Citrus */}
+        <div className="analysis-section">
+          <button
+            onClick={() => toggleSection('bcomplex')}
+            className="relative w-full text-left rounded-2xl overflow-hidden border border-yellow-500/15 bg-[#0f0e04] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(234,179,8,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-yellow-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute -top-4 right-8 w-20 h-20 rounded-full bg-yellow-500/8 blur-2xl" />
+              <div className="absolute bottom-0 left-1/4 w-24 h-10 rounded-full bg-amber-400/6 blur-xl" />
+            </div>
+            <div className="relative z-10 flex items-center gap-4 p-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-600/10 border border-yellow-500/20 flex items-center justify-center shadow-[0_0_12px_rgba(234,179,8,0.15)]">
+                <Battery className="w-5 h-5 text-yellow-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-yellow-200 drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]">Complejo B</h3>
+                <p className="text-xs text-yellow-100/40 truncate">B1, B2, B3, B5, B6, B7, B12 y folato</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-yellow-300/70 bg-yellow-500/10 border border-yellow-500/20 px-2 py-1 rounded-lg">
+                    B12 {bComplexVitamins.vitamin_b12_mcg}µg
+                  </span>
+                  <span className="text-[10px] font-bold text-amber-300/70 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-lg">
+                    B6 {bComplexVitamins.vitamin_b6_mg}mg
+                  </span>
+                </div>
+                <ChevronRight className={`w-4 h-4 text-yellow-400/60 transition-transform duration-300 ${expandedSection === 'bcomplex' ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
+          </button>
+          {expandedSection === 'bcomplex' && (
+            <div className="mt-2 bg-dark-card/40 backdrop-blur-sm border border-yellow-500/10 rounded-2xl overflow-hidden">
+              <BComplexVitamins vitamins={bComplexVitamins} />
+            </div>
+          )}
         </div>
 
-        <div className="analysis-section bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl overflow-hidden">
-          <StructuralMinerals minerals={structuralMinerals} />
+        {/* Structural Minerals — Slate/Stone */}
+        <div className="analysis-section">
+          <button
+            onClick={() => toggleSection('minerals')}
+            className="relative w-full text-left rounded-2xl overflow-hidden border border-slate-500/20 bg-[#07090f] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(148,163,184,0.15),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-slate-400/35 hover:-translate-y-0.5 transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute top-2 right-12 w-16 h-16 rounded-full bg-slate-400/6 blur-2xl" />
+              <div className="absolute -bottom-2 left-1/3 w-20 h-10 rounded-full bg-slate-300/5 blur-xl" />
+            </div>
+            <div className="relative z-10 flex items-center gap-4 p-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-slate-500/20 to-slate-600/10 border border-slate-500/20 flex items-center justify-center shadow-[0_0_12px_rgba(148,163,184,0.1)]">
+                <Layers className="w-5 h-5 text-slate-300" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-slate-200">Minerales Estructurales</h3>
+                <p className="text-xs text-slate-100/40 truncate">Calcio, fósforo, manganeso, yodo, cromo</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-300/70 bg-slate-500/10 border border-slate-500/20 px-2 py-1 rounded-lg">
+                    Ca {structuralMinerals.calcium_mg}mg
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-300/60 bg-slate-500/10 border border-slate-500/20 px-2 py-1 rounded-lg">
+                    P {structuralMinerals.phosphorus_mg}mg
+                  </span>
+                </div>
+                <ChevronRight className={`w-4 h-4 text-slate-400/60 transition-transform duration-300 ${expandedSection === 'minerals' ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
+          </button>
+          {expandedSection === 'minerals' && (
+            <div className="mt-2 bg-dark-card/40 backdrop-blur-sm border border-slate-500/10 rounded-2xl overflow-hidden">
+              <StructuralMinerals minerals={structuralMinerals} />
+            </div>
+          )}
         </div>
 
-        <div className="analysis-section bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl overflow-hidden">
-          <EssentialAminoAcids aminoAcids={essentialAminoAcids} />
+        {/* Essential Amino Acids — Cyan/Teal */}
+        <div className="analysis-section">
+          <button
+            onClick={() => toggleSection('aminoacids')}
+            className="relative w-full text-left rounded-2xl overflow-hidden border border-cyan-500/15 bg-[#040f10] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-cyan-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute -top-4 right-10 w-20 h-20 rounded-full bg-cyan-500/8 blur-2xl" />
+              <div className="absolute bottom-0 left-1/4 w-24 h-10 rounded-full bg-teal-400/6 blur-xl" />
+            </div>
+            <div className="relative z-10 flex items-center gap-4 p-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-600/10 border border-cyan-500/20 flex items-center justify-center shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+                <Dna className="w-5 h-5 text-cyan-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-cyan-200 drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]">Aminoácidos Esenciales</h3>
+                <p className="text-xs text-cyan-100/40 truncate">BCAAs + aminoácidos cerebrales y musculares</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-cyan-300/70 bg-cyan-500/10 border border-cyan-500/20 px-2 py-1 rounded-lg">
+                    Leu {essentialAminoAcids.leucine_mg}mg
+                  </span>
+                  <span className="text-[10px] font-bold text-teal-300/60 bg-teal-500/10 border border-teal-500/20 px-2 py-1 rounded-lg">
+                    BCAA ×3
+                  </span>
+                </div>
+                <ChevronRight className={`w-4 h-4 text-cyan-400/60 transition-transform duration-300 ${expandedSection === 'aminoacids' ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
+          </button>
+          {expandedSection === 'aminoacids' && (
+            <div className="mt-2 bg-dark-card/40 backdrop-blur-sm border border-cyan-500/10 rounded-2xl overflow-hidden">
+              <EssentialAminoAcids aminoAcids={essentialAminoAcids} />
+            </div>
+          )}
         </div>
       </div>
     </div>
