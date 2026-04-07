@@ -613,8 +613,14 @@ export function Dashboard() {
             <button
               onClick={() => toggleCard('water')}
               className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-cyan-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-cyan-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
+              style={{
+                backgroundImage: 'url(https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
             >
-              <div className="flex items-center gap-4 p-4 relative">
+              <div className="absolute inset-0 bg-black/40"></div>
+              <div className="flex items-center gap-4 p-4 relative z-10">
                 {/* Decorative image */}
                 <img src="/weather-icons/humidity.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
 
