@@ -620,7 +620,7 @@ export function Dashboard() {
 
                 <div className="relative shrink-0">
                   <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                    <img src="https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita.png" alt="" className="w-8 h-8 drop-shadow-md" />
+                    <img src="/weather-icons/humidity.svg" alt="" className="w-8 h-8" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 relative">
