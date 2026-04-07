@@ -690,34 +690,48 @@ export function Dashboard() {
             )}
           </div>
 
-          {/* Sleep */}
+          {/* Sleep — Aurora + Stars */}
           {sleepHours !== null && (
             <div className="dash-section">
               <button
                 onClick={() => toggleCard('sleep')}
-                className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-indigo-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(99,102,241,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-indigo-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
+                className="relative w-full text-left rounded-2xl overflow-hidden border border-indigo-500/15 bg-[#080c1a] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(99,102,241,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-indigo-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
               >
-                <div className="flex items-center gap-4 p-4 relative">
-                  <img src="/weather-icons/moon-waxing-gibbous.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+                {/* Animated night sky */}
+                <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                  {/* Stars */}
+                  <div className="absolute w-1 h-1 rounded-full bg-white/60 animate-[star-twinkle_3s_ease-in-out_infinite]" style={{ top: '20%', left: '15%' }} />
+                  <div className="absolute w-0.5 h-0.5 rounded-full bg-white/40 animate-[star-twinkle_4s_ease-in-out_infinite_1s]" style={{ top: '35%', left: '45%' }} />
+                  <div className="absolute w-1 h-1 rounded-full bg-indigo-300/50 animate-[star-twinkle_3.5s_ease-in-out_infinite_0.5s]" style={{ top: '15%', left: '70%' }} />
+                  <div className="absolute w-0.5 h-0.5 rounded-full bg-white/50 animate-[star-twinkle_5s_ease-in-out_infinite_2s]" style={{ top: '60%', left: '85%' }} />
+                  <div className="absolute w-1 h-1 rounded-full bg-violet-300/40 animate-[star-twinkle_4.5s_ease-in-out_infinite_1.5s]" style={{ top: '50%', left: '30%' }} />
+                  <div className="absolute w-0.5 h-0.5 rounded-full bg-white/30 animate-[star-twinkle_3s_ease-in-out_infinite_2.5s]" style={{ top: '25%', left: '55%' }} />
 
+                  {/* Aurora band */}
+                  <div className="absolute bottom-0 left-0 right-0 h-full animate-[aurora-drift_8s_ease-in-out_infinite]">
+                    <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.15) 20%, rgba(139,92,246,0.1) 40%, rgba(99,102,241,0.12) 60%, transparent 80%)', filter: 'blur(8px)' }} />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 h-3/4 animate-[aurora-drift-2_6s_ease-in-out_infinite]">
+                    <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(167,139,250,0.1) 30%, rgba(196,181,253,0.08) 50%, transparent 70%)', filter: 'blur(12px)' }} />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 relative z-10">
                   <div className="relative shrink-0">
-                    <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                      <Moon className="w-5 h-5 text-indigo-400" />
+                    <div className="w-12 h-12 rounded-xl bg-indigo-950/60 backdrop-blur-sm border border-indigo-500/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(99,102,241,0.1)]">
+                      <Moon className="w-5 h-5 text-indigo-400 drop-shadow-[0_0_6px_rgba(99,102,241,0.5)]" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 relative">
-                    <h3 className="text-sm font-bold text-indigo-400">Sueño</h3>
-                    <p className="text-xs text-dark-muted truncate">
+                    <h3 className="text-sm font-bold text-indigo-300 drop-shadow-[0_0_8px_rgba(99,102,241,0.4)]">Sueño</h3>
+                    <p className="text-xs text-indigo-100/50 truncate">
                       {sleepHours < 6 ? 'Descanso insuficiente' : sleepHours < 7.5 ? 'Descanso moderado' : 'Buen descanso'}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 relative">
-                    <span className="text-lg font-black text-white">{sleepHours}h</span>
-                    <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'sleep' ? 'rotate-90' : ''}`} />
+                    <span className="text-lg font-black text-white drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]">{sleepHours}h</span>
+                    <ChevronRight className={`w-4 h-4 text-indigo-400/60 transition-transform duration-300 ${expandedCard === 'sleep' ? 'rotate-90' : ''}`} />
                   </div>
-                </div>
-                <div className="h-0.5 bg-dark-border/20">
-                  <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-700" style={{ width: `${Math.min((sleepHours / 9) * 100, 100)}%` }} />
                 </div>
               </button>
               {expandedCard === 'sleep' && (
@@ -728,29 +742,42 @@ export function Dashboard() {
             </div>
           )}
 
-          {/* Metabolic State */}
+          {/* Metabolic State — Pulse waves */}
           <div className="dash-section">
             <button
               onClick={() => toggleCard('metabolic')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-emerald-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(16,185,129,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-emerald-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
+              className="relative w-full text-left rounded-2xl overflow-hidden border border-emerald-500/15 bg-[#081210] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(16,185,129,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-emerald-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
             >
-              <div className="flex items-center gap-4 p-4 relative">
-                <img src="/weather-icons/thermometer-raindrop.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+              {/* Animated pulse rings */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                {/* Expanding pulse rings from center-left */}
+                <div className="absolute top-1/2 left-[15%] -translate-y-1/2 w-20 h-20 rounded-full border border-emerald-500/20 animate-[pulse-ring_4s_ease-out_infinite]" />
+                <div className="absolute top-1/2 left-[15%] -translate-y-1/2 w-20 h-20 rounded-full border border-emerald-500/15 animate-[pulse-ring_4s_ease-out_infinite_1.3s]" />
+                <div className="absolute top-1/2 left-[15%] -translate-y-1/2 w-20 h-20 rounded-full border border-teal-400/10 animate-[pulse-ring_4s_ease-out_infinite_2.6s]" />
 
+                {/* Horizontal scan line */}
+                <div className="absolute top-0 left-0 w-full h-full animate-[scan-line_5s_linear_infinite]">
+                  <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
+                </div>
+
+                {/* Ambient glow */}
+                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-emerald-500/8 to-transparent" />
+              </div>
+
+              <div className="flex items-center gap-4 p-4 relative z-10">
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                    <Activity className="w-5 h-5 text-emerald-400" />
+                  <div className="w-12 h-12 rounded-xl bg-emerald-950/60 backdrop-blur-sm border border-emerald-500/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(16,185,129,0.1)]">
+                    <Activity className="w-5 h-5 text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 relative">
-                  <h3 className="text-sm font-bold text-emerald-400">Estado Metabólico</h3>
-                  <p className="text-xs text-dark-muted truncate">Monitor de vía mTOR / autofagia</p>
+                  <h3 className="text-sm font-bold text-emerald-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">Estado Metabólico</h3>
+                  <p className="text-xs text-emerald-100/50 truncate">Monitor de vía mTOR / autofagia</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 relative">
-                  <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'metabolic' ? 'rotate-90' : ''}`} />
+                  <ChevronRight className={`w-4 h-4 text-emerald-400/60 transition-transform duration-300 ${expandedCard === 'metabolic' ? 'rotate-90' : ''}`} />
                 </div>
               </div>
-              <div className="h-0.5 bg-gradient-to-r from-emerald-500/30 to-teal-500/30" />
             </button>
             {expandedCard === 'metabolic' && (
               <div className="mt-2">
@@ -759,33 +786,76 @@ export function Dashboard() {
             )}
           </div>
 
-          {/* Activity */}
+          {/* Activity — Fire/Flames */}
           <div className="dash-section">
             <button
               onClick={() => toggleCard('activity')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-amber-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(245,158,11,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-amber-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
+              className="relative w-full text-left rounded-2xl overflow-hidden border border-amber-500/15 bg-[#140c06] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(245,158,11,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-amber-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
             >
-              <div className="flex items-center gap-4 p-4 relative">
-                <img src="/weather-icons/lightning-bolt.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+              {/* Animated flames */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                {/* Flame layer 1 — tall, slow */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-3/4 animate-[flame-flicker-1_3s_ease-in-out_infinite]"
+                >
+                  <div
+                    className="absolute inset-0 w-[200%]"
+                    style={{
+                      background: 'repeating-linear-gradient(90deg, transparent, rgba(245,158,11,0.2) 20%, transparent 40%)',
+                      borderRadius: '50% 50% 0 0',
+                      filter: 'blur(4px)',
+                    }}
+                  />
+                </div>
 
+                {/* Flame layer 2 — medium, offset */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-1/2 animate-[flame-flicker-2_2.5s_ease-in-out_infinite]"
+                >
+                  <div
+                    className="absolute inset-0 w-[200%]"
+                    style={{
+                      background: 'repeating-linear-gradient(90deg, transparent, rgba(251,191,36,0.15) 25%, transparent 50%)',
+                      borderRadius: '45% 55% 0 0',
+                      filter: 'blur(3px)',
+                    }}
+                  />
+                </div>
+
+                {/* Flame layer 3 — core glow */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-1/3 animate-[flame-flicker-3_2s_ease-in-out_infinite]"
+                >
+                  <div
+                    className="absolute inset-0 w-[200%]"
+                    style={{
+                      background: 'repeating-linear-gradient(90deg, transparent, rgba(249,115,22,0.18) 20%, transparent 40%)',
+                      borderRadius: '40% 60% 0 0',
+                      filter: 'blur(2px)',
+                    }}
+                  />
+                </div>
+
+                {/* Heat shimmer at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-orange-500/15 via-amber-500/8 to-transparent" />
+              </div>
+
+              <div className="flex items-center gap-4 p-4 relative z-10">
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                    <Dumbbell className="w-5 h-5 text-amber-400" />
+                  <div className="w-12 h-12 rounded-xl bg-amber-950/60 backdrop-blur-sm border border-amber-500/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(245,158,11,0.1)]">
+                    <Dumbbell className="w-5 h-5 text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 relative">
-                  <h3 className="text-sm font-bold text-amber-400">Actividad Física</h3>
-                  <p className="text-xs text-dark-muted truncate">
+                  <h3 className="text-sm font-bold text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Actividad Física</h3>
+                  <p className="text-xs text-amber-100/50 truncate">
                     {activities.length > 0 ? `${activities.length} actividad${activities.length > 1 ? 'es' : ''} registrada${activities.length > 1 ? 's' : ''}` : 'Sin actividad registrada'}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 relative">
-                  {totalBurned > 0 && <span className="text-lg font-black text-white">{totalBurned} kcal</span>}
-                  <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'activity' ? 'rotate-90' : ''}`} />
+                  {totalBurned > 0 && <span className="text-lg font-black text-white drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">{totalBurned} kcal</span>}
+                  <ChevronRight className={`w-4 h-4 text-amber-400/60 transition-transform duration-300 ${expandedCard === 'activity' ? 'rotate-90' : ''}`} />
                 </div>
-              </div>
-              <div className="h-0.5 bg-dark-border/20">
-                <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-700" style={{ width: `${Math.min((totalBurned / 500) * 100, 100)}%` }} />
               </div>
             </button>
             {expandedCard === 'activity' && (
@@ -795,29 +865,60 @@ export function Dashboard() {
             )}
           </div>
 
-          {/* Day Type */}
+          {/* Day Type — Sun rays / Mist */}
           <div className="dash-section">
             <button
               onClick={() => toggleCard('daytype')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-slate-900/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(148,163,184,0.1),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-slate-400/20 hover:-translate-y-0.5 transition-all duration-300 group"
+              className={`relative w-full text-left rounded-2xl overflow-hidden border shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5 transition-all duration-300 group ${isTrainingDay ? 'border-red-500/15 bg-[#140808] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(239,68,68,0.2)] hover:border-red-400/30' : 'border-slate-500/15 bg-[#0a0c10] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(148,163,184,0.1)] hover:border-slate-400/25'}`}
             >
-              <div className="flex items-center gap-4 p-4 relative">
-                <img src={isTrainingDay ? '/weather-icons/thermometer-sun.svg' : '/weather-icons/wind.svg'} alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+              {/* Animated background */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                {isTrainingDay ? (
+                  <>
+                    {/* Sun rays rotating */}
+                    <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-32 h-32 animate-[sun-rotate_20s_linear_infinite]">
+                      <div className="absolute inset-0" style={{
+                        background: 'conic-gradient(from 0deg, transparent, rgba(239,68,68,0.12) 10%, transparent 20%, transparent, rgba(251,146,60,0.1) 50%, transparent 60%, transparent, rgba(239,68,68,0.08) 80%, transparent 90%)',
+                      }} />
+                    </div>
+                    {/* Core glow */}
+                    <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-10 h-10 rounded-full bg-red-500/15 animate-[pulse-glow_3s_ease-in-out_infinite]" style={{ filter: 'blur(8px)' }} />
+                    {/* Energy particles */}
+                    <div className="absolute w-1 h-1 rounded-full bg-red-400/40 animate-[float-up_4s_ease-in-out_infinite]" style={{ bottom: '10%', left: '25%' }} />
+                    <div className="absolute w-0.5 h-0.5 rounded-full bg-orange-400/30 animate-[float-up_3s_ease-in-out_infinite_1s]" style={{ bottom: '15%', left: '50%' }} />
+                    <div className="absolute w-1 h-1 rounded-full bg-red-300/35 animate-[float-up_5s_ease-in-out_infinite_2s]" style={{ bottom: '5%', left: '70%' }} />
+                  </>
+                ) : (
+                  <>
+                    {/* Mist/fog layers drifting */}
+                    <div className="absolute inset-0 animate-[mist-drift-1_10s_ease-in-out_infinite]">
+                      <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent, rgba(148,163,184,0.06) 30%, rgba(148,163,184,0.04) 50%, transparent 70%)', filter: 'blur(10px)' }} />
+                    </div>
+                    <div className="absolute inset-0 animate-[mist-drift-2_8s_ease-in-out_infinite]">
+                      <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent 20%, rgba(148,163,184,0.05) 40%, rgba(203,213,225,0.03) 60%, transparent 80%)', filter: 'blur(14px)' }} />
+                    </div>
+                    {/* Subtle particles */}
+                    <div className="absolute w-0.5 h-0.5 rounded-full bg-slate-400/20 animate-[star-twinkle_6s_ease-in-out_infinite]" style={{ top: '30%', left: '20%' }} />
+                    <div className="absolute w-0.5 h-0.5 rounded-full bg-slate-400/15 animate-[star-twinkle_5s_ease-in-out_infinite_2s]" style={{ top: '50%', left: '60%' }} />
+                  </>
+                )}
+              </div>
 
+              <div className="flex items-center gap-4 p-4 relative z-10">
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                    <Zap className={`w-5 h-5 ${isTrainingDay ? 'text-red-400' : 'text-slate-400'}`} />
+                  <div className={`w-12 h-12 rounded-xl backdrop-blur-sm flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] ${isTrainingDay ? 'bg-red-950/60 border border-red-500/20' : 'bg-slate-900/60 border border-slate-500/20'}`} style={{ boxShadow: isTrainingDay ? 'inset 0 1px 0 rgba(239,68,68,0.1)' : 'inset 0 1px 0 rgba(148,163,184,0.1)' }}>
+                    <Zap className={`w-5 h-5 ${isTrainingDay ? 'text-red-400 drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]' : 'text-slate-400 drop-shadow-[0_0_6px_rgba(148,163,184,0.3)]'}`} />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 relative">
-                  <h3 className={`text-sm font-bold ${isTrainingDay ? 'text-red-400' : 'text-slate-400'}`}>Tipo de Día</h3>
-                  <p className="text-xs text-dark-muted truncate">{isTrainingDay ? 'Día de entrenamiento' : 'Día de descanso'}</p>
+                  <h3 className={`text-sm font-bold ${isTrainingDay ? 'text-red-300 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'text-slate-300 drop-shadow-[0_0_8px_rgba(148,163,184,0.3)]'}`}>Tipo de Día</h3>
+                  <p className={`text-xs truncate ${isTrainingDay ? 'text-red-100/50' : 'text-slate-100/40'}`}>{isTrainingDay ? 'Día de entrenamiento' : 'Día de descanso'}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 relative">
                   <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${isTrainingDay ? 'bg-red-500/15 text-red-400' : 'bg-slate-500/15 text-slate-400'}`}>
                     {isTrainingDay ? 'Training' : 'Rest'}
                   </span>
-                  <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'daytype' ? 'rotate-90' : ''}`} />
+                  <ChevronRight className={`w-4 h-4 ${isTrainingDay ? 'text-red-400/60' : 'text-slate-400/60'} transition-transform duration-300 ${expandedCard === 'daytype' ? 'rotate-90' : ''}`} />
                 </div>
               </div>
             </button>
