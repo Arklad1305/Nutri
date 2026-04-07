@@ -56,39 +56,7 @@ export function Dashboard() {
   const dashRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
 
-  const waterCardRef = useRef<HTMLDivElement>(null)
-
   const toggleCard = (id: string) => setExpandedCard(prev => prev === id ? null : id)
-
-  // Water bubble animation (waves use CSS keyframes)
-  useGSAP(() => {
-    if (reducedMotion || !waterCardRef.current) return
-
-    const bubbles = waterCardRef.current.querySelectorAll('.water-bubble')
-    bubbles.forEach((bubble) => {
-      const startX = parseFloat(bubble.getAttribute('data-x') || '0')
-      gsap.fromTo(bubble,
-        { y: 0, opacity: 0, scale: 0.3 },
-        {
-          y: -55,
-          opacity: 0.8,
-          scale: 1,
-          duration: 2.5 + Math.random() * 2,
-          ease: 'power1.out',
-          repeat: -1,
-          delay: Math.random() * 4,
-          repeatDelay: Math.random() * 3,
-          x: `+=${Math.sin(startX) * 8}`,
-          modifiers: {
-            opacity: (val: string) => {
-              const v = parseFloat(val)
-              return String(v > 0.6 ? v * 0.5 : v)
-            }
-          }
-        }
-      )
-    })
-  }, { dependencies: [reducedMotion] })
 
   useGSAP(() => {
     if (reducedMotion || !dashRef.current || !goals) return
@@ -641,83 +609,19 @@ export function Dashboard() {
         <div className="space-y-3 mb-5">
 
           {/* Hydration */}
-          <div className="dash-section" ref={waterCardRef}>
-            <style>{`
-              @keyframes wave-drift-1 {
-                0%, 100% { transform: translateX(0); }
-                50% { transform: translateX(-25%); }
-              }
-              @keyframes wave-drift-2 {
-                0%, 100% { transform: translateX(-10%); }
-                50% { transform: translateX(15%); }
-              }
-              @keyframes wave-drift-3 {
-                0%, 100% { transform: translateX(5%); }
-                50% { transform: translateX(-20%); }
-              }
-              @keyframes shimmer-sweep {
-                0% { transform: translateX(-100%); }
-                100% { transform: translateX(400%); }
-              }
-            `}</style>
+          <div className="dash-section">
             <button
               onClick={() => toggleCard('water')}
               className="relative w-full text-left rounded-2xl overflow-hidden border border-cyan-500/15 bg-[#0a1628] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-cyan-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
             >
-              {/* Water fill layer */}
+              {/* Water background image */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                <div
-                  className="absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out"
-                  style={{ height: `${Math.max(Math.min(waterPercentage, 100), 12)}%` }}
-                >
-                  {/* Deep water body */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-600/60 via-cyan-500/40 to-cyan-400/25" />
-
-                  {/* Wave 1 */}
-                  <svg
-                    className="absolute -top-2 left-0 w-[200%] h-6"
-                    viewBox="0 0 800 30"
-                    preserveAspectRatio="none"
-                    style={{ animation: 'wave-drift-1 4s ease-in-out infinite' }}
-                  >
-                    <path d="M0,15 C100,5 200,25 400,15 C600,5 700,25 800,15 L800,30 L0,30 Z" fill="rgba(6,182,212,0.6)" />
-                  </svg>
-
-                  {/* Wave 2 */}
-                  <svg
-                    className="absolute -top-1 left-0 w-[200%] h-5"
-                    viewBox="0 0 800 25"
-                    preserveAspectRatio="none"
-                    style={{ animation: 'wave-drift-2 5.5s ease-in-out infinite' }}
-                  >
-                    <path d="M0,12 C150,4 250,20 400,12 C550,4 700,18 800,12 L800,25 L0,25 Z" fill="rgba(34,211,238,0.4)" />
-                  </svg>
-
-                  {/* Wave 3 */}
-                  <svg
-                    className="absolute -top-1 left-0 w-[200%] h-4"
-                    viewBox="0 0 800 20"
-                    preserveAspectRatio="none"
-                    style={{ animation: 'wave-drift-3 7s ease-in-out infinite' }}
-                  >
-                    <path d="M0,10 C120,4 280,16 400,10 C520,4 680,14 800,10 L800,20 L0,20 Z" fill="rgba(8,145,178,0.5)" />
-                  </svg>
-
-                  {/* Bubbles (GSAP animated) */}
-                  <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 100 60">
-                    <circle className="water-bubble" data-x="1" cx="12" cy="50" r="1.8" fill="rgba(165,243,252,0.6)" />
-                    <circle className="water-bubble" data-x="2" cx="30" cy="55" r="1.2" fill="rgba(165,243,252,0.5)" />
-                    <circle className="water-bubble" data-x="3" cx="50" cy="48" r="2.2" fill="rgba(165,243,252,0.45)" />
-                    <circle className="water-bubble" data-x="4" cx="72" cy="52" r="1.5" fill="rgba(165,243,252,0.55)" />
-                    <circle className="water-bubble" data-x="5" cx="88" cy="50" r="2" fill="rgba(165,243,252,0.4)" />
-                  </svg>
-
-                  {/* Surface shimmer */}
-                  <div
-                    className="absolute top-0 left-0 w-1/4 h-[2px] bg-gradient-to-r from-transparent via-cyan-200/50 to-transparent"
-                    style={{ animation: 'shimmer-sweep 4s ease-in-out infinite 2s' }}
-                  />
-                </div>
+                <img
+                  src="https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita358.png"
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 transition-opacity duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628]/80 via-[#0a1628]/50 to-transparent" />
               </div>
 
               <div className="flex items-center gap-4 p-4 relative z-10">
