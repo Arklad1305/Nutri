@@ -608,63 +608,55 @@ export function Dashboard() {
         {/* ── Quick Access Cards ── */}
         <div className="space-y-3 mb-5">
 
-          {/* Hydration */}
+          {/* Hydration — Ocean */}
           <div className="dash-section">
             <button
               onClick={() => toggleCard('water')}
-              className="relative w-full text-left rounded-2xl overflow-hidden border border-cyan-500/15 bg-[#0a1628] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-cyan-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+              className="relative w-full text-left rounded-2xl overflow-hidden border border-cyan-500/15 bg-[#060d18] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-cyan-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
             >
-              {/* Animated water */}
+              {/* Water fill */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                {/* Water body that rises with percentage */}
+                {/* Water body */}
                 <div
                   className="absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out"
                   style={{ height: `${Math.max(Math.min(waterPercentage, 100), 15)}%` }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/50 via-cyan-500/30 to-cyan-400/10" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-600/55 via-cyan-500/35 to-cyan-400/15" />
                 </div>
 
-                {/* Wave 1 — large, slow */}
+                {/* Wave 1 */}
                 <div
                   className="absolute left-0 right-0 h-12 animate-[wave-move-1_6s_ease-in-out_infinite]"
                   style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15) - 14}%` }}
                 >
-                  <div
-                    className="absolute inset-0 w-[200%]"
-                    style={{
-                      background: 'repeating-linear-gradient(90deg, transparent, rgba(6,182,212,0.45) 25%, transparent 50%)',
-                      borderRadius: '40%',
-                    }}
-                  />
+                  <div className="absolute inset-0 w-[200%]" style={{ background: 'repeating-linear-gradient(90deg, transparent, rgba(6,182,212,0.5) 25%, transparent 50%)', borderRadius: '40%' }} />
                 </div>
-
-                {/* Wave 2 — medium, opposite direction */}
+                {/* Wave 2 */}
                 <div
                   className="absolute left-0 right-0 h-10 animate-[wave-move-2_5s_ease-in-out_infinite]"
                   style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15) - 12}%` }}
                 >
-                  <div
-                    className="absolute inset-0 w-[200%]"
-                    style={{
-                      background: 'repeating-linear-gradient(90deg, transparent, rgba(34,211,238,0.3) 25%, transparent 50%)',
-                      borderRadius: '45%',
-                    }}
-                  />
+                  <div className="absolute inset-0 w-[200%]" style={{ background: 'repeating-linear-gradient(90deg, transparent, rgba(34,211,238,0.35) 25%, transparent 50%)', borderRadius: '45%' }} />
                 </div>
-
-                {/* Wave 3 — small, fast shimmer */}
+                {/* Wave 3 */}
                 <div
                   className="absolute left-0 right-0 h-8 animate-[wave-move-3_4s_ease-in-out_infinite]"
                   style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15) - 10}%` }}
                 >
-                  <div
-                    className="absolute inset-0 w-[200%]"
-                    style={{
-                      background: 'repeating-linear-gradient(90deg, transparent, rgba(165,243,252,0.2) 25%, transparent 50%)',
-                      borderRadius: '42%',
-                    }}
-                  />
+                  <div className="absolute inset-0 w-[200%]" style={{ background: 'repeating-linear-gradient(90deg, transparent, rgba(165,243,252,0.25) 25%, transparent 50%)', borderRadius: '42%' }} />
                 </div>
+
+                {/* Floating bubbles */}
+                <div className="absolute w-1.5 h-1.5 rounded-full bg-cyan-300/40 animate-[bubble-rise_4s_ease-in-out_infinite]" style={{ bottom: '5%', left: '18%' }} />
+                <div className="absolute w-1 h-1 rounded-full bg-cyan-200/30 animate-[bubble-rise_5s_ease-in-out_infinite_1.2s]" style={{ bottom: '8%', left: '40%' }} />
+                <div className="absolute w-2 h-2 rounded-full bg-cyan-300/25 animate-[bubble-rise_6s_ease-in-out_infinite_2.5s]" style={{ bottom: '3%', left: '65%' }} />
+                <div className="absolute w-1 h-1 rounded-full bg-cyan-200/35 animate-[bubble-rise_4.5s_ease-in-out_infinite_0.8s]" style={{ bottom: '10%', left: '82%' }} />
+
+                {/* Surface shimmer */}
+                <div
+                  className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-300/40 to-transparent animate-[shimmer-sweep_5s_ease-in-out_infinite]"
+                  style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15)}%` }}
+                />
               </div>
 
               <div className="flex items-center gap-4 p-4 relative z-10">
@@ -865,60 +857,67 @@ export function Dashboard() {
             )}
           </div>
 
-          {/* Day Type — Sun rays / Mist */}
+          {/* Day Type — Energy / Zen */}
           <div className="dash-section">
             <button
               onClick={() => toggleCard('daytype')}
-              className={`relative w-full text-left rounded-2xl overflow-hidden border shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5 transition-all duration-300 group ${isTrainingDay ? 'border-red-500/15 bg-[#140808] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(239,68,68,0.2)] hover:border-red-400/30' : 'border-slate-500/15 bg-[#0a0c10] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(148,163,184,0.1)] hover:border-slate-400/25'}`}
+              className={`relative w-full text-left rounded-2xl overflow-hidden border shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5 transition-all duration-300 group ${isTrainingDay ? 'border-red-500/20 bg-[#140606] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(239,68,68,0.25)] hover:border-red-400/35' : 'border-blue-500/15 bg-[#060810] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(96,165,250,0.15)] hover:border-blue-400/25'}`}
             >
-              {/* Animated background */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl">
                 {isTrainingDay ? (
                   <>
-                    {/* Sun rays rotating */}
-                    <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-32 h-32 animate-[sun-rotate_20s_linear_infinite]">
+                    {/* Rotating sun rays — larger, brighter */}
+                    <div className="absolute top-1/2 right-[8%] -translate-y-1/2 w-40 h-40 animate-[sun-rotate_15s_linear_infinite]">
                       <div className="absolute inset-0" style={{
-                        background: 'conic-gradient(from 0deg, transparent, rgba(239,68,68,0.12) 10%, transparent 20%, transparent, rgba(251,146,60,0.1) 50%, transparent 60%, transparent, rgba(239,68,68,0.08) 80%, transparent 90%)',
+                        background: 'conic-gradient(from 0deg, transparent, rgba(239,68,68,0.2) 8%, transparent 16%, transparent 25%, rgba(251,146,60,0.18) 33%, transparent 41%, transparent 50%, rgba(239,68,68,0.15) 58%, transparent 66%, transparent 75%, rgba(251,146,60,0.12) 83%, transparent 91%)',
                       }} />
                     </div>
-                    {/* Core glow */}
-                    <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-10 h-10 rounded-full bg-red-500/15 animate-[pulse-glow_3s_ease-in-out_infinite]" style={{ filter: 'blur(8px)' }} />
-                    {/* Energy particles */}
-                    <div className="absolute w-1 h-1 rounded-full bg-red-400/40 animate-[float-up_4s_ease-in-out_infinite]" style={{ bottom: '10%', left: '25%' }} />
-                    <div className="absolute w-0.5 h-0.5 rounded-full bg-orange-400/30 animate-[float-up_3s_ease-in-out_infinite_1s]" style={{ bottom: '15%', left: '50%' }} />
-                    <div className="absolute w-1 h-1 rounded-full bg-red-300/35 animate-[float-up_5s_ease-in-out_infinite_2s]" style={{ bottom: '5%', left: '70%' }} />
+                    {/* Core glow — pulsing */}
+                    <div className="absolute top-1/2 right-[8%] -translate-y-1/2 w-14 h-14 rounded-full bg-red-500/25 animate-[pulse-glow_2.5s_ease-in-out_infinite]" style={{ filter: 'blur(10px)' }} />
+                    {/* Embers rising */}
+                    <div className="absolute w-1.5 h-1.5 rounded-full bg-red-400/50 animate-[float-up_3s_ease-out_infinite]" style={{ bottom: '5%', left: '20%' }} />
+                    <div className="absolute w-1 h-1 rounded-full bg-orange-400/45 animate-[float-up_4s_ease-out_infinite_0.8s]" style={{ bottom: '10%', left: '40%' }} />
+                    <div className="absolute w-1.5 h-1.5 rounded-full bg-red-300/40 animate-[float-up_3.5s_ease-out_infinite_1.6s]" style={{ bottom: '3%', left: '60%' }} />
+                    <div className="absolute w-1 h-1 rounded-full bg-orange-300/35 animate-[float-up_5s_ease-out_infinite_2.4s]" style={{ bottom: '8%', left: '78%' }} />
+                    {/* Bottom heat glow */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-red-500/15 via-orange-500/5 to-transparent" />
                   </>
                 ) : (
                   <>
-                    {/* Mist/fog layers drifting */}
-                    <div className="absolute inset-0 animate-[mist-drift-1_10s_ease-in-out_infinite]">
-                      <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent, rgba(148,163,184,0.06) 30%, rgba(148,163,184,0.04) 50%, transparent 70%)', filter: 'blur(10px)' }} />
+                    {/* Moon glow */}
+                    <div className="absolute top-1/2 right-[12%] -translate-y-1/2 w-16 h-16 rounded-full bg-blue-400/10 animate-[pulse-glow_5s_ease-in-out_infinite]" style={{ filter: 'blur(12px)' }} />
+                    {/* Mist layers — thicker */}
+                    <div className="absolute inset-0 animate-[mist-drift-1_8s_ease-in-out_infinite]">
+                      <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.08) 25%, rgba(147,197,253,0.06) 50%, transparent 75%)', filter: 'blur(8px)' }} />
                     </div>
-                    <div className="absolute inset-0 animate-[mist-drift-2_8s_ease-in-out_infinite]">
-                      <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent 20%, rgba(148,163,184,0.05) 40%, rgba(203,213,225,0.03) 60%, transparent 80%)', filter: 'blur(14px)' }} />
+                    <div className="absolute inset-0 animate-[mist-drift-2_6s_ease-in-out_infinite]">
+                      <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent 15%, rgba(96,165,250,0.06) 35%, rgba(147,197,253,0.04) 55%, transparent 75%)', filter: 'blur(12px)' }} />
                     </div>
-                    {/* Subtle particles */}
-                    <div className="absolute w-0.5 h-0.5 rounded-full bg-slate-400/20 animate-[star-twinkle_6s_ease-in-out_infinite]" style={{ top: '30%', left: '20%' }} />
-                    <div className="absolute w-0.5 h-0.5 rounded-full bg-slate-400/15 animate-[star-twinkle_5s_ease-in-out_infinite_2s]" style={{ top: '50%', left: '60%' }} />
+                    {/* Zen particles */}
+                    <div className="absolute w-1 h-1 rounded-full bg-blue-400/25 animate-[star-twinkle_5s_ease-in-out_infinite]" style={{ top: '25%', left: '15%' }} />
+                    <div className="absolute w-0.5 h-0.5 rounded-full bg-blue-300/20 animate-[star-twinkle_4s_ease-in-out_infinite_1.5s]" style={{ top: '55%', left: '45%' }} />
+                    <div className="absolute w-1 h-1 rounded-full bg-blue-400/15 animate-[star-twinkle_6s_ease-in-out_infinite_3s]" style={{ top: '35%', left: '75%' }} />
+                    {/* Bottom cool glow */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-blue-500/8 to-transparent" />
                   </>
                 )}
               </div>
 
               <div className="flex items-center gap-4 p-4 relative z-10">
                 <div className="relative shrink-0">
-                  <div className={`w-12 h-12 rounded-xl backdrop-blur-sm flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] ${isTrainingDay ? 'bg-red-950/60 border border-red-500/20' : 'bg-slate-900/60 border border-slate-500/20'}`} style={{ boxShadow: isTrainingDay ? 'inset 0 1px 0 rgba(239,68,68,0.1)' : 'inset 0 1px 0 rgba(148,163,184,0.1)' }}>
-                    <Zap className={`w-5 h-5 ${isTrainingDay ? 'text-red-400 drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]' : 'text-slate-400 drop-shadow-[0_0_6px_rgba(148,163,184,0.3)]'}`} />
+                  <div className={`w-12 h-12 rounded-xl backdrop-blur-sm flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] ${isTrainingDay ? 'bg-red-950/60 border border-red-500/25' : 'bg-blue-950/60 border border-blue-500/20'}`} style={{ boxShadow: isTrainingDay ? 'inset 0 1px 0 rgba(239,68,68,0.15)' : 'inset 0 1px 0 rgba(96,165,250,0.1)' }}>
+                    <Zap className={`w-5 h-5 ${isTrainingDay ? 'text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]' : 'text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.4)]'}`} />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 relative">
-                  <h3 className={`text-sm font-bold ${isTrainingDay ? 'text-red-300 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'text-slate-300 drop-shadow-[0_0_8px_rgba(148,163,184,0.3)]'}`}>Tipo de Día</h3>
-                  <p className={`text-xs truncate ${isTrainingDay ? 'text-red-100/50' : 'text-slate-100/40'}`}>{isTrainingDay ? 'Día de entrenamiento' : 'Día de descanso'}</p>
+                  <h3 className={`text-sm font-bold ${isTrainingDay ? 'text-red-300 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'text-blue-300 drop-shadow-[0_0_8px_rgba(96,165,250,0.3)]'}`}>Tipo de Día</h3>
+                  <p className={`text-xs truncate ${isTrainingDay ? 'text-red-100/50' : 'text-blue-100/40'}`}>{isTrainingDay ? 'Día de entrenamiento' : 'Día de descanso'}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 relative">
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${isTrainingDay ? 'bg-red-500/15 text-red-400' : 'bg-slate-500/15 text-slate-400'}`}>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${isTrainingDay ? 'bg-red-500/20 text-red-400 shadow-[0_0_8px_rgba(239,68,68,0.2)]' : 'bg-blue-500/15 text-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.15)]'}`}>
                     {isTrainingDay ? 'Training' : 'Rest'}
                   </span>
-                  <ChevronRight className={`w-4 h-4 ${isTrainingDay ? 'text-red-400/60' : 'text-slate-400/60'} transition-transform duration-300 ${expandedCard === 'daytype' ? 'rotate-90' : ''}`} />
+                  <ChevronRight className={`w-4 h-4 ${isTrainingDay ? 'text-red-400/60' : 'text-blue-400/60'} transition-transform duration-300 ${expandedCard === 'daytype' ? 'rotate-90' : ''}`} />
                 </div>
               </div>
             </button>
@@ -932,14 +931,25 @@ export function Dashboard() {
 
         {/* ── Food Log ── */}
         <div className="dash-section">
-          <div className="bg-dark-card/40 backdrop-blur-xl border border-dark-border/50 rounded-2xl p-5">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="p-1.5 rounded-lg bg-primary/10">
-                <ClipboardList className="w-4 h-4 text-primary" />
-              </div>
-              <h3 className="text-sm font-bold text-white">Registro de Alimentos</h3>
+          <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-[#060a0a] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.04)]">
+            {/* Subtle animated background */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-primary/8 to-transparent" />
+              <div className="absolute top-1/2 left-[50%] -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-primary/5 animate-[pulse-glow_6s_ease-in-out_infinite]" style={{ filter: 'blur(30px)' }} />
             </div>
-            <FoodLogList refreshKey={refreshKey} onFoodDeleted={handleFoodDeleted} limit={5} />
+
+            <div className="relative z-10 p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(13,148,136,0.1)]">
+                  <ClipboardList className="w-5 h-5 text-primary drop-shadow-[0_0_6px_rgba(13,148,136,0.5)]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white drop-shadow-[0_0_8px_rgba(13,148,136,0.3)]">Registro de Alimentos</h3>
+                  <p className="text-[10px] text-dark-muted">Comidas de hoy</p>
+                </div>
+              </div>
+              <FoodLogList refreshKey={refreshKey} onFoodDeleted={handleFoodDeleted} limit={5} />
+            </div>
           </div>
         </div>
       </div>

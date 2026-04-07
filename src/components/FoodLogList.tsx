@@ -101,56 +101,53 @@ export function FoodLogList({ refreshKey, onFoodDeleted, limit }: FoodLogListPro
         {displayedLogs.map((log) => (
           <div
             key={log.id}
-            className="food-log-item bg-dark-hover border border-dark-border rounded-lg p-4 hover:border-primary/50 transition-colors"
+            className="food-log-item relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-3.5 hover:border-primary/30 hover:bg-white/[0.05] transition-all duration-200 group/item"
           >
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1">
-                <h3 className="font-semibold text-white mb-1">{log.food_name}</h3>
-                <div className="flex items-center gap-2 text-sm text-dark-muted">
-                  <Clock className="w-3 h-3" />
-                  <span>{format(new Date(log.logged_at), 'HH:mm')}</span>
+            <div className="flex items-center gap-3">
+              {/* Calorie badge */}
+              <div className="shrink-0 w-11 h-11 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/10 flex flex-col items-center justify-center">
+                <span className="text-xs font-black text-primary leading-none">{Math.round(Number(log.calories) || 0)}</span>
+                <span className="text-[7px] text-primary/60 font-medium">kcal</span>
+              </div>
+
+              {/* Food info */}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-white truncate">{log.food_name}</h3>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <Clock className="w-2.5 h-2.5 text-dark-muted" />
+                  <span className="text-[10px] text-dark-muted">{format(new Date(log.logged_at), 'HH:mm')}</span>
                   {log.quantity_g && (
                     <>
-                      <span>•</span>
-                      <span>{log.quantity_g}g</span>
+                      <span className="text-dark-muted/40">·</span>
+                      <span className="text-[10px] text-dark-muted">{log.quantity_g}g</span>
                     </>
                   )}
                 </div>
               </div>
-              <div className="flex gap-2">
+
+              {/* Macro pills */}
+              <div className="hidden min-[380px]:flex items-center gap-1.5 shrink-0">
+                <span className="text-[9px] font-bold text-blue-400/80 bg-blue-500/10 px-1.5 py-0.5 rounded-md">{Math.round(Number(log.protein_g) || 0)}P</span>
+                <span className="text-[9px] font-bold text-amber-400/80 bg-amber-500/10 px-1.5 py-0.5 rounded-md">{Math.round(Number(log.carbs_g) || 0)}C</span>
+                <span className="text-[9px] font-bold text-rose-400/80 bg-rose-500/10 px-1.5 py-0.5 rounded-md">{Math.round(Number(log.fat_g) || 0)}G</span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-1 shrink-0 opacity-50 group-hover/item:opacity-100 transition-opacity">
                 <button
                   onClick={() => setSelectedFood(log)}
-                  className="text-dark-muted hover:text-primary transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-white/[0.06] text-dark-muted hover:text-primary transition-all"
                   title="Ver detalles"
                 >
-                  <Eye className="w-5 h-5" />
+                  <Eye className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => deleteLog(log.id)}
-                  className="text-dark-muted hover:text-danger transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-red-500/10 text-dark-muted hover:text-danger transition-all"
                   title="Eliminar"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-4 gap-3 mt-3">
-              <div className="text-center">
-                <div className="text-xs text-dark-muted mb-1">Calorías</div>
-                <div className="text-sm font-semibold text-white">{Math.round(Number(log.calories) || 0)}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs text-dark-muted mb-1">Proteína</div>
-                <div className="text-sm font-semibold text-white">{Math.round(Number(log.protein_g) || 0)}g</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs text-dark-muted mb-1">Carbos</div>
-                <div className="text-sm font-semibold text-white">{Math.round(Number(log.carbs_g) || 0)}g</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs text-dark-muted mb-1">Grasas</div>
-                <div className="text-sm font-semibold text-white">{Math.round(Number(log.fat_g) || 0)}g</div>
               </div>
             </div>
           </div>
