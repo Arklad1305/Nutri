@@ -27,6 +27,7 @@ export function MacroRing({
   const reducedMotion = useReducedMotion()
   const ringRef = useRef<SVGCircleElement>(null)
   const calorieRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [hasAnimated, setHasAnimated] = useState(false)
 
   const caloriePercentage = Math.min((calories / calorieGoal) * 100, 100)
@@ -73,6 +74,42 @@ export function MacroRing({
         }
       },
     })
+
+    // Animate macro bars staggered
+    const bars = containerRef.current?.querySelectorAll('.macro-bar-fill')
+    if (bars && bars.length > 0) {
+      gsap.from(bars, {
+        scaleX: 0,
+        transformOrigin: 'left center',
+        duration: 1,
+        ease: 'power3.out',
+        stagger: 0.15,
+        delay: 0.4,
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top 85%',
+          once: true,
+        },
+      })
+    }
+
+    // Animate macro cards entrance
+    const cards = containerRef.current?.querySelectorAll('.macro-card')
+    if (cards && cards.length > 0) {
+      gsap.from(cards, {
+        y: 20,
+        opacity: 0,
+        duration: 0.5,
+        ease: 'power3.out',
+        stagger: 0.1,
+        delay: 0.3,
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top 85%',
+          once: true,
+        },
+      })
+    }
   }, { dependencies: [calories, calorieGoal, reducedMotion], revertOnUpdate: true })
 
   const macros = [
@@ -82,13 +119,13 @@ export function MacroRing({
       goal: Math.round(proteinGoal),
       pct: proteinPercentage,
       unit: 'g',
-      color: 'blue',
       gradient: 'from-blue-500 to-blue-400',
-      bg: 'from-blue-500/10 to-blue-600/5',
-      border: 'border-blue-500/15',
+      bg: 'from-blue-500/8 to-blue-600/4',
+      border: 'border-blue-500/12',
       text: 'text-blue-400',
-      bar: 'bg-gradient-to-r from-blue-500 to-blue-400',
+      bar: 'bg-gradient-to-r from-blue-600 via-blue-400 to-blue-300',
       glow: 'rgba(59,130,246,0.3)',
+      shimmer: 'from-blue-300/0 via-blue-200/40 to-blue-300/0',
     },
     {
       label: 'Carbos',
@@ -96,13 +133,13 @@ export function MacroRing({
       goal: Math.round(carbsGoal),
       pct: carbsPercentage,
       unit: 'g',
-      color: 'emerald',
       gradient: 'from-emerald-500 to-emerald-400',
-      bg: 'from-emerald-500/10 to-emerald-600/5',
-      border: 'border-emerald-500/15',
+      bg: 'from-emerald-500/8 to-emerald-600/4',
+      border: 'border-emerald-500/12',
       text: 'text-emerald-400',
-      bar: 'bg-gradient-to-r from-emerald-500 to-emerald-400',
+      bar: 'bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-300',
       glow: 'rgba(16,185,129,0.3)',
+      shimmer: 'from-emerald-300/0 via-emerald-200/40 to-emerald-300/0',
     },
     {
       label: 'Grasas',
@@ -110,26 +147,24 @@ export function MacroRing({
       goal: Math.round(fatGoal),
       pct: fatPercentage,
       unit: 'g',
-      color: 'amber',
       gradient: 'from-amber-500 to-amber-400',
-      bg: 'from-amber-500/10 to-amber-600/5',
-      border: 'border-amber-500/15',
+      bg: 'from-amber-500/8 to-amber-600/4',
+      border: 'border-amber-500/12',
       text: 'text-amber-400',
-      bar: 'bg-gradient-to-r from-amber-500 to-amber-400',
+      bar: 'bg-gradient-to-r from-amber-600 via-amber-400 to-amber-300',
       glow: 'rgba(245,158,11,0.3)',
+      shimmer: 'from-amber-300/0 via-amber-200/40 to-amber-300/0',
     },
   ]
 
   return (
-    <div className="macro-ring-container relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#060a0d]">
+    <div ref={containerRef} className="macro-ring-container relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#060a0d]">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Subtle radial glow behind ring */}
         <div
           className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/4 w-48 h-48 rounded-full animate-[pulse-glow_5s_ease-in-out_infinite]"
           style={{ background: 'radial-gradient(circle, rgba(13,148,136,0.12), transparent 70%)', filter: 'blur(20px)' }}
         />
-        {/* Ambient particles */}
         <div className="absolute w-1 h-1 rounded-full bg-primary/20 animate-[star-twinkle_4s_ease-in-out_infinite]" style={{ top: '15%', left: '10%' }} />
         <div className="absolute w-0.5 h-0.5 rounded-full bg-blue-400/15 animate-[star-twinkle_5s_ease-in-out_infinite_1.5s]" style={{ top: '20%', right: '15%' }} />
         <div className="absolute w-0.5 h-0.5 rounded-full bg-emerald-400/15 animate-[star-twinkle_3.5s_ease-in-out_infinite_2.5s]" style={{ bottom: '30%', left: '8%' }} />
@@ -197,24 +232,47 @@ export function MacroRing({
           </div>
         </div>
 
-        {/* Macro bars */}
+        {/* Macro bars with fluid animation */}
         <div className="space-y-3">
           {macros.map((m) => (
-            <div key={m.label} className={`rounded-xl border ${m.border} bg-gradient-to-r ${m.bg} p-3`}>
-              <div className="flex items-center justify-between mb-1.5">
+            <div key={m.label} className={`macro-card rounded-xl border ${m.border} bg-gradient-to-r ${m.bg} p-3 transition-all duration-300 hover:scale-[1.01]`}>
+              <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-white/70">{m.label}</span>
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-black ${m.text}`} style={{ textShadow: `0 0 8px ${m.glow}` }}>
+                  <span className={`text-sm font-black ${m.text} transition-all duration-500`} style={{ textShadow: `0 0 8px ${m.glow}` }}>
                     {m.value}{m.unit}
                   </span>
                   <span className="text-[10px] text-dark-muted">/ {m.goal}{m.unit}</span>
                 </div>
               </div>
-              <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+              {/* Animated progress bar track */}
+              <div className="relative h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                {/* Fill bar with shimmer */}
                 <div
-                  className={`h-full rounded-full ${m.bar} transition-all duration-700`}
+                  className={`macro-bar-fill h-full rounded-full ${m.bar} relative overflow-hidden transition-all duration-700`}
                   style={{ width: `${Math.min(m.pct, 100)}%` }}
-                />
+                >
+                  {/* Shimmer sweep effect */}
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-r ${m.shimmer} animate-[shimmer-sweep_2.5s_ease-in-out_infinite]`}
+                    style={{ width: '200%', left: '-100%' }}
+                  />
+                </div>
+                {/* Glow at the tip of the bar */}
+                {m.pct > 5 && (
+                  <div
+                    className="absolute top-0 h-full w-3 rounded-full animate-[pulse-glow_2s_ease-in-out_infinite]"
+                    style={{
+                      left: `calc(${Math.min(m.pct, 100)}% - 6px)`,
+                      background: `radial-gradient(circle, ${m.glow}, transparent)`,
+                      filter: 'blur(2px)',
+                    }}
+                  />
+                )}
+              </div>
+              {/* Percentage label */}
+              <div className="flex justify-end mt-1">
+                <span className={`text-[9px] font-bold ${m.text} opacity-60`}>{Math.round(m.pct)}%</span>
               </div>
             </div>
           ))}

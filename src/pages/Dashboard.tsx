@@ -866,14 +866,8 @@ export function Dashboard() {
               <div className="absolute inset-0 overflow-hidden rounded-2xl">
                 {isTrainingDay ? (
                   <>
-                    {/* Rotating sun rays — larger, brighter */}
-                    <div className="absolute top-1/2 right-[8%] -translate-y-1/2 w-40 h-40 animate-[sun-rotate_15s_linear_infinite]">
-                      <div className="absolute inset-0" style={{
-                        background: 'conic-gradient(from 0deg, transparent, rgba(239,68,68,0.2) 8%, transparent 16%, transparent 25%, rgba(251,146,60,0.18) 33%, transparent 41%, transparent 50%, rgba(239,68,68,0.15) 58%, transparent 66%, transparent 75%, rgba(251,146,60,0.12) 83%, transparent 91%)',
-                      }} />
-                    </div>
                     {/* Core glow — pulsing */}
-                    <div className="absolute top-1/2 right-[8%] -translate-y-1/2 w-14 h-14 rounded-full bg-red-500/25 animate-[pulse-glow_2.5s_ease-in-out_infinite]" style={{ filter: 'blur(10px)' }} />
+                    <div className="absolute top-1/2 right-[8%] -translate-y-1/2 w-16 h-16 rounded-full bg-red-500/20 animate-[pulse-glow_3s_ease-in-out_infinite]" style={{ filter: 'blur(14px)' }} />
                     {/* Embers rising */}
                     <div className="absolute w-1.5 h-1.5 rounded-full bg-red-400/50 animate-[float-up_3s_ease-out_infinite]" style={{ bottom: '5%', left: '20%' }} />
                     <div className="absolute w-1 h-1 rounded-full bg-orange-400/45 animate-[float-up_4s_ease-out_infinite_0.8s]" style={{ bottom: '10%', left: '40%' }} />

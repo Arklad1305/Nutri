@@ -26,7 +26,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
       glowColor: 'shadow-red-500/50',
       textColor: 'text-red-400',
       message: 'Privación severa. Ajustes metabólicos críticos activos.',
-      emoji: '🚨'
+      emoji: ''
     }
     if (hours < 6.5) return {
       phase: 'Recuperación',
@@ -35,7 +35,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
       glowColor: 'shadow-yellow-500/50',
       textColor: 'text-yellow-400',
       message: 'Déficit moderado. Protección metabólica activa.',
-      emoji: '⚠️'
+      emoji: ''
     }
     if (hours < 7.5) return {
       phase: 'Bueno',
@@ -44,7 +44,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
       glowColor: 'shadow-blue-500/50',
       textColor: 'text-blue-400',
       message: 'Sueño adecuado. Funcionamiento normal.',
-      emoji: '😌'
+      emoji: ''
     }
     return {
       phase: 'Óptimo',
@@ -53,7 +53,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
       glowColor: 'shadow-green-500/50',
       textColor: 'text-green-400',
       message: 'Recuperación completa. Rendimiento máximo.',
-      emoji: '✨'
+      emoji: ''
     }
   }
 
@@ -120,9 +120,8 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
               <Icon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-white">
                 Estado de Sueño
-                <span className="text-xl">{phase.emoji}</span>
               </h3>
               <p className={`text-sm font-medium ${phase.textColor}`}>{phase.phase}</p>
             </div>

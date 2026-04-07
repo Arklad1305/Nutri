@@ -132,11 +132,11 @@ export function QuickActionsBar({ onWaterAdded, onOpenAddFood, onFoodAdded }: Qu
       <button
         onClick={addWaterQuick}
         disabled={loading}
-        className="group relative w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/50 hover:shadow-blue-500/70 transition-all duration-300 flex items-center justify-center disabled:opacity-50 hover:scale-110 active:scale-95"
+        className="group relative w-13 h-13 rounded-2xl bg-cyan-500/10 backdrop-blur-xl border border-cyan-400/20 shadow-[0_4px_20px_-4px_rgba(6,182,212,0.25),inset_0_1px_0_rgba(6,182,212,0.1)] hover:bg-cyan-500/15 hover:border-cyan-400/30 hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.35)] transition-all duration-300 flex items-center justify-center disabled:opacity-50 hover:scale-105 active:scale-95"
         title="Agregar 250ml de agua"
       >
-        <Droplets className="w-6 h-6 text-white" />
-        <span className="absolute -left-16 bg-dark-card/90 backdrop-blur-sm border border-dark-border rounded-lg px-3 py-1.5 text-xs font-bold text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <Droplets className="w-5 h-5 text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.4)]" />
+        <span className="absolute -left-[4.5rem] bg-[#0a1a1a]/90 backdrop-blur-xl border border-cyan-500/15 rounded-xl px-3 py-1.5 text-[10px] font-semibold text-cyan-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-lg shadow-black/30">
           +250ml agua
         </span>
       </button>
@@ -144,11 +144,11 @@ export function QuickActionsBar({ onWaterAdded, onOpenAddFood, onFoodAdded }: Qu
       {/* Add food primary */}
       <button
         onClick={onOpenAddFood}
-        className="group relative w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg shadow-primary/30 hover:shadow-primary/40 transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95"
+        className="group relative w-13 h-13 rounded-2xl bg-primary/12 backdrop-blur-xl border border-primary/20 shadow-[0_4px_20px_-4px_rgba(13,148,136,0.3),inset_0_1px_0_rgba(13,148,136,0.1)] hover:bg-primary/18 hover:border-primary/30 hover:shadow-[0_8px_30px_-4px_rgba(13,148,136,0.4)] transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95"
         title="Agregar alimento"
       >
-        <Plus className="w-6 h-6 text-white" />
-        <span className="absolute -left-20 bg-dark-card/90 backdrop-blur-sm border border-dark-border rounded-lg px-3 py-1.5 text-xs font-bold text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <Plus className="w-5 h-5 text-primary drop-shadow-[0_0_6px_rgba(13,148,136,0.4)]" />
+        <span className="absolute -left-[5.5rem] bg-[#0a1a1a]/90 backdrop-blur-xl border border-primary/15 rounded-xl px-3 py-1.5 text-[10px] font-semibold text-teal-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-lg shadow-black/30">
           Agregar comida
         </span>
       </button>
@@ -157,26 +157,26 @@ export function QuickActionsBar({ onWaterAdded, onOpenAddFood, onFoodAdded }: Qu
       <button
         onClick={handleCameraClick}
         disabled={cameraState === 'processing'}
-        className={`group relative w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95 disabled:hover:scale-100 ${
+        className={`group relative w-13 h-13 rounded-2xl backdrop-blur-xl border transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100 ${
           cameraState === 'processing'
-            ? 'bg-gradient-to-br from-primary-700 to-primary-800 shadow-primary/25 animate-pulse'
+            ? 'bg-primary/10 border-primary/20 shadow-[0_4px_20px_-4px_rgba(13,148,136,0.2)] animate-pulse'
             : cameraState === 'success'
-            ? 'bg-gradient-to-br from-green-500 to-emerald-500 shadow-green-500/50'
+            ? 'bg-emerald-500/12 border-emerald-400/25 shadow-[0_4px_20px_-4px_rgba(16,185,129,0.3)]'
             : cameraState === 'error'
-            ? 'bg-gradient-to-br from-red-500 to-rose-500 shadow-red-500/50'
-            : 'bg-gradient-to-br from-primary-700 to-primary-800 hover:from-primary-800 hover:to-primary-900 shadow-primary/25 hover:shadow-primary/35'
+            ? 'bg-red-500/10 border-red-400/20 shadow-[0_4px_20px_-4px_rgba(239,68,68,0.2)]'
+            : 'bg-white/[0.04] border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.06] hover:border-white/[0.12] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)]'
         }`}
         title="Foto de alimento"
       >
         {cameraState === 'processing' ? (
-          <Loader2 className="w-6 h-6 text-white animate-spin" />
+          <Loader2 className="w-5 h-5 text-primary animate-spin" />
         ) : cameraState === 'success' ? (
-          <CheckCircle className="w-6 h-6 text-white" />
+          <CheckCircle className="w-5 h-5 text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
         ) : (
-          <Camera className="w-6 h-6 text-white" />
+          <Camera className="w-5 h-5 text-white/60 drop-shadow-[0_0_4px_rgba(255,255,255,0.1)]" />
         )}
-        <span className={`absolute -left-28 bg-dark-card/90 backdrop-blur-sm border border-dark-border rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none ${
-          cameraState === 'error' ? 'text-red-400' : cameraState === 'success' ? 'text-green-400' : 'text-white'
+        <span className={`absolute -left-[6.5rem] bg-[#0a1a1a]/90 backdrop-blur-xl border border-white/[0.08] rounded-xl px-3 py-1.5 text-[10px] font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-lg shadow-black/30 ${
+          cameraState === 'error' ? 'text-red-400 border-red-500/15' : cameraState === 'success' ? 'text-emerald-400 border-emerald-500/15' : 'text-white/70'
         }`}>
           {cameraState === 'processing'
             ? 'Analizando foto...'
