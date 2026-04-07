@@ -56,25 +56,63 @@ export function Dashboard() {
   const dashRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
 
-  const waterWaveRef = useRef<SVGSVGElement>(null)
+  const waterCardRef = useRef<HTMLDivElement>(null)
 
   const toggleCard = (id: string) => setExpandedCard(prev => prev === id ? null : id)
 
-  // Water wave animation
+  // Water wave + bubble animation
   useGSAP(() => {
-    if (reducedMotion || !waterWaveRef.current) return
-    const paths = waterWaveRef.current.querySelectorAll('.water-wave')
-    if (paths.length === 0) return
+    if (reducedMotion || !waterCardRef.current) return
 
-    paths.forEach((wave, i) => {
+    // Animate waves
+    const waves = waterCardRef.current.querySelectorAll('.water-wave')
+    waves.forEach((wave, i) => {
       gsap.to(wave, {
         x: i % 2 === 0 ? '-50%' : '50%',
-        duration: 3 + i * 1.5,
+        duration: 2.5 + i * 1.2,
         ease: 'sine.inOut',
         repeat: -1,
         yoyo: true,
       })
     })
+
+    // Animate bubbles
+    const bubbles = waterCardRef.current.querySelectorAll('.water-bubble')
+    bubbles.forEach((bubble, i) => {
+      const delay = i * 0.8
+      gsap.set(bubble, { y: 0, opacity: 0, scale: 0 })
+      gsap.to(bubble, {
+        y: -60,
+        opacity: 0.7,
+        scale: 1,
+        duration: 2 + Math.random() * 1.5,
+        ease: 'power1.out',
+        repeat: -1,
+        delay,
+        onRepeat: function() {
+          gsap.set(bubble, { x: Math.random() * 20 - 10 })
+        },
+      })
+      gsap.to(bubble, {
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power2.in',
+        repeat: -1,
+        delay: delay + 1.5 + Math.random(),
+      })
+    })
+
+    // Surface shimmer
+    const shimmer = waterCardRef.current.querySelector('.water-shimmer')
+    if (shimmer) {
+      gsap.to(shimmer, {
+        x: '100%',
+        duration: 3,
+        ease: 'power1.inOut',
+        repeat: -1,
+        repeatDelay: 2,
+      })
+    }
   }, { dependencies: [reducedMotion] })
 
   useGSAP(() => {
@@ -628,61 +666,71 @@ export function Dashboard() {
         <div className="space-y-3 mb-5">
 
           {/* Hydration */}
-          <div className="dash-section">
+          <div className="dash-section" ref={waterCardRef}>
             <button
               onClick={() => toggleCard('water')}
-              className="relative w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-cyan-950/60 via-dark-card/70 to-dark-card/50 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-cyan-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
+              className="relative w-full text-left rounded-2xl overflow-hidden border border-cyan-500/15 bg-[#0a1628] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-cyan-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
             >
-              {/* Animated water fill */}
-              <div className="absolute inset-0 overflow-hidden">
+              {/* Water fill layer */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
                 <div
-                  className="absolute bottom-0 left-0 right-0 transition-all duration-700 ease-out"
-                  style={{ height: `${Math.min(waterPercentage, 100)}%` }}
+                  className="absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out"
+                  style={{ height: `${Math.max(Math.min(waterPercentage, 100), 8)}%` }}
                 >
+                  {/* Deep water body */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-600/50 via-cyan-500/35 to-cyan-400/20" />
+
+                  {/* Wave SVG */}
                   <svg
-                    ref={waterWaveRef}
-                    className="absolute top-0 left-0 w-[200%] h-full"
-                    viewBox="0 0 800 60"
+                    className="absolute -top-3 left-0 w-[200%] h-8"
+                    viewBox="0 0 800 40"
                     preserveAspectRatio="none"
-                    style={{ transform: 'translateY(-8px)' }}
                   >
                     <path
                       className="water-wave"
-                      d="M0,30 C100,10 200,50 400,30 C600,10 700,50 800,30 L800,60 L0,60 Z"
-                      fill="rgba(6,182,212,0.25)"
+                      d="M0,20 C80,8 160,32 320,20 C480,8 560,32 800,20 L800,40 L0,40 Z"
+                      fill="rgba(6,182,212,0.5)"
                     />
                     <path
                       className="water-wave"
-                      d="M0,35 C150,15 250,55 400,35 C550,15 700,50 800,35 L800,60 L0,60 Z"
-                      fill="rgba(34,211,238,0.18)"
+                      d="M0,24 C120,12 200,36 400,24 C600,12 720,32 800,24 L800,40 L0,40 Z"
+                      fill="rgba(34,211,238,0.35)"
                     />
                     <path
                       className="water-wave"
-                      d="M0,38 C120,22 280,52 400,38 C520,24 680,48 800,38 L800,60 L0,60 Z"
-                      fill="rgba(8,145,178,0.2)"
+                      d="M0,28 C100,18 250,38 400,28 C550,18 700,34 800,28 L800,40 L0,40 Z"
+                      fill="rgba(8,145,178,0.45)"
                     />
                   </svg>
-                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/30 via-cyan-600/15 to-transparent" />
+
+                  {/* Bubbles */}
+                  <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 100 60">
+                    <circle className="water-bubble" cx="15" cy="50" r="1.5" fill="rgba(165,243,252,0.5)" />
+                    <circle className="water-bubble" cx="35" cy="55" r="1" fill="rgba(165,243,252,0.4)" />
+                    <circle className="water-bubble" cx="55" cy="48" r="2" fill="rgba(165,243,252,0.35)" />
+                    <circle className="water-bubble" cx="75" cy="52" r="1.2" fill="rgba(165,243,252,0.45)" />
+                    <circle className="water-bubble" cx="90" cy="50" r="1.8" fill="rgba(165,243,252,0.3)" />
+                  </svg>
+
+                  {/* Surface shimmer */}
+                  <div className="absolute top-0 left-0 w-1/3 h-1 water-shimmer bg-gradient-to-r from-transparent via-cyan-300/40 to-transparent" style={{ transform: 'translateX(-100%)' }} />
                 </div>
               </div>
 
               <div className="flex items-center gap-4 p-4 relative z-10">
                 <div className="relative shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                    <img src="/weather-icons/humidity.svg" alt="" className="w-8 h-8" />
+                  <div className="w-12 h-12 rounded-xl bg-cyan-950/60 backdrop-blur-sm border border-cyan-500/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(6,182,212,0.1)]">
+                    <img src="/weather-icons/humidity.svg" alt="" className="w-8 h-8 drop-shadow-[0_0_6px_rgba(6,182,212,0.5)]" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 relative">
-                  <h3 className="text-sm font-bold text-cyan-400 drop-shadow-sm">Hidratación</h3>
-                  <p className="text-xs text-dark-muted truncate drop-shadow-sm">{waterLiters}L / {waterGoalLiters}L consumidos</p>
+                  <h3 className="text-sm font-bold text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]">Hidratación</h3>
+                  <p className="text-xs text-cyan-100/50 truncate">{waterLiters}L / {waterGoalLiters}L consumidos</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 relative">
-                  <span className="text-lg font-black text-white drop-shadow-sm">{waterPercentage}%</span>
-                  <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'water' ? 'rotate-90' : ''}`} />
+                  <span className="text-lg font-black text-white drop-shadow-[0_0_10px_rgba(6,182,212,0.3)]">{waterPercentage}%</span>
+                  <ChevronRight className={`w-4 h-4 text-cyan-400/60 transition-transform duration-300 ${expandedCard === 'water' ? 'rotate-90' : ''}`} />
                 </div>
-              </div>
-              <div className="h-0.5 bg-dark-border/20 relative z-10">
-                <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-700" style={{ width: `${Math.min(waterPercentage, 100)}%` }} />
               </div>
             </button>
             {expandedCard === 'water' && (
