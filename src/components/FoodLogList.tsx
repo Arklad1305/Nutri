@@ -128,8 +128,8 @@ export function FoodLogList({ refreshKey, onFoodDeleted, limit }: FoodLogListPro
               {/* Macro pills */}
               <div className="hidden min-[380px]:flex items-center gap-1.5 shrink-0">
                 <span className="text-[9px] font-bold text-blue-400/80 bg-blue-500/10 px-1.5 py-0.5 rounded-md">{Math.round(Number(log.protein_g) || 0)}P</span>
-                <span className="text-[9px] font-bold text-amber-400/80 bg-amber-500/10 px-1.5 py-0.5 rounded-md">{Math.round(Number(log.carbs_g) || 0)}C</span>
-                <span className="text-[9px] font-bold text-rose-400/80 bg-rose-500/10 px-1.5 py-0.5 rounded-md">{Math.round(Number(log.fat_g) || 0)}G</span>
+                <span className="text-[9px] font-bold text-emerald-400/80 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">{Math.round(Number(log.carbs_g) || 0)}C</span>
+                <span className="text-[9px] font-bold text-amber-400/80 bg-amber-500/10 px-1.5 py-0.5 rounded-md">{Math.round(Number(log.fat_g) || 0)}G</span>
               </div>
 
               {/* Actions */}

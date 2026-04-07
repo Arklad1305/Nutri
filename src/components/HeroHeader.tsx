@@ -4,9 +4,6 @@ import { es } from 'date-fns/locale'
 
 interface HeroHeaderProps {
   userName: string
-  totalCalories: number
-  goalCalories: number
-  metabolicState: 'mTOR_ACTIVE' | 'NEUTRAL' | 'AUTOPHAGY_EARLY' | 'AUTOPHAGY_DEEP'
 }
 
 function SunArc() {
@@ -113,17 +110,17 @@ function Landscape({ timeOfDay }: { timeOfDay: TimeOfDay }) {
 
       {/* Mountains silhouette — far */}
       <svg className="absolute bottom-0 left-0 w-full h-[45%]" viewBox="0 0 400 80" preserveAspectRatio="none">
-        <path d="M0,80 L0,55 Q30,20 70,40 Q100,10 140,35 Q180,5 220,30 Q260,15 300,38 Q340,8 370,32 Q390,25 400,40 L400,80 Z" fill="rgba(15,23,42,0.5)" />
+        <path d="M0,80 L0,55 Q30,20 70,40 Q100,10 140,35 Q180,5 220,30 Q260,15 300,38 Q340,8 370,32 Q390,25 400,40 L400,80 Z" fill="rgba(15,23,42,0.35)" />
       </svg>
 
       {/* Mountains silhouette — near */}
       <svg className="absolute bottom-0 left-0 w-full h-[35%]" viewBox="0 0 400 60" preserveAspectRatio="none">
-        <path d="M0,60 L0,40 Q40,15 80,30 Q120,5 160,25 Q200,10 240,28 Q280,8 320,22 Q360,12 400,30 L400,60 Z" fill="rgba(15,23,42,0.75)" />
+        <path d="M0,60 L0,40 Q40,15 80,30 Q120,5 160,25 Q200,10 240,28 Q280,8 320,22 Q360,12 400,30 L400,60 Z" fill="rgba(15,23,42,0.5)" />
       </svg>
 
       {/* Ground / treeline */}
       <svg className="absolute bottom-0 left-0 w-full h-[20%]" viewBox="0 0 400 30" preserveAspectRatio="none">
-        <path d="M0,30 L0,15 Q10,8 20,14 Q30,5 40,12 Q50,7 60,13 Q70,4 80,11 Q90,6 100,13 Q110,5 120,12 Q130,7 140,14 Q150,4 160,11 Q170,6 180,13 Q190,5 200,12 Q210,7 220,14 Q230,4 240,11 Q250,6 260,13 Q270,5 280,12 Q290,7 300,14 Q310,4 320,11 Q330,6 340,13 Q350,5 360,12 Q370,7 380,14 Q390,8 400,15 L400,30 Z" fill="rgba(6,8,9,0.9)" />
+        <path d="M0,30 L0,15 Q10,8 20,14 Q30,5 40,12 Q50,7 60,13 Q70,4 80,11 Q90,6 100,13 Q110,5 120,12 Q130,7 140,14 Q150,4 160,11 Q170,6 180,13 Q190,5 200,12 Q210,7 220,14 Q230,4 240,11 Q250,6 260,13 Q270,5 280,12 Q290,7 300,14 Q310,4 320,11 Q330,6 340,13 Q350,5 360,12 Q370,7 380,14 Q390,8 400,15 L400,30 Z" fill="rgba(6,8,9,0.65)" />
       </svg>
 
       {/* Horizon glow */}
@@ -142,7 +139,7 @@ function getWeatherIcon(hour: number): string {
   return '/weather-icons/starry-night.svg'
 }
 
-export function HeroHeader({ userName, totalCalories, goalCalories }: HeroHeaderProps) {
+export function HeroHeader({ userName }: HeroHeaderProps) {
   const [currentHour, setCurrentHour] = useState(new Date().getHours())
 
   useEffect(() => {
@@ -160,9 +157,6 @@ export function HeroHeader({ userName, totalCalories, goalCalories }: HeroHeader
   }, [currentHour])
 
   const weatherIcon = useMemo(() => getWeatherIcon(currentHour), [currentHour])
-
-  const calPercentage = goalCalories > 0 ? (totalCalories / goalCalories) * 100 : 0
-  const remaining = Math.max(0, goalCalories - totalCalories)
 
   return (
     <div className="relative mb-6 overflow-hidden rounded-2xl border border-white/[0.06]">
@@ -192,32 +186,8 @@ export function HeroHeader({ userName, totalCalories, goalCalories }: HeroHeader
         </div>
 
         {/* Sun arc */}
-        <div className="mb-3 rounded-xl overflow-hidden bg-black/20 backdrop-blur-sm">
+        <div className="rounded-xl overflow-hidden bg-black/20 backdrop-blur-sm">
           <SunArc />
-        </div>
-
-        {/* Calorie progress */}
-        <div className="space-y-1.5 bg-black/20 backdrop-blur-sm rounded-xl p-3">
-          <div className="flex items-center justify-between">
-            <span className="text-white/50 text-[11px] font-medium">Energía diaria</span>
-            <span className={`text-[11px] font-semibold drop-shadow-sm ${
-              calPercentage >= 90 && calPercentage <= 110 ? 'text-primary-300' : calPercentage > 110 ? 'text-red-400' : 'text-amber-400'
-            }`}>
-              {totalCalories} / {goalCalories} kcal
-            </span>
-          </div>
-          <div className="relative h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-700 ${
-                calPercentage >= 90 && calPercentage <= 110 ? 'bg-primary' : calPercentage > 110 ? 'bg-red-500' : 'bg-amber-500'
-              }`}
-              style={{ width: `${Math.min(calPercentage, 100)}%` }}
-            />
-          </div>
-          <div className="flex items-center justify-between text-[10px] text-white/40">
-            <span>{Math.round(calPercentage)}%</span>
-            <span>{remaining > 0 ? `${remaining} kcal restantes` : 'Meta alcanzada'}</span>
-          </div>
         </div>
       </div>
     </div>

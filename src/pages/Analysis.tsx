@@ -341,7 +341,7 @@ export function Analysis() {
             { label: 'Calorías', value: averages.calories, unit: 'kcal/día', icon: Zap, color: 'text-amber-400', bg: 'from-amber-500/15 to-orange-500/5', border: 'border-amber-500/20' },
             { label: 'Proteína', value: `${averages.protein_g}g`, unit: '/día', icon: Activity, color: 'text-blue-400', bg: 'from-blue-500/15 to-cyan-500/5', border: 'border-blue-500/20' },
             { label: 'Carbohidratos', value: `${averages.carbs_g}g`, unit: '/día', icon: Flame, color: 'text-emerald-400', bg: 'from-emerald-500/15 to-green-500/5', border: 'border-emerald-500/20' },
-            { label: 'Grasas', value: `${averages.fat_g}g`, unit: '/día', icon: Droplets, color: 'text-yellow-400', bg: 'from-yellow-500/15 to-amber-500/5', border: 'border-yellow-500/20' },
+            { label: 'Grasas', value: `${averages.fat_g}g`, unit: '/día', icon: Droplets, color: 'text-amber-400', bg: 'from-amber-500/15 to-orange-500/5', border: 'border-amber-500/20' },
           ].map(({ label, value, unit, icon: Icon, color, bg, border }) => (
             <div key={label} className={`relative overflow-hidden bg-gradient-to-br ${bg} backdrop-blur-sm border ${border} rounded-2xl p-4 shadow-lg shadow-black/20`}>
               <div className="flex items-center gap-2 mb-3">

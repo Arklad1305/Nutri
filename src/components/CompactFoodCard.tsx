@@ -57,11 +57,11 @@ export function CompactFoodCard({ data }: CompactFoodCardProps) {
             </div>
             <div className="bg-dark-bg/50 rounded-lg p-2 text-center">
               <p className="text-xs text-dark-muted">Carbos</p>
-              <p className="text-sm font-semibold text-green-400">{carbs}g</p>
+              <p className="text-sm font-semibold text-emerald-400">{carbs}g</p>
             </div>
             <div className="bg-dark-bg/50 rounded-lg p-2 text-center">
               <p className="text-xs text-dark-muted">Grasas</p>
-              <p className="text-sm font-semibold text-yellow-400">{fat}g</p>
+              <p className="text-sm font-semibold text-amber-400">{fat}g</p>
             </div>
           </div>
 

@@ -84,14 +84,14 @@ export function NutritionCard({ data }: NutritionCardProps) {
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <Beef className="w-4 h-4 text-red-400" />
+                    <Beef className="w-4 h-4 text-blue-400" />
                     <span className="text-white font-medium">Proteína</span>
                   </div>
-                  <span className="text-red-400 font-semibold">{macros.protein_g}g</span>
+                  <span className="text-blue-400 font-semibold">{macros.protein_g}g</span>
                 </div>
                 <div className="h-2 bg-dark-bg rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-red-500 to-red-400 transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-500"
                     style={{ width: `${proteinPercentage}%` }}
                   />
                 </div>
@@ -102,14 +102,14 @@ export function NutritionCard({ data }: NutritionCardProps) {
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <Wheat className="w-4 h-4 text-yellow-400" />
+                    <Wheat className="w-4 h-4 text-emerald-400" />
                     <span className="text-white font-medium">Carbohidratos</span>
                   </div>
-                  <span className="text-yellow-400 font-semibold">{macros.carbs_g}g</span>
+                  <span className="text-emerald-400 font-semibold">{macros.carbs_g}g</span>
                 </div>
                 <div className="h-2 bg-dark-bg rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
                     style={{ width: `${carbsPercentage}%` }}
                   />
                 </div>
@@ -120,14 +120,14 @@ export function NutritionCard({ data }: NutritionCardProps) {
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <Droplet className="w-4 h-4 text-green-400" />
+                    <Droplet className="w-4 h-4 text-amber-400" />
                     <span className="text-white font-medium">Grasas</span>
                   </div>
-                  <span className="text-green-400 font-semibold">{macros.fat_g}g</span>
+                  <span className="text-amber-400 font-semibold">{macros.fat_g}g</span>
                 </div>
                 <div className="h-2 bg-dark-bg rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-500"
                     style={{ width: `${fatPercentage}%` }}
                   />
                 </div>

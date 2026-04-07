@@ -585,9 +585,6 @@ export function Dashboard() {
         <div className="dash-section mb-6">
           <HeroHeader
             userName={profileName || user?.user_metadata?.first_name || 'Usuario'}
-            totalCalories={totals.calories}
-            goalCalories={goals.calories}
-            metabolicState={isTrainingDay ? 'mTOR_ACTIVE' : 'NEUTRAL'}
           />
         </div>
 

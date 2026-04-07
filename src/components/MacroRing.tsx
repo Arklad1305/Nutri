@@ -141,7 +141,7 @@ export function MacroRing({
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_4px_rgba(59,130,246,0.4)]" />
-                <span className="text-[10px] text-white/50 font-medium">Prot</span>
+                <span className="text-[10px] text-white/50 font-medium">Proteína</span>
                 <span className="text-[10px] text-blue-400 font-bold">{Math.round(protein)}g</span>
               </div>
               <div className="flex items-center gap-1.5">
