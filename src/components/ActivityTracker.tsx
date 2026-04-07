@@ -135,12 +135,15 @@ export function ActivityTracker({ activities, onActivityAdded }: ActivityTracker
   }
 
   return (
-    <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
+    <div className="relative bg-gradient-to-br from-[#140c06] to-[#100a05] border border-amber-500/15 rounded-2xl p-6 overflow-hidden group hover:border-amber-500/25 transition-all duration-300">
       {/* Ambient gradient overlay */}
       <div className={`absolute inset-0 bg-gradient-to-br ${level.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
 
       {/* Decorative blur effect */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl"></div>
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-400/5 to-transparent rounded-full blur-3xl"></div>
+
+      {/* Subtle flame layer at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/6 bg-gradient-to-t from-amber-500/5 via-orange-500/3 to-transparent animate-[flame-flicker-3_2s_ease-in-out_infinite] pointer-events-none"></div>
 
       <div className="relative z-10">
         {/* Header section with activity level indicator */}
@@ -224,7 +227,7 @@ export function ActivityTracker({ activities, onActivityAdded }: ActivityTracker
           <div className="space-y-4">
             <button
               onClick={() => setIsAdding(true)}
-              className="w-full px-4 py-3 bg-dark-hover hover:bg-dark-border border border-dark-border rounded-xl text-sm font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full px-4 py-3 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 rounded-xl text-sm font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               Registrar Actividad
             </button>
@@ -236,7 +239,7 @@ export function ActivityTracker({ activities, onActivityAdded }: ActivityTracker
                 {activities.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex items-center justify-between bg-dark-bg/50 backdrop-blur-sm rounded-lg p-3 border border-dark-border/50 hover:border-dark-border transition-colors"
+                    className="flex items-center justify-between bg-amber-500/5 backdrop-blur-sm rounded-lg p-3 border border-amber-500/10 hover:border-amber-500/20 transition-colors"
                   >
                     <div className="flex-1">
                       <p className="text-sm text-white font-medium">{activity.activity_name}</p>
@@ -271,7 +274,7 @@ export function ActivityTracker({ activities, onActivityAdded }: ActivityTracker
         ) : (
           <div className="space-y-4">
             {/* Activity selection dropdown */}
-            <div className="bg-dark-bg/50 backdrop-blur-sm rounded-xl p-4 border border-dark-border/50">
+            <div className="bg-[#100a05]/60 backdrop-blur-sm rounded-xl p-4 border border-amber-500/15">
               <label className="block text-xs font-medium text-dark-muted mb-3">
                 Tipo de Actividad
               </label>
@@ -281,7 +284,7 @@ export function ActivityTracker({ activities, onActivityAdded }: ActivityTracker
                   const activity = COMMON_ACTIVITIES.find(a => a.name === e.target.value)
                   if (activity) setSelectedActivity(activity)
                 }}
-                className="w-full bg-dark-card border border-dark-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-neon-cyan"
+                className="w-full bg-[#140c06] border border-amber-500/15 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500/30"
               >
                 {COMMON_ACTIVITIES.map((activity) => (
                   <option key={activity.name} value={activity.name}>
@@ -292,7 +295,7 @@ export function ActivityTracker({ activities, onActivityAdded }: ActivityTracker
             </div>
 
             {/* Duration slider control */}
-            <div className="bg-dark-bg/50 backdrop-blur-sm rounded-xl p-4 border border-dark-border/50">
+            <div className="bg-[#100a05]/60 backdrop-blur-sm rounded-xl p-4 border border-amber-500/15">
               <label className="block text-xs font-medium text-dark-muted mb-3">
                 Duración: {duration} minutos
               </label>
@@ -327,7 +330,7 @@ export function ActivityTracker({ activities, onActivityAdded }: ActivityTracker
               <button
                 onClick={() => setIsAdding(false)}
                 disabled={isLoading}
-                className="flex-1 px-4 py-3 bg-dark-hover hover:bg-dark-border border border-dark-border rounded-xl text-sm font-medium text-dark-muted hover:text-white transition-all disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/15 rounded-xl text-sm font-medium text-dark-muted hover:text-white transition-all disabled:opacity-50"
               >
                 Cancelar
               </button>

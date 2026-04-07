@@ -272,30 +272,30 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
             </form>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-4 pb-5 mb-1 border-b border-white/[0.06]">
             <div>
-              <label className="block text-sm font-medium text-dark-text mb-2">
+              <label className="block text-base font-semibold text-white mb-2">
                 Nombre del Alimento *
               </label>
               <input
                 type="text"
                 value={formData.food_name}
                 onChange={(e) => setFormData({ ...formData, food_name: e.target.value })}
-                className="w-full px-4 py-2 bg-dark-bg/40 border border-white/[0.06] rounded-xl focus:outline-none focus:border-primary/40 text-white"
+                className="w-full px-4 py-3 text-lg bg-dark-bg/40 border border-white/[0.06] rounded-xl focus:outline-none focus:border-primary/40 text-white"
                 placeholder="Ej: Pechuga de pollo"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-dark-text mb-2">
+              <label className="block text-base font-semibold text-white mb-2">
                 Cantidad (g) *
               </label>
               <input
                 type="number"
                 value={formData.quantity_g}
                 onChange={(e) => setFormData({ ...formData, quantity_g: Number(e.target.value) })}
-                className="w-full px-4 py-2 bg-dark-bg/40 border border-white/[0.06] rounded-xl focus:outline-none focus:border-primary/40 text-white"
+                className="w-full px-4 py-3 text-lg bg-dark-bg/40 border border-white/[0.06] rounded-xl focus:outline-none focus:border-primary/40 text-white"
                 placeholder="100"
                 min="1"
                 required
@@ -303,7 +303,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
             </div>
           </div>
 
-          <div>
+          <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/[0.03] p-4">
             <h3 className="text-lg font-semibold text-white mb-3">Motor (Energía y Rendimiento)</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -404,7 +404,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
             </div>
           </div>
 
-          <div>
+          <div className="rounded-2xl border border-violet-500/10 bg-violet-500/[0.03] p-4">
             <h3 className="text-lg font-semibold text-white mb-3">Cognitivo</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
