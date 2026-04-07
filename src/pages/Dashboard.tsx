@@ -616,7 +616,7 @@ export function Dashboard() {
             >
               <div className="flex items-center gap-4 p-4 relative">
                 {/* Decorative image */}
-                <img src="https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita.png" alt="" className="absolute right-0 top-1/2 -translate-y-1/2 h-full w-auto max-w-[40%] object-contain opacity-30 group-hover:opacity-50 transition-opacity duration-500 drop-shadow-lg pointer-events-none" />
+                <img src="https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita.png" alt="" className="absolute right-16 inset-y-0 my-auto h-14 w-14 object-contain opacity-40 group-hover:opacity-60 transition-opacity duration-500 drop-shadow-lg pointer-events-none" />
 
                 <div className="relative shrink-0">
                   <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
