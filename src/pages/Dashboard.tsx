@@ -56,7 +56,26 @@ export function Dashboard() {
   const dashRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
 
+  const waterWaveRef = useRef<SVGSVGElement>(null)
+
   const toggleCard = (id: string) => setExpandedCard(prev => prev === id ? null : id)
+
+  // Water wave animation
+  useGSAP(() => {
+    if (reducedMotion || !waterWaveRef.current) return
+    const paths = waterWaveRef.current.querySelectorAll('.water-wave')
+    if (paths.length === 0) return
+
+    paths.forEach((wave, i) => {
+      gsap.to(wave, {
+        x: i % 2 === 0 ? '-50%' : '50%',
+        duration: 3 + i * 1.5,
+        ease: 'sine.inOut',
+        repeat: -1,
+        yoyo: true,
+      })
+    })
+  }, { dependencies: [reducedMotion] })
 
   useGSAP(() => {
     if (reducedMotion || !dashRef.current || !goals) return
@@ -612,33 +631,57 @@ export function Dashboard() {
           <div className="dash-section">
             <button
               onClick={() => toggleCard('water')}
-              className="w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-cyan-950/40 via-dark-card/50 to-dark-card/30 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-cyan-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
-              style={{
-                backgroundImage: 'url(https://gdoquewussvvkmwgdgxp.supabase.co/storage/v1/object/public/imagenes/aguita.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
+              className="relative w-full text-left rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-r from-cyan-950/60 via-dark-card/70 to-dark-card/50 backdrop-blur-xl shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.15),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-cyan-500/25 hover:-translate-y-0.5 transition-all duration-300 group"
             >
-              <div className="absolute inset-0 bg-black/40"></div>
-              <div className="flex items-center gap-4 p-4 relative z-10">
-                {/* Decorative image */}
-                <img src="/weather-icons/humidity.svg" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-16 h-16 opacity-[0.12] group-hover:opacity-20 transition-opacity duration-500" />
+              {/* Animated water fill */}
+              <div className="absolute inset-0 overflow-hidden">
+                <div
+                  className="absolute bottom-0 left-0 right-0 transition-all duration-700 ease-out"
+                  style={{ height: `${Math.min(waterPercentage, 100)}%` }}
+                >
+                  <svg
+                    ref={waterWaveRef}
+                    className="absolute top-0 left-0 w-[200%] h-full"
+                    viewBox="0 0 800 60"
+                    preserveAspectRatio="none"
+                    style={{ transform: 'translateY(-8px)' }}
+                  >
+                    <path
+                      className="water-wave"
+                      d="M0,30 C100,10 200,50 400,30 C600,10 700,50 800,30 L800,60 L0,60 Z"
+                      fill="rgba(6,182,212,0.25)"
+                    />
+                    <path
+                      className="water-wave"
+                      d="M0,35 C150,15 250,55 400,35 C550,15 700,50 800,35 L800,60 L0,60 Z"
+                      fill="rgba(34,211,238,0.18)"
+                    />
+                    <path
+                      className="water-wave"
+                      d="M0,38 C120,22 280,52 400,38 C520,24 680,48 800,38 L800,60 L0,60 Z"
+                      fill="rgba(8,145,178,0.2)"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/30 via-cyan-600/15 to-transparent" />
+                </div>
+              </div>
 
+              <div className="flex items-center gap-4 p-4 relative z-10">
                 <div className="relative shrink-0">
                   <div className="w-12 h-12 rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
                     <img src="/weather-icons/humidity.svg" alt="" className="w-8 h-8" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 relative">
-                  <h3 className="text-sm font-bold text-cyan-400">Hidratación</h3>
-                  <p className="text-xs text-dark-muted truncate">{waterLiters}L / {waterGoalLiters}L consumidos</p>
+                  <h3 className="text-sm font-bold text-cyan-400 drop-shadow-sm">Hidratación</h3>
+                  <p className="text-xs text-dark-muted truncate drop-shadow-sm">{waterLiters}L / {waterGoalLiters}L consumidos</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 relative">
-                  <span className="text-lg font-black text-white">{waterPercentage}%</span>
+                  <span className="text-lg font-black text-white drop-shadow-sm">{waterPercentage}%</span>
                   <ChevronRight className={`w-4 h-4 text-dark-muted transition-transform duration-300 ${expandedCard === 'water' ? 'rotate-90' : ''}`} />
                 </div>
               </div>
-              <div className="h-0.5 bg-dark-border/20">
+              <div className="h-0.5 bg-dark-border/20 relative z-10">
                 <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-700" style={{ width: `${Math.min(waterPercentage, 100)}%` }} />
               </div>
             </button>
