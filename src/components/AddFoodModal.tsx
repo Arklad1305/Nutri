@@ -423,7 +423,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
             </div>
           </div>
 
-          <div>
+          <div className="rounded-2xl border border-amber-500/10 bg-amber-500/[0.03] p-4">
             <h3 className="text-lg font-semibold text-white mb-3">Hormonal</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -470,7 +470,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
             </div>
           </div>
 
-          <div>
+          <div className="rounded-2xl border border-blue-500/10 bg-blue-500/[0.03] p-4">
             <h3 className="text-lg font-semibold text-white mb-3">Inflamación</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
