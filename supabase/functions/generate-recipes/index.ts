@@ -186,46 +186,43 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Call Gemini API
+    // --- Multi-provider AI call: Gemini -> DeepSeek ---
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
+    const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
+
+    if (!GEMINI_API_KEY && !DEEPSEEK_API_KEY) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "GEMINI_API_KEY not configured. Please set it in Supabase Dashboard > Edge Functions > Secrets"
+          error: "No hay API keys configuradas. Configura GEMINI_API_KEY o DEEPSEEK_API_KEY en Supabase Secrets."
         }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("[generate-recipes] Calling Gemini API", {
+    console.log("[generate-recipes] AI providers available:", {
+      gemini: !!GEMINI_API_KEY,
+      deepseek: !!DEEPSEEK_API_KEY,
       deficitCount: deficits.length,
-      dietType: dietType || "standard",
-      hasCustomRequest: !!customRequest,
-      hasUserContext: !!userContext
     });
 
     // Construir prompt personalizado con déficits, perfil del usuario y preferencias
-    let userPrompt = `DÉFICITS NUTRICIONALES A CUBRIR:\n`;
+    let userPrompt = `DEFICITS NUTRICIONALES A CUBRIR:\n`;
     deficits.forEach((d: RecipeDeficit) => {
       userPrompt += `- ${d.nutrient}: Actual ${d.current.toFixed(1)}, Objetivo ${d.target.toFixed(1)} (${d.status})\n`;
     });
 
-    // Agregar contexto del usuario si está disponible (edad, peso, targets nutricionales, etc.)
     if (userContext) {
       userPrompt += `\nPERFIL DEL USUARIO:\n`;
-      if (userContext.age) userPrompt += `- Edad: ${userContext.age} años\n`;
-      if (userContext.gender) userPrompt += `- Género: ${userContext.gender}\n`;
+      if (userContext.age) userPrompt += `- Edad: ${userContext.age}\n`;
+      if (userContext.gender) userPrompt += `- Genero: ${userContext.gender}\n`;
       if (userContext.weight_kg) userPrompt += `- Peso: ${userContext.weight_kg} kg\n`;
       if (userContext.height_cm) userPrompt += `- Altura: ${userContext.height_cm} cm\n`;
-      if (userContext.activity_level) userPrompt += `- Nivel de actividad: ${userContext.activity_level}\n`;
-      if (userContext.target_calories) userPrompt += `- Target de calorías diarias: ${userContext.target_calories} kcal\n`;
-      if (userContext.target_protein) userPrompt += `- Target de proteína diaria: ${userContext.target_protein}g\n`;
-      if (userContext.target_carbs) userPrompt += `- Target de carbohidratos diarios: ${userContext.target_carbs}g\n`;
-      if (userContext.target_fat) userPrompt += `- Target de grasas diarias: ${userContext.target_fat}g\n`;
+      if (userContext.activity_level) userPrompt += `- Actividad: ${userContext.activity_level}\n`;
+      if (userContext.target_calories) userPrompt += `- Calorias objetivo: ${userContext.target_calories} kcal\n`;
+      if (userContext.target_protein) userPrompt += `- Proteina objetivo: ${userContext.target_protein}g\n`;
+      if (userContext.target_carbs) userPrompt += `- Carbohidratos objetivo: ${userContext.target_carbs}g\n`;
+      if (userContext.target_fat) userPrompt += `- Grasas objetivo: ${userContext.target_fat}g\n`;
     }
 
     if (dietType && dietType !== 'standard') {
@@ -233,108 +230,97 @@ Deno.serve(async (req: Request) => {
     }
 
     if (customRequest) {
-      // Sanitizar input del usuario para mitigar prompt injection
       const sanitizedRequest = String(customRequest)
         .replace(/\bignore\b.*\binstructions?\b/gi, "[filtrado]")
         .replace(/\bsystem\b.*\bprompt\b/gi, "[filtrado]")
         .substring(0, 500);
-      userPrompt += `\nREQUERIMIENTO ESPECIAL DEL USUARIO: ${sanitizedRequest}`;
+      userPrompt += `\nREQUERIMIENTO ESPECIAL: ${sanitizedRequest}`;
     }
 
-    userPrompt += `\n\nGenera UNA receta que ayude a cubrir estos déficits considerando el perfil del usuario. Sé creativo, práctico y asegúrate de que sea deliciosa.`;
+    userPrompt += `\n\nGenera UNA receta que ayude a cubrir estos deficits. Se creativo, practico y asegurate de que sea deliciosa.`;
 
-    // Modelos en orden de prioridad (fallback si uno falla con 429)
-    const GEMINI_MODELS = [
-      "gemini-2.0-flash",
-      "gemini-2.0-flash-lite",
-      "gemini-1.5-flash",
-    ];
-
-    const geminiRequestBody = JSON.stringify({
-      contents: [{
-        parts: [{
-          text: `${RECIPE_SYSTEM_PROMPT}\n\n${userPrompt}`
-        }]
-      }],
-      generationConfig: {
-        temperature: 0.8,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 4096,
-      }
-    });
-
-    let geminiData: any = null;
-    let lastError = "";
-
-    for (const model of GEMINI_MODELS) {
-      // Retry con backoff por modelo (max 2 intentos)
-      for (let attempt = 0; attempt < 2; attempt++) {
-        if (attempt > 0) {
-          const delay = attempt * 3000; // 3s backoff
-          console.log(`[generate-recipes] Retry ${attempt} for ${model} in ${delay}ms`);
-          await new Promise(r => setTimeout(r, delay));
-        }
-
-        try {
-          const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: geminiRequestBody,
-            }
-          );
-
-          if (geminiResponse.ok) {
-            geminiData = await geminiResponse.json();
-            console.log(`[generate-recipes] Success with model ${model}`);
-            break;
-          }
-
-          const errorText = await geminiResponse.text();
-          lastError = `${model}: ${geminiResponse.status} - ${errorText.substring(0, 200)}`;
-          console.warn(`[generate-recipes] ${model} failed (${geminiResponse.status}), attempt ${attempt + 1}`);
-
-          // Solo retry en 429 (rate limit), para otros errores pasar al siguiente modelo
-          if (geminiResponse.status !== 429) break;
-        } catch (fetchErr) {
-          lastError = `${model}: fetch error - ${fetchErr}`;
-          console.warn(`[generate-recipes] ${model} fetch error:`, fetchErr);
-          break;
-        }
-      }
-      if (geminiData) break;
-    }
-
-    if (!geminiData) {
-      console.error("[generate-recipes] All models failed:", lastError);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Todos los modelos de IA están temporalmente saturados. Intenta de nuevo en unos minutos.",
-          details: lastError,
-        }),
+    // Helper: call Gemini
+    async function callGemini(model: string): Promise<string | null> {
+      if (!GEMINI_API_KEY) return null;
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
         {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: RECIPE_SYSTEM_PROMPT + "\n\n" + userPrompt }] }],
+            generationConfig: { temperature: 0.8, topK: 40, topP: 0.95, maxOutputTokens: 4096 }
+          })
         }
       );
+      if (!res.ok) {
+        const errText = await res.text();
+        console.warn(`[generate-recipes] Gemini ${model} => ${res.status}: ${errText.substring(0, 150)}`);
+        return null;
+      }
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
     }
-    const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    // Helper: call DeepSeek (OpenAI-compatible)
+    async function callDeepSeek(): Promise<string | null> {
+      if (!DEEPSEEK_API_KEY) return null;
+      const res = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: RECIPE_SYSTEM_PROMPT },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.8,
+          max_tokens: 4096,
+        })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        console.warn(`[generate-recipes] DeepSeek => ${res.status}: ${errText.substring(0, 150)}`);
+        return null;
+      }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || null;
+    }
+
+    // Cadena de fallback: Gemini flash -> flash-lite -> 1.5-flash -> DeepSeek
+    let rawText: string | null = null;
+    let usedProvider = "";
+
+    const providers: Array<[string, () => Promise<string | null>]> = [
+      ["gemini-2.0-flash", () => callGemini("gemini-2.0-flash")],
+      ["gemini-2.0-flash-lite", () => callGemini("gemini-2.0-flash-lite")],
+      ["gemini-1.5-flash", () => callGemini("gemini-1.5-flash")],
+      ["deepseek-chat", () => callDeepSeek()],
+    ];
+
+    for (const [name, fn] of providers) {
+      try {
+        rawText = await fn();
+        if (rawText) {
+          usedProvider = name;
+          console.log(`[generate-recipes] Success with ${name}`);
+          break;
+        }
+      } catch (err) {
+        console.warn(`[generate-recipes] ${name} error:`, err);
+      }
+    }
 
     if (!rawText) {
-      console.error("Gemini returned empty response:", geminiData);
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Gemini returned no response",
-          geminiData
+          error: "Todos los modelos de IA estan temporalmente saturados. Intenta de nuevo en unos minutos."
         }),
-        {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -398,7 +384,7 @@ Deno.serve(async (req: Request) => {
         tags: recipe.tags || [],
         nutritional_highlights: recipe.nutrition?.deficitsCovered || [],
         recipe_image_url: null,
-        recipe_source: "gemini-ai-generated",
+        recipe_source: `${usedProvider}-ai-generated`,
         user_rating: null,
         times_cooked: 0,
         is_favorite: false,
