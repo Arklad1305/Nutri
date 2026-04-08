@@ -116,35 +116,21 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    console.log("🔍 INICIANDO DIAGNÓSTICO DE AUTH...");
-
-    // 1. CHEQUEAR VARIABLES DE ENTORNO
     const sbUrl = Deno.env.get("SUPABASE_URL");
     const sbKey = Deno.env.get("SUPABASE_ANON_KEY");
 
-    console.log("DEBUG VARS:", {
-        hasUrl: !!sbUrl,
-        hasKey: !!sbKey,
-        urlLength: sbUrl?.length || 0,
-        keyLength: sbKey?.length || 0
-    });
-
     if (!sbUrl || !sbKey) {
-        throw new Error("🚨 FATAL: Las variables de entorno SUPABASE_URL o SUPABASE_ANON_KEY no están definidas en el servidor.");
+        throw new Error("SUPABASE_URL o SUPABASE_ANON_KEY no configuradas");
     }
 
-    // 2. CHEQUEAR HEADER
     const authHeader = req.headers.get("Authorization");
-    console.log("DEBUG HEADER:", {
-        hasAuthHeader: !!authHeader,
-        headerPreview: authHeader ? authHeader.substring(0, 20) + "..." : "NULO"
-    });
-
     if (!authHeader) {
-        throw new Error("🚨 FATAL: No llegó el header Authorization a la función.");
+        return new Response(
+            JSON.stringify({ success: false, error: "Authorization header requerido" }),
+            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
     }
 
-    // 3. INTENTAR CONECTAR
     const supabaseClient = createClient(
       sbUrl,
       sbKey,
@@ -154,21 +140,13 @@ Deno.serve(async (req: Request) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
     if (authError || !user) {
-        console.error("🚫 ERROR AL VALIDAR USUARIO:", authError);
         return new Response(
-            JSON.stringify({
-              success: false,
-              error: "Token Rejected by Auth Server",
-              details: authError,
-              authErrorMessage: authError?.message,
-              authErrorCode: authError?.code,
-              authErrorStatus: authError?.status
-            }),
+            JSON.stringify({ success: false, error: "Token inválido" }),
             { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }
 
-    console.log("✅ USUARIO VALIDADO:", user.id);
+    console.log("[generate-recipes] User:", user.id);
 
     const requestBody = await req.json();
     console.log("[generate-recipes] Request body received", {
@@ -265,41 +243,77 @@ Deno.serve(async (req: Request) => {
 
     userPrompt += `\n\nGenera UNA receta que ayude a cubrir estos déficits considerando el perfil del usuario. Sé creativo, práctico y asegúrate de que sea deliciosa.`;
 
-    // Llamar a la API para generar la receta con contexto completo
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `${RECIPE_SYSTEM_PROMPT}\n\n${userPrompt}`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.8,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 4096,
-          }
-        })
-      }
-    );
+    // Modelos en orden de prioridad (fallback si uno falla con 429)
+    const GEMINI_MODELS = [
+      "gemini-2.0-flash",
+      "gemini-2.0-flash-lite",
+      "gemini-1.5-flash",
+    ];
 
-    console.log("[generate-recipes] Gemini API responded", {
-      status: geminiResponse.status,
-      ok: geminiResponse.ok
+    const geminiRequestBody = JSON.stringify({
+      contents: [{
+        parts: [{
+          text: `${RECIPE_SYSTEM_PROMPT}\n\n${userPrompt}`
+        }]
+      }],
+      generationConfig: {
+        temperature: 0.8,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 4096,
+      }
     });
 
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("[generate-recipes] Gemini API error:", errorText);
+    let geminiData: any = null;
+    let lastError = "";
+
+    for (const model of GEMINI_MODELS) {
+      // Retry con backoff por modelo (max 2 intentos)
+      for (let attempt = 0; attempt < 2; attempt++) {
+        if (attempt > 0) {
+          const delay = attempt * 3000; // 3s backoff
+          console.log(`[generate-recipes] Retry ${attempt} for ${model} in ${delay}ms`);
+          await new Promise(r => setTimeout(r, delay));
+        }
+
+        try {
+          const geminiResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: geminiRequestBody,
+            }
+          );
+
+          if (geminiResponse.ok) {
+            geminiData = await geminiResponse.json();
+            console.log(`[generate-recipes] Success with model ${model}`);
+            break;
+          }
+
+          const errorText = await geminiResponse.text();
+          lastError = `${model}: ${geminiResponse.status} - ${errorText.substring(0, 200)}`;
+          console.warn(`[generate-recipes] ${model} failed (${geminiResponse.status}), attempt ${attempt + 1}`);
+
+          // Solo retry en 429 (rate limit), para otros errores pasar al siguiente modelo
+          if (geminiResponse.status !== 429) break;
+        } catch (fetchErr) {
+          lastError = `${model}: fetch error - ${fetchErr}`;
+          console.warn(`[generate-recipes] ${model} fetch error:`, fetchErr);
+          break;
+        }
+      }
+      if (geminiData) break;
+    }
+
+    if (!geminiData) {
+      console.error("[generate-recipes] All models failed:", lastError);
       return new Response(
         JSON.stringify({
           success: false,
-          error: `Gemini API error: ${geminiResponse.status}`,
-          details: errorText
+          error: "Todos los modelos de IA están temporalmente saturados. Intenta de nuevo en unos minutos.",
+          details: lastError,
         }),
         {
           status: 502,
@@ -307,8 +321,6 @@ Deno.serve(async (req: Request) => {
         }
       );
     }
-
-    const geminiData = await geminiResponse.json();
     const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawText) {
