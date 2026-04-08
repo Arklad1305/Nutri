@@ -1,9 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChefHat, Sparkles, Plus, X, Loader2, ShoppingBasket, UtensilsCrossed, Coffee, Sunset, Moon, Cookie, Calendar, ChevronRight, AlertTriangle, TrendingDown, Activity } from 'lucide-react'
+import { ChefHat, Sparkles, Plus, X, Loader2, ShoppingBasket, UtensilsCrossed, Coffee, Sunset, Moon, Cookie, Calendar, ChevronRight, AlertTriangle, TrendingDown, Activity, Leaf, Check, ShoppingCart } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { RecipeCard } from '../components/RecipeCard'
 import { generateRecipeWithAI, getUserNutrientDeficits, type RecipeDeficit } from '../lib/recipeService'
+import {
+  fetchPantryItems as fetchPantryFromService,
+  addPantryItem as addPantryToService,
+  deletePantryItem as deletePantryFromService,
+  getAntiDeficitFoodsWithPantry,
+  autocompletePantryInput,
+  buildRecipeContext,
+  type PantryItem,
+  type AntiDeficitFood,
+} from '../lib/pantryService'
+import { FOOD_CATEGORIES, type FoodCategory } from '../lib/nutrientFoodMap'
 import { isToday, parseISO } from 'date-fns'
 import { gsap, useGSAP } from '../lib/gsap'
 import { useReducedMotion } from '../hooks/useReducedMotion'
@@ -35,14 +46,6 @@ interface Recipe {
   difficulty?: string
 }
 
-interface PantryItem {
-  id: number
-  name: string
-  quantity: number | null
-  unit: string | null
-  category: string | null
-}
-
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack'
 
 export function Recipes() {
@@ -63,6 +66,10 @@ export function Recipes() {
 
   const [deficits, setDeficits] = useState<RecipeDeficit[]>([])
   const [deficitsLoading, setDeficitsLoading] = useState(false)
+
+  const [antiDeficitFoods, setAntiDeficitFoods] = useState<AntiDeficitFood[]>([])
+  const [autocompleteResults, setAutocompleteResults] = useState<Array<{ name: string; category: FoodCategory | null; isInPantry: boolean }>>([])
+  const [showAutocomplete, setShowAutocomplete] = useState(false)
 
   const pageRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
@@ -177,50 +184,36 @@ export function Recipes() {
 
   const fetchPantryItems = async () => {
     if (!user) return
-    try {
-      const { data, error } = await supabase
-        .from('pantry_items')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-      if (error) throw error
-      if (data) setPantryItems(data)
-    } catch (err) {
-      console.error('Error fetching pantry items:', err)
-    }
+    const items = await fetchPantryFromService(user.id)
+    setPantryItems(items)
   }
 
-  const addPantryItem = async () => {
-    if (!user || !newIngredient.trim()) return
-    try {
-      const { data, error } = await supabase
-        .from('pantry_items')
-        .insert([{ user_id: user.id, name: newIngredient.trim() }])
-        .select()
-        .single()
-      if (error) throw error
-      if (data) {
-        setPantryItems([data, ...pantryItems])
-        setNewIngredient('')
-      }
-    } catch (err) {
-      console.error('Error adding pantry item:', err)
+  // Recalcular anti-deficit foods cuando cambian deficits o pantry
+  useEffect(() => {
+    if (deficits.length > 0) {
+      const foods = getAntiDeficitFoodsWithPantry(deficits, pantryItems)
+      setAntiDeficitFoods(foods)
+    }
+  }, [deficits, pantryItems])
+
+  const addPantryItem = async (name?: string) => {
+    if (!user) return
+    const itemName = name || newIngredient.trim()
+    if (!itemName) return
+    const item = await addPantryToService(user.id, itemName)
+    if (item) {
+      setPantryItems(prev => [item, ...prev])
+      setNewIngredient('')
+      setShowAutocomplete(false)
     }
   }
 
   const deletePantryItem = async (id: number) => {
     if (!user) return
-    try {
-      const { error } = await supabase
-        .from('pantry_items')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id)
-      if (error) throw error
+    const ok = await deletePantryFromService(user.id, id)
+    if (ok) {
       setPantryItems(pantryItems.filter(item => item.id !== id))
       setSelectedPantryItems(selectedPantryItems.filter(itemId => itemId !== id))
-    } catch (err) {
-      console.error('Error deleting pantry item:', err)
     }
   }
 
@@ -229,6 +222,25 @@ export function Recipes() {
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     )
   }
+
+  const handleIngredientInput = (value: string) => {
+    setNewIngredient(value)
+    if (value.length >= 2) {
+      const results = autocompletePantryInput(value, pantryItems)
+      setAutocompleteResults(results)
+      setShowAutocomplete(results.length > 0)
+    } else {
+      setShowAutocomplete(false)
+    }
+  }
+
+  // Agrupar pantry items por categoria
+  const groupedPantry = pantryItems.reduce<Record<string, PantryItem[]>>((acc, item) => {
+    const cat = (item.category as string) || 'otros'
+    if (!acc[cat]) acc[cat] = []
+    acc[cat].push(item)
+    return acc
+  }, {})
 
   const generateRecipe = async () => {
     if (!user) return
@@ -239,11 +251,11 @@ export function Recipes() {
     setIsGenerating(true)
     setError(null)
     try {
-      const selectedIngredients = pantryItems
-        .filter(item => selectedPantryItems.includes(item.id))
-        .map(item => item.name)
+      const selectedItems = pantryItems.filter(item => selectedPantryItems.includes(item.id))
       const mealTypeLabels = { breakfast: 'Desayuno', lunch: 'Almuerzo', dinner: 'Cena', snack: 'Snack' }
-      const request = `Generar ${mealTypeLabels[selectedMealType]} usando: ${selectedIngredients.join(', ')}${customRequest ? `. ${customRequest}` : ''}`
+      // Construir contexto enriquecido con datos nutricionales
+      const pantryContext = buildRecipeContext(selectedItems, deficits)
+      const request = `Generar ${mealTypeLabels[selectedMealType]}.\n${pantryContext}${customRequest ? `\nNOTA DEL USUARIO: ${customRequest}` : ''}`
       const { data: profile } = await supabase
         .from('profiles')
         .select('preferred_diet, weight_kg, height_cm, age, gender, activity_level, target_calories, target_protein_g, target_carbs_g, target_fat_g')
@@ -358,39 +370,78 @@ export function Recipes() {
           </button>
           {expandedSection === 'pantry' && (
             <div className="mt-2 bg-dark-card/40 backdrop-blur-sm border border-emerald-500/10 rounded-2xl p-5">
-              <div className="flex gap-2 mb-5">
-                <input
-                  type="text"
-                  value={newIngredient}
-                  onChange={(e) => setNewIngredient(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addPantryItem()}
-                  placeholder="Ej: Pollo, Arroz, Brócoli..."
-                  className="flex-1 px-4 py-3 bg-dark-hover/60 border border-dark-border/50 rounded-xl text-white placeholder-dark-muted focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all text-sm"
-                />
-                <button
-                  onClick={addPantryItem}
-                  disabled={!newIngredient.trim()}
-                  className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:from-emerald-600 hover:to-green-600 transition-all shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95"
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
+              {/* Input con autocompletado */}
+              <div className="relative mb-5">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newIngredient}
+                    onChange={(e) => handleIngredientInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') addPantryItem() }}
+                    onFocus={() => newIngredient.length >= 2 && setShowAutocomplete(autocompleteResults.length > 0)}
+                    onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
+                    placeholder="Buscar alimento..."
+                    className="flex-1 px-4 py-3 bg-dark-hover/60 border border-dark-border/50 rounded-xl text-white placeholder-dark-muted focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all text-sm"
+                  />
+                  <button
+                    onClick={() => addPantryItem()}
+                    disabled={!newIngredient.trim()}
+                    className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:from-emerald-600 hover:to-green-600 transition-all shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+                {/* Autocomplete dropdown */}
+                {showAutocomplete && (
+                  <div className="absolute z-20 top-full left-0 right-12 mt-1 bg-dark-card border border-emerald-500/20 rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+                    {autocompleteResults.map((result, i) => {
+                      const catInfo = result.category ? FOOD_CATEGORIES[result.category] : null
+                      return (
+                        <button
+                          key={i}
+                          onMouseDown={(e) => { e.preventDefault(); addPantryItem(result.name) }}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-emerald-500/10 transition-colors ${result.isInPantry ? 'opacity-40' : ''}`}
+                        >
+                          <span className="text-base">{catInfo?.emoji || '🍽️'}</span>
+                          <span className="text-white font-medium flex-1">{result.name}</span>
+                          {result.isInPantry && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
+
               {pantryItems.length === 0 ? (
                 <div className="text-center py-10">
                   <ShoppingBasket className="w-12 h-12 text-dark-muted mx-auto mb-3 opacity-25" />
-                  <p className="text-dark-muted text-sm font-medium">Tu despensa está vacía</p>
-                  <p className="text-dark-muted text-xs mt-1 opacity-60">Comienza agregando ingredientes</p>
+                  <p className="text-dark-muted text-sm font-medium">Tu despensa esta vacia</p>
+                  <p className="text-dark-muted text-xs mt-1 opacity-60">Busca y agrega ingredientes</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {pantryItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 bg-dark-hover/40 border border-dark-border/30 rounded-xl hover:border-emerald-500/25 hover:bg-dark-hover/60 transition-all group">
-                      <span className="text-white font-semibold text-sm">{item.name}</span>
-                      <button onClick={() => deletePantryItem(item.id)} className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 rounded-lg transition-all">
-                        <X className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
-                  ))}
+                <div className="space-y-4">
+                  {Object.entries(groupedPantry).map(([cat, items]) => {
+                    const catInfo = FOOD_CATEGORIES[cat as FoodCategory] || { label: cat, emoji: '📦', color: 'gray' }
+                    return (
+                      <div key={cat}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm">{catInfo.emoji}</span>
+                          <span className="text-xs font-bold text-dark-muted uppercase tracking-wider">{catInfo.label}</span>
+                          <span className="text-[10px] text-dark-muted/50">({items.length})</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {items.map((item) => (
+                            <div key={item.id} className="group flex items-center gap-1.5 px-3 py-1.5 bg-dark-hover/40 border border-dark-border/30 rounded-xl hover:border-emerald-500/25 transition-all">
+                              <span className="text-white font-medium text-sm">{item.name}</span>
+                              <button onClick={() => deletePantryItem(item.id)} className="opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all">
+                                <X className="w-3.5 h-3.5 text-dark-muted" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -482,6 +533,75 @@ export function Recipes() {
             </div>
           )}
         </div>
+
+        {/* ── Alimentos Anti-Deficit — Violet ── */}
+        {deficits.length > 0 && antiDeficitFoods.length > 0 && (
+          <div className="chef-section">
+            <button
+              onClick={() => toggleSection('anti-deficit')}
+              className="relative w-full text-left rounded-2xl overflow-hidden border border-violet-500/15 bg-[#080410] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(139,92,246,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-violet-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+            >
+              <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+                <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-violet-500/8 blur-2xl" />
+              </div>
+              <div className="relative z-10 flex items-center gap-4 p-4">
+                <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-600/10 border border-violet-500/20 flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.15)]">
+                  <Leaf className="w-5 h-5 text-violet-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-violet-300 drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]">Alimentos Recomendados</h3>
+                  <p className="text-xs text-violet-100/40 truncate">Para cubrir tus deficits nutricionales</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-[10px] font-bold text-violet-300/70 bg-violet-500/10 border border-violet-500/20 px-2 py-1 rounded-lg">
+                    {antiDeficitFoods.filter(f => f.inPantry).length}/{antiDeficitFoods.slice(0, 12).length} tienes
+                  </span>
+                  <ChevronRight className={`w-4 h-4 text-violet-400/60 transition-transform duration-300 ${expandedSection === 'anti-deficit' ? 'rotate-90' : ''}`} />
+                </div>
+              </div>
+            </button>
+            {expandedSection === 'anti-deficit' && (
+              <div className="mt-2 bg-dark-card/40 backdrop-blur-sm border border-violet-500/10 rounded-2xl p-5">
+                <div className="space-y-2">
+                  {antiDeficitFoods.slice(0, 12).map((item, i) => {
+                    const catInfo = FOOD_CATEGORIES[item.food.category] || { emoji: '🍽️', label: '', color: 'gray' }
+                    return (
+                      <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${item.inPantry ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-dark-hover/30 border-dark-border/20'}`}>
+                        <span className="text-base shrink-0">{catInfo.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-white">{item.food.name}</span>
+                            {item.inPantry && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {item.coversNutrients.slice(0, 3).map((n, j) => (
+                              <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-300/70">
+                                {n.label}: {n.amountPerPortion}{n.unit}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        {!item.inPantry && (
+                          <button
+                            onClick={() => addPantryItem(item.food.name)}
+                            className="shrink-0 p-2 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 transition-all"
+                            title="Agregar a despensa"
+                          >
+                            <Plus className="w-4 h-4 text-violet-400" />
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="mt-3 flex items-center gap-2 text-[11px] text-dark-muted">
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  <span>Agrega los que no tienes a tu despensa para generar recetas optimizadas</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Generar Receta — Primary/Teal ── */}
         <div className="chef-section">
