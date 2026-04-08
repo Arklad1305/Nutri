@@ -317,21 +317,26 @@ export function HealthChat() {
 
   return (
     <div className="flex flex-col h-screen bg-dark-bg">
-      <div className="sticky top-0 z-10 bg-dark-card/90 backdrop-blur-xl border-b border-dark-border/50">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      {/* ── Premium Header ── */}
+      <div className="sticky top-0 z-10 bg-[#080c14]/95 backdrop-blur-xl border-b border-primary/10">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-8 left-1/4 w-40 h-24 bg-primary/6 rounded-full blur-3xl" />
+          <div className="absolute -top-4 right-1/4 w-32 h-20 bg-cyan-500/5 rounded-full blur-2xl" />
+        </div>
+        <div className="relative max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-700 flex items-center justify-center shadow-md shadow-primary/25">
-              <Bot className="w-5 h-5 text-white" />
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-teal-600/10 border border-primary/25 flex items-center justify-center shadow-[0_0_14px_rgba(13,148,136,0.2)]">
+              <Bot className="w-5 h-5 text-primary-400" />
             </div>
             <div className="flex-1">
-              <h1 className="text-lg font-semibold text-white">Asistente de Salud</h1>
+              <h1 className="text-base font-black text-white tracking-tight">Asistente Nutricional</h1>
               <p className="text-xs text-dark-muted">
                 {isLoading && processingMessage ? (
-                  processingMessage
+                  <span className="text-primary-400 animate-pulse">{processingMessage}</span>
                 ) : (
                   <>
-                    <span className="text-primary">{format(new Date(), "d 'de' MMMM", { locale: es })}</span>
-                    <span className="text-dark-muted/50 mx-1.5">•</span>
+                    <span className="text-primary-300">{format(new Date(), "d 'de' MMMM", { locale: es })}</span>
+                    <span className="text-dark-muted/40 mx-1.5">·</span>
                     <span>Conversaciones de hoy</span>
                   </>
                 )}
@@ -340,84 +345,74 @@ export function HealthChat() {
           </div>
         </div>
         {isLoading && (
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-800 overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 animate-pulse-slow bg-[length:200%_100%] animate-shimmer" />
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-dark-bg overflow-hidden">
+            <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent animate-[shimmer-sweep_2s_ease-in-out_infinite]" />
           </div>
         )}
       </div>
 
+      {/* ── Messages Area ── */}
       <div className="flex-1 overflow-y-auto pb-24 mobile-scroll-hide scroll-smooth-mobile">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="space-y-4">
+          <div className="space-y-5">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-3 ${
-                  message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'
-                }`}
+                className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
               >
                 <div
-                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                  className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center ${
                     message.sender === 'user'
-                      ? 'bg-primary'
-                      : 'bg-secondary/20'
+                      ? 'bg-gradient-to-br from-primary to-primary-600 shadow-md shadow-primary/25'
+                      : 'bg-dark-card/80 border border-dark-border/50 shadow-md shadow-black/20'
                   }`}
                 >
                   {message.sender === 'user' ? (
-                    <UserIcon className="w-4 h-4 text-white" />
+                    <UserIcon className="w-3.5 h-3.5 text-white" />
                   ) : (
-                    <Bot className="w-4 h-4 text-secondary" />
+                    <Bot className="w-3.5 h-3.5 text-primary-400" />
                   )}
                 </div>
 
-                <div
-                  className={`flex-1 ${message.isTyping ? 'max-w-[90%]' : 'max-w-[75%]'} ${
-                    message.sender === 'user' ? 'items-end' : 'items-start'
-                  }`}
-                >
+                <div className={`flex-1 ${message.isTyping ? 'max-w-[90%]' : 'max-w-[80%]'} ${message.sender === 'user' ? 'items-end' : 'items-start'}`}>
                   <div
                     className={`rounded-2xl px-4 py-3 ${
                       message.sender === 'user'
-                        ? 'bg-primary text-white rounded-tr-sm'
+                        ? 'bg-gradient-to-br from-primary to-primary-600 text-white rounded-tr-md shadow-lg shadow-primary/20'
                         : message.isTyping
-                        ? 'bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-primary/30 text-white rounded-tl-sm shadow-lg shadow-primary/10'
-                        : 'bg-dark-card border border-dark-border text-white rounded-tl-sm'
+                        ? 'bg-dark-card/60 backdrop-blur-sm border border-primary/20 text-white rounded-tl-md shadow-lg shadow-primary/10'
+                        : 'bg-dark-card/50 backdrop-blur-sm border border-dark-border/40 text-white rounded-tl-md shadow-lg shadow-black/15'
                     }`}
                   >
                     <div className="text-sm leading-relaxed">
                       {renderMessageContent(message)}
                     </div>
                   </div>
-                  <p
-                    className={`text-xs text-dark-muted mt-1 px-2 ${
-                      message.sender === 'user' ? 'text-right' : 'text-left'
-                    }`}
-                  >
+                  <p className={`text-[10px] text-dark-muted/60 mt-1.5 px-1 ${message.sender === 'user' ? 'text-right' : 'text-left'}`}>
                     {format(message.timestamp, 'HH:mm', { locale: es })}
                   </p>
                 </div>
               </div>
             ))}
-
             <div ref={messagesEndRef} />
           </div>
         </div>
       </div>
 
-      <div className="fixed bottom-16 left-0 right-0 bg-dark-card/90 backdrop-blur-xl border-t border-dark-border/50">
+      {/* ── Input Bar ── */}
+      <div className="fixed bottom-16 left-0 right-0 bg-[#080c14]/95 backdrop-blur-xl border-t border-dark-border/30">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-end gap-2">
             <AudioRecorder
               onAnalysisComplete={(result) => handleMultimediaAnalysis(result, 'audio')}
               onError={handleMultimediaError}
             />
-
             <ImageUploader
               onAnalysisComplete={(result) => handleMultimediaAnalysis(result, 'image')}
               onError={handleMultimediaError}
             />
 
-            <div className="flex-1 bg-dark-card border border-dark-border rounded-2xl px-4 py-2 focus-within:border-primary transition-colors">
+            <div className="flex-1 bg-dark-hover/40 border border-dark-border/40 rounded-xl px-4 py-2.5 focus-within:border-primary/40 focus-within:shadow-[0_0_0_1px_rgba(13,148,136,0.15)] transition-all">
               <textarea
                 ref={textareaRef}
                 value={inputMessage}
@@ -425,7 +420,7 @@ export function HealthChat() {
                 onKeyPress={handleKeyPress}
                 placeholder="Escribe, habla o sube una foto..."
                 rows={1}
-                className="w-full bg-transparent text-white placeholder-dark-muted resize-none outline-none text-sm leading-relaxed"
+                className="w-full bg-transparent text-white placeholder-dark-muted/60 resize-none outline-none text-sm leading-relaxed"
                 style={{ maxHeight: '120px' }}
                 disabled={isLoading}
               />
@@ -434,15 +429,11 @@ export function HealthChat() {
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}
-              className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-primary text-white rounded-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-primary/30"
+              className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gradient-to-br from-primary to-primary-600 text-white rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-primary/25"
             >
-              <Send className="w-5 h-5" />
+              <Send className="w-4 h-4" />
             </button>
           </div>
-
-          <p className="text-xs text-dark-muted text-center mt-2">
-            Escribe, graba audio o sube foto de tus alimentos
-          </p>
         </div>
       </div>
     </div>

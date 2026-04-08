@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChefHat, Sparkles, Plus, X, Loader2, ShoppingBasket, UtensilsCrossed, Coffee, Sunset, Moon, Cookie, Calendar } from 'lucide-react'
+import { ChefHat, Sparkles, Plus, X, Loader2, ShoppingBasket, UtensilsCrossed, Coffee, Sunset, Moon, Cookie, Calendar, ChevronRight } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { RecipeCard } from '../components/RecipeCard'
@@ -44,11 +44,11 @@ interface PantryItem {
 }
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack'
-type TabType = 'pantry' | 'recipes'
 
 export function Recipes() {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState<TabType>('pantry')
+  const [expandedSection, setExpandedSection] = useState<string | null>('pantry')
+  const toggleSection = (id: string) => setExpandedSection(prev => prev === id ? null : id)
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -75,7 +75,7 @@ export function Recipes() {
       duration: 0.55,
       ease: 'power3.out',
     })
-  }, { scope: pageRef, dependencies: [activeTab, reducedMotion] })
+  }, { scope: pageRef, dependencies: [expandedSection, reducedMotion] })
 
   useEffect(() => {
     if (user) {
@@ -251,7 +251,7 @@ export function Recipes() {
         setCustomRequest('')
         setSelectedPantryItems([])
         setSelectedMealType(null)
-        setActiveTab('recipes')
+        setExpandedSection('recipes')
       } else {
         setError(result.error || 'Error al generar receta')
         setIsGenerating(false)
@@ -272,19 +272,17 @@ export function Recipes() {
   const todayRecipes = recipes.filter(recipe => isToday(parseISO(recipe.createdAt)))
 
   return (
-    <div ref={pageRef} className="pb-24">
+    <div ref={pageRef} className="min-h-screen bg-dark-bg pb-24">
 
       {/* ── Hero Section ── */}
       <div className="relative overflow-hidden px-4 pt-6 pb-8 mb-6">
-        {/* Ambient glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute top-4 right-1/4 w-48 h-48 bg-blue-600/15 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-64 h-64 bg-emerald-600/8 rounded-full blur-3xl" />
+          <div className="absolute top-4 right-1/4 w-48 h-48 bg-primary/10 rounded-full blur-3xl" />
         </div>
-
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-700 flex items-center justify-center shadow-md shadow-primary/30">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-700 flex items-center justify-center shadow-lg shadow-primary/30">
               <ChefHat className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -292,14 +290,12 @@ export function Recipes() {
               <p className="text-sm text-dark-muted">Recetas personalizadas con tu despensa</p>
             </div>
           </div>
-
-          {/* Stats pills */}
           <div className="flex gap-2 flex-wrap mt-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-dark-card/60 backdrop-blur-sm border border-dark-border/50 rounded-full text-xs font-semibold text-white">
-              <ShoppingBasket className="w-3.5 h-3.5 text-green-400" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-dark-card/60 backdrop-blur-sm border border-dark-border/50 rounded-full text-xs font-bold text-white">
+              <ShoppingBasket className="w-3.5 h-3.5 text-emerald-400" />
               {pantryItems.length} ingredientes
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-dark-card/60 backdrop-blur-sm border border-dark-border/50 rounded-full text-xs font-semibold text-white">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-dark-card/60 backdrop-blur-sm border border-dark-border/50 rounded-full text-xs font-bold text-white">
               <Calendar className="w-3.5 h-3.5 text-primary-400" />
               {todayRecipes.length} recetas hoy
             </span>
@@ -307,54 +303,36 @@ export function Recipes() {
         </div>
       </div>
 
-      <div className="px-4 space-y-5">
-        {/* ── Tab Selector ── */}
-        <div className="chef-section flex gap-2 p-1.5 bg-dark-hover/50 backdrop-blur-sm rounded-xl border border-dark-border/30">
-          <button
-            onClick={() => setActiveTab('pantry')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold text-sm transition-all duration-300 ${
-              activeTab === 'pantry'
-                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/30 scale-[1.02]'
-                : 'text-dark-muted hover:text-white hover:bg-dark-hover/50'
-            }`}
-          >
-            <ShoppingBasket className={`w-4 h-4 transition-transform ${activeTab === 'pantry' ? 'scale-110' : ''}`} />
-            Despensa
-            {pantryItems.length > 0 && (
-              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
-                activeTab === 'pantry' ? 'bg-white/25 text-white' : 'bg-green-500/20 text-green-400'
-              }`}>
-                {pantryItems.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('recipes')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold text-sm transition-all duration-300 ${
-              activeTab === 'recipes'
-                ? 'bg-gradient-to-r from-primary to-primary-600 text-white shadow-lg shadow-primary/25 scale-[1.02]'
-                : 'text-dark-muted hover:text-white hover:bg-dark-hover/50'
-            }`}
-          >
-            <UtensilsCrossed className={`w-4 h-4 transition-transform ${activeTab === 'recipes' ? 'scale-110' : ''}`} />
-            Recetas
-            {todayRecipes.length > 0 && (
-              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
-                activeTab === 'recipes' ? 'bg-white/25 text-white' : 'bg-primary/20 text-primary-400'
-              }`}>
-                {todayRecipes.length}
-              </span>
-            )}
-          </button>
-        </div>
+      <div className="px-4 space-y-3 max-w-7xl mx-auto">
 
-        {/* ── Pantry Tab ── */}
-        {activeTab === 'pantry' && (
-          <>
-            <div className="chef-section bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-5">
-              <h2 className="text-lg font-black text-white mb-1">Ingredientes Disponibles</h2>
-              <p className="text-sm text-dark-muted mb-4">Agrega los ingredientes que tienes en casa</p>
-
+        {/* ── Despensa — Emerald ── */}
+        <div className="chef-section">
+          <button
+            onClick={() => toggleSection('pantry')}
+            className="relative w-full text-left rounded-2xl overflow-hidden border border-emerald-500/15 bg-[#040f0a] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(16,185,129,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-emerald-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-emerald-500/8 blur-2xl" />
+              <div className="absolute bottom-0 left-1/4 w-20 h-12 rounded-full bg-green-400/6 blur-xl" />
+            </div>
+            <div className="relative z-10 flex items-center gap-4 p-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-600/10 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+                <ShoppingBasket className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-emerald-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">Despensa</h3>
+                <p className="text-xs text-emerald-100/40 truncate">Ingredientes disponibles en casa</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-[10px] font-bold text-emerald-300/70 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-lg">
+                  {pantryItems.length} items
+                </span>
+                <ChevronRight className={`w-4 h-4 text-emerald-400/60 transition-transform duration-300 ${expandedSection === 'pantry' ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
+          </button>
+          {expandedSection === 'pantry' && (
+            <div className="mt-2 bg-dark-card/40 backdrop-blur-sm border border-emerald-500/10 rounded-2xl p-5">
               <div className="flex gap-2 mb-5">
                 <input
                   type="text"
@@ -362,38 +340,28 @@ export function Recipes() {
                   onChange={(e) => setNewIngredient(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addPantryItem()}
                   placeholder="Ej: Pollo, Arroz, Brócoli..."
-                  className="flex-1 px-4 py-3 bg-dark-hover/60 border border-dark-border/50 rounded-xl text-white placeholder-dark-muted focus:outline-none focus:border-green-500/60 focus:ring-1 focus:ring-green-500/30 transition-all"
+                  className="flex-1 px-4 py-3 bg-dark-hover/60 border border-dark-border/50 rounded-xl text-white placeholder-dark-muted focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all text-sm"
                 />
                 <button
                   onClick={addPantryItem}
                   disabled={!newIngredient.trim()}
-                  className="px-5 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:scale-105 active:scale-95"
+                  className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:from-emerald-600 hover:to-green-600 transition-all shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
               </div>
-
               {pantryItems.length === 0 ? (
-                <div className="text-center py-12">
-                  <ShoppingBasket className="w-14 h-14 text-dark-muted mx-auto mb-3 opacity-30" />
+                <div className="text-center py-10">
+                  <ShoppingBasket className="w-12 h-12 text-dark-muted mx-auto mb-3 opacity-25" />
                   <p className="text-dark-muted text-sm font-medium">Tu despensa está vacía</p>
                   <p className="text-dark-muted text-xs mt-1 opacity-60">Comienza agregando ingredientes</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-xs text-dark-muted mb-3 font-medium">
-                    {pantryItems.length} {pantryItems.length === 1 ? 'ingrediente' : 'ingredientes'} disponibles
-                  </p>
                   {pantryItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between p-3 bg-dark-hover/40 border border-dark-border/30 rounded-xl hover:border-green-500/30 hover:bg-dark-hover/60 transition-all group"
-                    >
+                    <div key={item.id} className="flex items-center justify-between p-3 bg-dark-hover/40 border border-dark-border/30 rounded-xl hover:border-emerald-500/25 hover:bg-dark-hover/60 transition-all group">
                       <span className="text-white font-semibold text-sm">{item.name}</span>
-                      <button
-                        onClick={() => deletePantryItem(item.id)}
-                        className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 rounded-lg transition-all"
-                      >
+                      <button onClick={() => deletePantryItem(item.id)} className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 rounded-lg transition-all">
                         <X className="w-4 h-4 text-red-400" />
                       </button>
                     </div>
@@ -401,45 +369,52 @@ export function Recipes() {
                 </div>
               )}
             </div>
+          )}
+        </div>
 
-            {pantryItems.length > 0 && (
-              <button
-                onClick={() => setActiveTab('recipes')}
-                className="chef-section w-full py-3.5 px-6 bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-primary/25 hover:shadow-primary/30 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]"
-              >
-                <Sparkles className="w-5 h-5" />
-                Generar Receta con estos ingredientes
-              </button>
-            )}
-          </>
-        )}
-
-        {/* ── Recipes Tab ── */}
-        {activeTab === 'recipes' && (
-          <>
-            {pantryItems.length === 0 ? (
-              <div className="chef-section bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-8 text-center">
-                <ShoppingBasket className="w-14 h-14 text-dark-muted mx-auto mb-4 opacity-30" />
-                <h3 className="text-lg font-black text-white mb-2">Primero agrega ingredientes</h3>
-                <p className="text-sm text-dark-muted mb-5">
-                  Necesitas agregar ingredientes a tu despensa antes de generar recetas
-                </p>
-                <button
-                  onClick={() => setActiveTab('pantry')}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold hover:from-green-600 hover:to-emerald-600 transition-all inline-flex items-center gap-2 shadow-lg shadow-green-500/30"
-                >
-                  <Plus className="w-5 h-5" />
-                  Ir a Despensa
-                </button>
+        {/* ── Generar Receta — Primary/Teal ── */}
+        <div className="chef-section">
+          <button
+            onClick={() => toggleSection('generator')}
+            className="relative w-full text-left rounded-2xl overflow-hidden border border-primary/15 bg-[#040d0d] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(13,148,136,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute -top-4 right-8 w-20 h-20 rounded-full bg-primary/8 blur-2xl" />
+              <div className="absolute bottom-0 left-1/3 w-24 h-10 rounded-full bg-teal-400/6 blur-xl" />
+            </div>
+            <div className="relative z-10 flex items-center gap-4 p-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-teal-600/10 border border-primary/20 flex items-center justify-center shadow-[0_0_12px_rgba(13,148,136,0.15)]">
+                <Sparkles className="w-5 h-5 text-primary-400" />
               </div>
-            ) : (
-              <>
-                {/* Recipe Generator */}
-                <div className="chef-section bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-5">
-                  <h2 className="text-lg font-black text-white mb-1">Generar Nueva Receta</h2>
-                  <p className="text-sm text-dark-muted mb-5">Selecciona ingredientes y tipo de comida</p>
-
-                  {/* Ingredient pills */}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-primary-300 drop-shadow-[0_0_8px_rgba(13,148,136,0.4)]">Generar Receta</h3>
+                <p className="text-xs text-teal-100/40 truncate">Selecciona ingredientes y tipo de comida</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                {selectedMealType && (
+                  <span className="text-[10px] font-bold text-primary-300/70 bg-primary/10 border border-primary/20 px-2 py-1 rounded-lg">
+                    {mealTypes.find(m => m.value === selectedMealType)?.label}
+                  </span>
+                )}
+                {isGenerating && <Loader2 className="w-4 h-4 text-primary-400 animate-spin" />}
+                <ChevronRight className={`w-4 h-4 text-primary-400/60 transition-transform duration-300 ${expandedSection === 'generator' ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
+          </button>
+          {expandedSection === 'generator' && (
+            <div className="mt-2 bg-dark-card/40 backdrop-blur-sm border border-primary/10 rounded-2xl p-5">
+              {pantryItems.length === 0 ? (
+                <div className="text-center py-8">
+                  <ShoppingBasket className="w-12 h-12 text-dark-muted mx-auto mb-3 opacity-25" />
+                  <p className="text-white font-bold mb-1">Primero agrega ingredientes</p>
+                  <p className="text-sm text-dark-muted mb-4">Necesitas ingredientes en la despensa</p>
+                  <button onClick={() => setExpandedSection('pantry')} className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl font-bold inline-flex items-center gap-2 text-sm shadow-lg shadow-emerald-500/25">
+                    <Plus className="w-4 h-4" />
+                    Ir a Despensa
+                  </button>
+                </div>
+              ) : (
+                <>
                   <div className="mb-5">
                     <label className="text-xs font-bold text-dark-muted uppercase tracking-wider mb-3 block">
                       Ingredientes ({selectedPantryItems.length} seleccionados)
@@ -451,8 +426,8 @@ export function Recipes() {
                           onClick={() => togglePantrySelection(item.id)}
                           className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                             selectedPantryItems.includes(item.id)
-                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/30 scale-105'
-                              : 'bg-dark-hover/60 border border-dark-border/50 text-dark-muted hover:text-white hover:border-green-500/30 hover:bg-dark-hover'
+                              ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30 scale-105'
+                              : 'bg-dark-hover/60 border border-dark-border/50 text-dark-muted hover:text-white hover:border-emerald-500/30 hover:bg-dark-hover'
                           }`}
                         >
                           {item.name}
@@ -461,12 +436,9 @@ export function Recipes() {
                     </div>
                   </div>
 
-                  {/* Meal type grid */}
                   <div className="mb-5">
-                    <label className="text-xs font-bold text-dark-muted uppercase tracking-wider mb-3 block">
-                      Tipo de comida
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <label className="text-xs font-bold text-dark-muted uppercase tracking-wider mb-3 block">Tipo de comida</label>
+                    <div className="grid grid-cols-4 gap-2">
                       {mealTypes.map((mealType) => {
                         const Icon = mealType.icon
                         const isSelected = selectedMealType === mealType.value
@@ -474,27 +446,26 @@ export function Recipes() {
                           <button
                             key={mealType.value}
                             onClick={() => setSelectedMealType(mealType.value)}
-                            className={`flex items-center gap-2.5 p-3.5 rounded-xl transition-all duration-200 ${
+                            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all duration-200 ${
                               isSelected
-                                ? `bg-gradient-to-br ${mealType.color} text-white shadow-lg ${mealType.shadow} scale-[1.02]`
+                                ? `bg-gradient-to-br ${mealType.color} text-white shadow-lg ${mealType.shadow} scale-[1.03]`
                                 : 'bg-dark-hover/40 border border-dark-border/40 text-dark-muted hover:text-white hover:border-dark-border/80 hover:bg-dark-hover/60'
                             }`}
                           >
-                            <Icon className="w-5 h-5 flex-shrink-0" />
-                            <span className="text-sm font-bold">{mealType.label}</span>
+                            <Icon className="w-5 h-5" />
+                            <span className="text-[11px] font-bold">{mealType.label}</span>
                           </button>
                         )
                       })}
                     </div>
                   </div>
 
-                  {/* Custom request */}
                   <textarea
                     value={customRequest}
                     onChange={(e) => setCustomRequest(e.target.value)}
                     placeholder="Solicitud adicional (opcional)..."
                     rows={2}
-                    className="w-full px-4 py-3 bg-dark-hover/60 border border-dark-border/50 rounded-xl text-white placeholder-dark-muted focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 resize-none mb-4 transition-all"
+                    className="w-full px-4 py-3 bg-dark-hover/60 border border-dark-border/50 rounded-xl text-white placeholder-dark-muted focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 resize-none mb-4 transition-all text-sm"
                   />
 
                   {error && (
@@ -521,51 +492,67 @@ export function Recipes() {
                       </>
                     )}
                   </button>
-                </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
-                {/* Today's Recipes */}
-                <div className="chef-section">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="w-5 h-5 text-primary-400" />
-                    <h2 className="text-lg font-black text-white">Recetas de Hoy</h2>
-                    {todayRecipes.length > 0 && (
-                      <span className="text-xs font-bold text-dark-muted bg-dark-hover/60 border border-dark-border/40 px-2.5 py-1 rounded-full">
-                        {todayRecipes.length}
-                      </span>
-                    )}
+        {/* ── Recetas de Hoy — Amber ── */}
+        <div className="chef-section">
+          <button
+            onClick={() => toggleSection('recipes')}
+            className="relative w-full text-left rounded-2xl overflow-hidden border border-amber-500/15 bg-[#0f0b04] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(245,158,11,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-amber-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-amber-500/8 blur-2xl" />
+              <div className="absolute bottom-0 left-1/4 w-20 h-10 rounded-full bg-orange-400/6 blur-xl" />
+            </div>
+            <div className="relative z-10 flex items-center gap-4 p-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-600/10 border border-amber-500/20 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.15)]">
+                <UtensilsCrossed className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Recetas de Hoy</h3>
+                <p className="text-xs text-amber-100/40 truncate">Tus recetas generadas por IA</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                {todayRecipes.length > 0 && (
+                  <span className="text-lg font-black text-white drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">{todayRecipes.length}</span>
+                )}
+                <ChevronRight className={`w-4 h-4 text-amber-400/60 transition-transform duration-300 ${expandedSection === 'recipes' ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
+          </button>
+          {expandedSection === 'recipes' && (
+            <div className="mt-2">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-14">
+                  <div className="relative mb-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-700 rounded-2xl animate-pulse shadow-md shadow-primary/30" />
+                    <ChefHat className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                   </div>
-
-                  {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-14">
-                      <div className="relative mb-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-700 rounded-2xl animate-pulse shadow-md shadow-primary/30" />
-                        <ChefHat className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                      </div>
-                      <p className="text-dark-muted text-sm">Cargando recetas...</p>
-                    </div>
-                  ) : todayRecipes.length === 0 ? (
-                    <div className="bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-8 text-center">
-                      <div className="relative inline-block mb-4">
-                        <ChefHat className="w-14 h-14 text-dark-muted opacity-30" />
-                        <Sparkles className="w-5 h-5 text-primary-400 absolute -top-1 -right-1 animate-pulse" />
-                      </div>
-                      <p className="text-white font-black mb-1">No hay recetas generadas hoy</p>
-                      <p className="text-sm text-dark-muted">
-                        Selecciona ingredientes y genera tu primera receta del día
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {todayRecipes.map((recipe) => (
-                        <RecipeCard key={recipe.id} recipe={recipe} />
-                      ))}
-                    </div>
-                  )}
+                  <p className="text-dark-muted text-sm">Cargando recetas...</p>
                 </div>
-              </>
-            )}
-          </>
-        )}
+              ) : todayRecipes.length === 0 ? (
+                <div className="bg-dark-card/40 backdrop-blur-sm border border-dark-border/50 rounded-2xl p-8 text-center">
+                  <div className="relative inline-block mb-4">
+                    <ChefHat className="w-14 h-14 text-dark-muted opacity-30" />
+                    <Sparkles className="w-5 h-5 text-primary-400 absolute -top-1 -right-1 animate-pulse" />
+                  </div>
+                  <p className="text-white font-black mb-1">No hay recetas generadas hoy</p>
+                  <p className="text-sm text-dark-muted">Selecciona ingredientes y genera tu primera receta</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {todayRecipes.map((recipe) => (
+                    <RecipeCard key={recipe.id} recipe={recipe} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
