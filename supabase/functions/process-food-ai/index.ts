@@ -304,6 +304,174 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // ═══════════════════════════════════════════════════════
+    // CASCADE: Try cached/API data before full Gemini call
+    // Only for text-only messages (no image/audio)
+    // ═══════════════════════════════════════════════════════
+    if (message && !audioBase64 && !imageBase64) {
+      try {
+        console.log("[process-food-ai] CASCADE: Attempting identification + lookup");
+
+        const GEMINI_API_KEY_CASCADE = Deno.env.get("GEMINI_API_KEY");
+        if (GEMINI_API_KEY_CASCADE) {
+          // Cheap Gemini call: just identify the food (no nutritional calc)
+          const identifyPrompt = `Eres un identificador de alimentos. El usuario describe lo que comió.
+Extrae SOLO la identificación del alimento. Responde ÚNICAMENTE con JSON:
+{
+  "food_name_es": "nombre en español (singular, genérico)",
+  "food_name_en": "English name (singular, generic, for USDA database)",
+  "quantity_g": número estimado en gramos,
+  "cooking_method": "raw/cooked/fried/baked/boiled/steamed/none",
+  "is_complex_dish": false
+}
+
+Reglas:
+- Si es un plato compuesto (ej: "cazuela", "pastel de choclo"), pon is_complex_dish: true
+- Si no hay cantidad explícita, estima por porción estándar
+- Responde SOLO JSON, sin backticks ni explicaciones`;
+
+          const identifyResp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY_CASCADE}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: `${identifyPrompt}\n\nINPUT: "${message}"` }] }],
+                generationConfig: { maxOutputTokens: 200, temperature: 0.1 }
+              })
+            }
+          );
+
+          if (identifyResp.ok) {
+            const identifyData = await identifyResp.json();
+            const identifyText = identifyData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            const idBraceStart = identifyText.indexOf("{");
+            const idBraceEnd = identifyText.lastIndexOf("}");
+
+            if (idBraceStart !== -1 && idBraceEnd !== -1) {
+              const identified = JSON.parse(identifyText.substring(idBraceStart, idBraceEnd + 1));
+              console.log("[process-food-ai] CASCADE: Identified:", identified);
+
+              // Skip cascade for complex dishes — Gemini full analysis is better
+              if (!identified.is_complex_dish && identified.food_name_en) {
+                // Call nutrition-lookup edge function via internal fetch
+                const lookupUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/nutrition-lookup`;
+                const lookupResp = await fetch(lookupUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": authHeader || "",
+                    "apikey": Deno.env.get("SUPABASE_ANON_KEY") || "",
+                  },
+                  body: JSON.stringify({
+                    food_name_es: identified.food_name_es,
+                    food_name_en: identified.food_name_en,
+                    quantity_g: identified.quantity_g || 100,
+                  }),
+                });
+
+                if (lookupResp.ok) {
+                  const lookupData = await lookupResp.json();
+
+                  if (lookupData.success && lookupData.source !== "none") {
+                    console.log("[process-food-ai] CASCADE HIT from:", lookupData.source, "confidence:", lookupData.confidence);
+
+                    const s = lookupData.scaled;
+                    const matrix = lookupData.nutritional_matrix;
+                    const v = (val: any) => Number(val) || 0;
+
+                    // Build foodData from API data
+                    const foodData: FoodData = {
+                      food_name: identified.food_name_es || lookupData.food_name,
+                      quantity_g: identified.quantity_g || lookupData.quantity_g,
+                      reply_text: `✅ ${identified.food_name_es} registrado (${lookupData.quantity_g}g) — Datos verificados de ${lookupData.source === 'usda' ? 'USDA' : lookupData.source === 'openfoodfacts' ? 'OpenFoodFacts' : lookupData.original_source || lookupData.source} (confianza: ${Math.round((lookupData.confidence || 0.8) * 100)}%)`,
+
+                      // MOTOR VIPs
+                      calories: v(s.calories),
+                      protein_g: v(s.protein_g),
+                      carbs_g: v(s.carbs_g),
+                      fat_g: v(s.fat_g),
+                      water_ml: v(s.water_ml),
+                      sodium_mg: v(s.sodium_mg),
+                      leucine_g: v(s.leucine_mg) / 1000,
+
+                      // COGNITIVE VIPs
+                      choline_mg: v(s.choline_mg),
+
+                      // HORMONAL VIPs
+                      zinc_mg: v(s.zinc_mg),
+                      magnesium_mg: v(s.magnesium_mg),
+                      vit_d3_iu: v(s.vit_d3_iu),
+
+                      // INFLAMMATION VIPs
+                      omega_3_total_g: (v(s.epa_mg) + v(s.dha_mg) + v(s.ala_mg)) / 1000,
+                      polyphenols_total_mg: v(s.polyphenols_total_mg),
+
+                      nutritional_matrix: matrix,
+                    };
+
+                    // Insert into food_logs (same schema as Gemini path)
+                    const { data, error } = await supabaseClient
+                      .from("food_logs")
+                      .insert({
+                        user_id: user.id,
+                        food_name: foodData.food_name,
+                        quantity_g: foodData.quantity_g || null,
+                        reply_text: foodData.reply_text || null,
+                        calories: foodData.calories || 0,
+                        protein_g: foodData.protein_g || 0,
+                        carbs_g: foodData.carbs_g || 0,
+                        fat_g: foodData.fat_g || 0,
+                        water_ml: foodData.water_ml || 0,
+                        leucine_g: foodData.leucine_g || 0,
+                        sodium_mg: foodData.sodium_mg || 0,
+                        choline_mg: foodData.choline_mg || 0,
+                        zinc_mg: foodData.zinc_mg || 0,
+                        magnesium_mg: foodData.magnesium_mg || 0,
+                        vit_d3_iu: foodData.vit_d3_iu || 0,
+                        omega_3_total_g: foodData.omega_3_total_g || 0,
+                        polyphenols_total_mg: foodData.polyphenols_total_mg || 0,
+                        nutritional_matrix: foodData.nutritional_matrix,
+                        logged_at: new Date(),
+                      })
+                      .select()
+                      .single();
+
+                    if (error) {
+                      console.error("[process-food-ai] CASCADE insert error:", error.message);
+                      // Fall through to full Gemini
+                    } else {
+                      console.log("[process-food-ai] CASCADE: Food logged successfully via", lookupData.source);
+                      return new Response(
+                        JSON.stringify({
+                          success: true,
+                          data,
+                          source: lookupData.source,
+                          confidence: lookupData.confidence,
+                          message: `Food logged via ${lookupData.source} (cascade). Gemini full analysis skipped.`
+                        }),
+                        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                      );
+                    }
+                  } else {
+                    console.log("[process-food-ai] CASCADE MISS: nutrition-lookup found nothing, falling through to Gemini");
+                  }
+                }
+              } else {
+                console.log("[process-food-ai] CASCADE: Complex dish detected or no EN name, using full Gemini");
+              }
+            }
+          }
+        }
+      } catch (cascadeErr) {
+        console.warn("[process-food-ai] CASCADE error (non-fatal, falling through to Gemini):", cascadeErr);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // FULL GEMINI ANALYSIS (fallback or for image/audio)
+    // ═══════════════════════════════════════════════════════
+
     // Call Gemini API
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     if (!GEMINI_API_KEY) {
