@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChefHat, Sparkles, Plus, X, Loader2, ShoppingBasket, UtensilsCrossed, Coffee, Sunset, Moon, Cookie, Calendar, ChevronRight } from 'lucide-react'
+import { ChefHat, Sparkles, Plus, X, Loader2, ShoppingBasket, UtensilsCrossed, Coffee, Sunset, Moon, Cookie, Calendar, ChevronRight, AlertTriangle, TrendingDown, Activity } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { RecipeCard } from '../components/RecipeCard'
-import { generateRecipeWithAI } from '../lib/recipeService'
+import { generateRecipeWithAI, getUserNutrientDeficits, type RecipeDeficit } from '../lib/recipeService'
 import { isToday, parseISO } from 'date-fns'
 import { gsap, useGSAP } from '../lib/gsap'
 import { useReducedMotion } from '../hooks/useReducedMotion'
@@ -61,6 +61,9 @@ export function Recipes() {
   const [customRequest, setCustomRequest] = useState('')
   const [error, setError] = useState<string | null>(null)
 
+  const [deficits, setDeficits] = useState<RecipeDeficit[]>([])
+  const [deficitsLoading, setDeficitsLoading] = useState(false)
+
   const pageRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
 
@@ -81,8 +84,24 @@ export function Recipes() {
     if (user) {
       fetchRecipes()
       fetchPantryItems()
+      loadDeficits()
     }
   }, [user])
+
+  const loadDeficits = async () => {
+    if (!user) return
+    setDeficitsLoading(true)
+    try {
+      const result = await getUserNutrientDeficits(user.id, 7)
+      if (result.success && result.deficits) {
+        setDeficits(result.deficits)
+      }
+    } catch (err) {
+      console.error('Error loading deficits:', err)
+    } finally {
+      setDeficitsLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (!user) return
@@ -232,7 +251,7 @@ export function Recipes() {
         .maybeSingle()
       const dietType = profile?.preferred_diet?.[0] || 'standard'
       const result = await generateRecipeWithAI({
-        deficits: [],
+        deficits,
         dietType,
         customRequest: request,
         userContext: {
@@ -299,6 +318,12 @@ export function Recipes() {
               <Calendar className="w-3.5 h-3.5 text-primary-400" />
               {todayRecipes.length} recetas hoy
             </span>
+            {deficits.length > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-dark-card/60 backdrop-blur-sm border border-rose-500/30 rounded-full text-xs font-bold text-rose-300">
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                {deficits.filter(d => d.status === 'critical').length} déficits críticos
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -366,6 +391,92 @@ export function Recipes() {
                       </button>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Déficits Nutricionales — Red/Rose ── */}
+        <div className="chef-section">
+          <button
+            onClick={() => toggleSection('deficits')}
+            className="relative w-full text-left rounded-2xl overflow-hidden border border-rose-500/15 bg-[#0f0406] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(244,63,94,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-rose-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-rose-500/8 blur-2xl" />
+              <div className="absolute bottom-0 left-1/4 w-20 h-12 rounded-full bg-red-400/6 blur-xl" />
+            </div>
+            <div className="relative z-10 flex items-center gap-4 p-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-600/10 border border-rose-500/20 flex items-center justify-center shadow-[0_0_12px_rgba(244,63,94,0.15)]">
+                <Activity className="w-5 h-5 text-rose-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-rose-300 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]">Déficits Nutricionales</h3>
+                <p className="text-xs text-rose-100/40 truncate">Nutrientes que necesitas cubrir (7 días)</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                {deficitsLoading ? (
+                  <Loader2 className="w-4 h-4 text-rose-400 animate-spin" />
+                ) : deficits.length > 0 ? (
+                  <span className="text-[10px] font-bold text-rose-300/70 bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-lg">
+                    {deficits.filter(d => d.status === 'critical').length} críticos
+                  </span>
+                ) : null}
+                <ChevronRight className={`w-4 h-4 text-rose-400/60 transition-transform duration-300 ${expandedSection === 'deficits' ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
+          </button>
+          {expandedSection === 'deficits' && (
+            <div className="mt-2 bg-dark-card/40 backdrop-blur-sm border border-rose-500/10 rounded-2xl p-5">
+              {deficitsLoading ? (
+                <div className="flex items-center justify-center py-8 gap-3">
+                  <Loader2 className="w-5 h-5 text-rose-400 animate-spin" />
+                  <p className="text-dark-muted text-sm">Analizando nutrientes...</p>
+                </div>
+              ) : deficits.length === 0 ? (
+                <div className="text-center py-8">
+                  <Activity className="w-12 h-12 text-dark-muted mx-auto mb-3 opacity-25" />
+                  <p className="text-white font-bold mb-1">Sin déficits detectados</p>
+                  <p className="text-sm text-dark-muted">Registra comidas para analizar tu nutrición</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {deficits.map((deficit, i) => {
+                    const statusConfig = {
+                      critical: { color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20', bar: 'bg-red-500', icon: AlertTriangle, label: 'Crítico' },
+                      survival: { color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20', bar: 'bg-orange-500', icon: TrendingDown, label: 'Bajo' },
+                      functional: { color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', bar: 'bg-yellow-500', icon: TrendingDown, label: 'Subóptimo' },
+                    }[deficit.status] || { color: 'text-gray-400', bg: 'bg-gray-500/10', border: 'border-gray-500/20', bar: 'bg-gray-500', icon: TrendingDown, label: deficit.status }
+
+                    const StatusIcon = statusConfig.icon
+                    const pct = Math.min(deficit.percentCovered || 0, 100)
+
+                    return (
+                      <div key={i} className={`p-3 rounded-xl ${statusConfig.bg} border ${statusConfig.border} transition-all`}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <StatusIcon className={`w-3.5 h-3.5 ${statusConfig.color}`} />
+                            <span className="text-sm font-semibold text-white">{deficit.nutrient}</span>
+                          </div>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${statusConfig.bg} ${statusConfig.color}`}>
+                            {statusConfig.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-1.5 bg-dark-hover/60 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${statusConfig.bar} transition-all duration-500`} style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="text-[11px] text-dark-muted font-medium shrink-0">
+                            {deficit.current}{deficit.unit ? ` ${deficit.unit}` : ''} / {deficit.target}{deficit.unit ? ` ${deficit.unit}` : ''}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                  <p className="text-[11px] text-dark-muted text-center pt-2">
+                    Las recetas generadas priorizarán cubrir estos déficits
+                  </p>
                 </div>
               )}
             </div>
