@@ -6,3 +6,4 @@ test-*.html
 test-*.sh
 test-*.http
 *.log
+supabase/.temp/
