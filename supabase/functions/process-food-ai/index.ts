@@ -77,6 +77,13 @@ FORMATO JSON DE RESPUESTA OBLIGATORIO:
   }
 }
 
+DETECCIÓN DE ETIQUETAS NUTRICIONALES:
+Si la imagen muestra una etiqueta nutricional, tabla de información nutricional o empaque de producto:
+1. Extrae los valores EXACTOS que aparecen en la tabla (no inferir, leer directamente).
+2. Usa el nombre del producto como food_name.
+3. Usa la porción indicada en la etiqueta como quantity_g.
+4. Prioriza los datos impresos sobre cualquier estimación.
+
 IMPORTANTE: Devuelve SOLO el JSON limpio, sin markdown, sin backticks, sin explicaciones adicionales.`;
 
 const IDENTIFY_PROMPT = `Eres un identificador de alimentos. El usuario describe lo que comió.

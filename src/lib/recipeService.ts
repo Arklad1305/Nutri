@@ -270,7 +270,7 @@ export async function getUserNutrientDeficits(
     // 5. Load personalized targets from user profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('weight_kg, height_cm, age, gender, activity_level, goal, body_fat_percent')
+      .select('weight_kg, height_cm, age, gender, activity_level, goal')
       .eq('id', userId)
       .single()
 
@@ -284,7 +284,6 @@ export async function getUserNutrientDeficits(
         gender: profile.gender || 'male',
         activity_level: profile.activity_level || 'moderate',
         goal: profile.goal || 'maintain',
-        body_fat_percent: profile.body_fat_percent || undefined,
       } as UserProfile)
 
       personalizedOverrides['calories'] = targets.meta_calorias
