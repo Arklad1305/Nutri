@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { ChefHat, Sparkles, Plus, X, Loader2, ShoppingBasket, UtensilsCrossed, Coffee, Sunset, Moon, Cookie, Calendar, ChevronRight, AlertTriangle, TrendingDown, Activity, Leaf, Check, ShoppingCart } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { useRecipeGeneration } from '../contexts/RecipeGenerationContext'
 import { supabase } from '../lib/supabase'
 import { RecipeCard } from '../components/RecipeCard'
 import { generateRecipeWithAI, getUserNutrientDeficits, type RecipeDeficit } from '../lib/recipeService'
@@ -50,6 +51,7 @@ type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack'
 
 export function Recipes() {
   const { user } = useAuth()
+  const { startGeneration, dismiss: dismissGenToast } = useRecipeGeneration()
   const [expandedSection, setExpandedSection] = useState<string | null>('pantry')
   const toggleSection = (id: string) => setExpandedSection(prev => prev === id ? null : id)
   const [recipes, setRecipes] = useState<Recipe[]>([])
@@ -139,6 +141,7 @@ export function Recipes() {
           }
           setRecipes((currentRecipes) => [newRecipe, ...currentRecipes])
           setIsGenerating(false)
+          dismissGenToast()
         }
       )
       .subscribe()
@@ -249,6 +252,7 @@ export function Recipes() {
       setError('Por favor selecciona ingredientes o describe lo que quieres'); return
     }
     setIsGenerating(true)
+    startGeneration()
     setError(null)
     try {
       const selectedItems = pantryItems.filter(item => selectedPantryItems.includes(item.id))
@@ -286,10 +290,12 @@ export function Recipes() {
       } else {
         setError(result.error || 'Error al generar receta')
         setIsGenerating(false)
+        dismissGenToast()
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error inesperado')
       setIsGenerating(false)
+      dismissGenToast()
     }
   }
 

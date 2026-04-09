@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { RecipeGenerationProvider } from './contexts/RecipeGenerationContext'
 import { Layout } from './components/Layout'
 import { Auth } from './pages/Auth'
 import { Dashboard } from './pages/Dashboard'
@@ -105,7 +106,9 @@ export function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <AppRoutes />
+        <RecipeGenerationProvider>
+          <AppRoutes />
+        </RecipeGenerationProvider>
       </BrowserRouter>
     </AuthProvider>
   )
