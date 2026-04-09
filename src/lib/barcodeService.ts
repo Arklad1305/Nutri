@@ -1,21 +1,5 @@
 import { supabase } from './supabase'
 
-export interface BarcodeProduct {
-  barcode: string
-  food_name: string
-  brand: string
-  quantity_g: number
-  calories: number
-  protein_g: number
-  carbs_g: number
-  fat_g: number
-  fiber_g: number
-  sugar_g: number
-  sodium_mg: number
-  fat_saturated_g: number
-  image_url?: string
-}
-
 export interface BarcodeLookupResult {
   success: boolean
   data?: {
@@ -34,99 +18,45 @@ export interface BarcodeLookupResult {
   error?: string
 }
 
-// Consulta OpenFoodFacts por código de barras EAN/UPC
+// Consulta barcode via edge function (server-side → OpenFoodFacts)
+// Evita problemas de CORS y permite User-Agent + headers correctos
 export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResult> {
   try {
-    const cleanBarcode = barcode.replace(/\D/g, '')
-    if (cleanBarcode.length < 8 || cleanBarcode.length > 14) {
+    const clean = barcode.replace(/\D/g, '')
+    if (clean.length < 8 || clean.length > 14) {
       return { success: false, error: 'Código de barras inválido' }
     }
 
-    // Intentar primero con v2, fallback a v0 si falla
-    let data: any = null
-
-    for (const apiUrl of [
-      `https://world.openfoodfacts.net/api/v2/product/${cleanBarcode}.json?fields=product_name,brands,nutriments,serving_size,product_quantity,image_front_url,image_front_small_url`,
-      `https://world.openfoodfacts.org/api/v0/product/${cleanBarcode}.json`,
-    ]) {
-      try {
-        const response = await fetch(apiUrl, {
-          headers: { 'Accept': 'application/json' },
-        })
-
-        // 404 = producto no existe en OFF, no es un error de red
-        if (response.status === 404) {
-          continue
-        }
-
-        if (!response.ok) {
-          console.warn(`[barcodeService] ${apiUrl} → ${response.status}`)
-          continue
-        }
-
-        data = await response.json()
-        if (data.status === 1 && data.product) break
-        data = null
-      } catch (fetchErr) {
-        console.warn(`[barcodeService] fetch failed for ${apiUrl}:`, fetchErr)
-        continue
-      }
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) {
+      return { success: false, error: 'Sesión expirada. Inicia sesión de nuevo.' }
     }
 
-    if (!data || !data.product) {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lookup-barcode`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ barcode: clean }),
+      }
+    )
+
+    const result = await response.json()
+
+    if (!response.ok || !result.success) {
       return {
         success: false,
-        error: 'Producto no encontrado en OpenFoodFacts. Intenta registrarlo manualmente.',
+        error: result.error || `Error del servidor: ${response.status}`,
       }
     }
 
-    const p = data.product
-    const n = p.nutriments || {}
-
-    // OpenFoodFacts reporta per 100g por defecto
-    const servingG = parseServingSize(p.serving_size) || 100
-    const factor = servingG / 100
-
-    const foodName = [p.product_name, p.brands].filter(Boolean).join(' — ')
-
-    const product: BarcodeProduct = {
-      barcode: cleanBarcode,
-      food_name: foodName || `Producto ${cleanBarcode}`,
-      brand: p.brands || '',
-      quantity_g: servingG,
-      calories: round(n['energy-kcal_100g'] * factor) || round(n['energy-kcal'] * factor) || 0,
-      protein_g: round(n.proteins_100g * factor) || 0,
-      carbs_g: round(n.carbohydrates_100g * factor) || 0,
-      fat_g: round(n.fat_100g * factor) || 0,
-      fiber_g: round(n.fiber_100g * factor) || 0,
-      sugar_g: round(n.sugars_100g * factor) || 0,
-      sodium_mg: round((n.sodium_100g || 0) * 1000 * factor),
-      fat_saturated_g: round(n['saturated-fat_100g'] * factor) || 0,
-      image_url: p.image_front_small_url || p.image_front_url,
-    }
-
-    return {
-      success: true,
-      data: {
-        food_name: product.food_name,
-        quantity_g: product.quantity_g,
-        calories: product.calories,
-        protein_g: product.protein_g,
-        carbs_g: product.carbs_g,
-        fat_g: product.fat_g,
-        reply_text: `${product.food_name} (${product.quantity_g}g): ${product.calories} kcal, ${product.protein_g}g proteína, ${product.carbs_g}g carbos, ${product.fat_g}g grasa`,
-        source: 'openfoodfacts-barcode',
-        barcode: cleanBarcode,
-        brand: product.brand,
-        image_url: product.image_url,
-      },
-    }
+    return { success: true, data: result.data }
   } catch (error) {
-    console.error('[barcodeService] Lookup error:', error)
-    // CORS o error de red → mensaje claro
-    if (error instanceof TypeError && (error.message.includes('fetch') || error.message.includes('network'))) {
-      return { success: false, error: 'Error de conexión. Verifica tu internet e intenta de nuevo.' }
-    }
+    console.error('[barcodeService] Error:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error al buscar producto',
@@ -134,50 +64,11 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
   }
 }
 
-// Busca el producto por barcode y lo guarda en food_logs
+// Wrapper para QuickActionsBar: lookup + save ya se hace server-side
 export async function scanAndSaveBarcode(
   barcode: string,
-  userId: string
+  _userId: string
 ): Promise<BarcodeLookupResult> {
-  const result = await lookupBarcode(barcode)
-  if (!result.success || !result.data) return result
-
-  try {
-    const { error: dbError } = await supabase.from('food_logs').insert({
-      user_id: userId,
-      food_name: result.data.food_name,
-      quantity_g: result.data.quantity_g,
-      calories: result.data.calories,
-      protein_g: result.data.protein_g,
-      carbs_g: result.data.carbs_g,
-      fat_g: result.data.fat_g,
-    })
-
-    if (dbError) {
-      console.error('[barcodeService] DB insert error:', dbError.message)
-      return { success: false, error: 'Producto encontrado pero error al guardar' }
-    }
-
-    return result
-  } catch (error) {
-    console.error('[barcodeService] Save error:', error)
-    return { success: false, error: 'Error al guardar el alimento' }
-  }
-}
-
-function round(val: number | undefined): number {
-  if (!val || isNaN(val)) return 0
-  return Math.round(val * 10) / 10
-}
-
-// Parsea "30g", "250 ml", "1 barra (25g)" → número en gramos
-function parseServingSize(serving?: string): number | null {
-  if (!serving) return null
-  const match = serving.match(/(\d+(?:[.,]\d+)?)\s*g/i)
-  if (match) return parseFloat(match[1].replace(',', '.'))
-
-  const mlMatch = serving.match(/(\d+(?:[.,]\d+)?)\s*ml/i)
-  if (mlMatch) return parseFloat(mlMatch[1].replace(',', '.'))
-
-  return null
+  // La edge function ya guarda en food_logs, solo hacemos el lookup
+  return lookupBarcode(barcode)
 }
