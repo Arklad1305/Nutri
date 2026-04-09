@@ -252,8 +252,10 @@ Deno.serve(async (req: Request) => {
     }
 
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
-      return new Response(JSON.stringify({ success: false, error: "GEMINI_API_KEY not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
+
+    if (!GEMINI_API_KEY && !DEEPSEEK_API_KEY) {
+      return new Response(JSON.stringify({ success: false, error: "No hay API keys configuradas" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // ─── CASCADE: texto sin imagen/audio ───────────────────
@@ -276,29 +278,77 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // ─── GEMINI FULL ANALYSIS (fallback / image / audio) ──
-    // Gemini full analysis
-    const parts: any[] = [];
-    if (sanitizedMessage) { parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: "${sanitizedMessage}"` }); }
-    else if (audioBase64) { parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Audio describiendo alimentos consumidos]` }); }
-    else if (imageBase64) { parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Imagen de alimentos]` }); }
-    if (audioBase64) { parts.push({ inlineData: { mimeType: mimeType || "audio/webm", data: audioBase64 } }); }
-    if (imageBase64) { parts.push({ inlineData: { mimeType: mimeType || "image/jpeg", data: imageBase64 } }); }
+    // ─── MULTI-PROVIDER AI: Gemini → DeepSeek fallback ──
+    const isMultimedia = !!(audioBase64 || imageBase64);
+    const textPrompt = sanitizedMessage
+      ? `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: "${sanitizedMessage}"`
+      : audioBase64
+        ? `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Audio describiendo alimentos consumidos]`
+        : `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Imagen de alimentos]`;
 
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts }] }) }
-    );
-
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      return new Response(JSON.stringify({ success: false, error: `Gemini API error: ${geminiResponse.status}`, details: errorText }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // Helper: llamar Gemini (soporta texto + multimedia)
+    async function callGemini(model: string): Promise<string | null> {
+      if (!GEMINI_API_KEY) return null;
+      const parts: any[] = [{ text: textPrompt }];
+      if (audioBase64) { parts.push({ inlineData: { mimeType: mimeType || "audio/webm", data: audioBase64 } }); }
+      if (imageBase64) { parts.push({ inlineData: { mimeType: mimeType || "image/jpeg", data: imageBase64 } }); }
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts }] }) }
+      );
+      if (!res.ok) {
+        console.warn(`[process-food-ai] ${model} => ${res.status}`);
+        return null;
+      }
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
     }
 
-    const geminiData = await geminiResponse.json();
-    const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    // Helper: llamar DeepSeek (solo texto, no multimedia)
+    async function callDeepSeek(): Promise<string | null> {
+      if (!DEEPSEEK_API_KEY || isMultimedia) return null;
+      const res = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${DEEPSEEK_API_KEY}` },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: sanitizedMessage || "" },
+          ],
+          temperature: 0.4,
+          max_tokens: 4096,
+        }),
+      });
+      if (!res.ok) {
+        console.warn(`[process-food-ai] deepseek => ${res.status}`);
+        return null;
+      }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || null;
+    }
+
+    // Cadena de providers: Gemini 2.5-flash → 2.0-flash → 1.5-flash → DeepSeek
+    const providers: Array<[string, () => Promise<string | null>]> = [
+      ["gemini-2.5-flash", () => callGemini("gemini-2.5-flash")],
+      ["gemini-2.0-flash", () => callGemini("gemini-2.0-flash")],
+      ["gemini-1.5-flash", () => callGemini("gemini-1.5-flash")],
+      ["deepseek-chat", () => callDeepSeek()],
+    ];
+
+    let rawText: string | null = null;
+    let usedProvider = "unknown";
+    for (const [name, fn] of providers) {
+      try {
+        rawText = await fn();
+        if (rawText) { usedProvider = name; break; }
+      } catch (err) {
+        console.warn(`[process-food-ai] ${name} error:`, err);
+      }
+    }
+
     if (!rawText) {
-      return new Response(JSON.stringify({ success: false, error: "Gemini returned no response" }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ success: false, error: "Todos los proveedores de IA fallaron. Intenta de nuevo." }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const firstBrace = rawText.indexOf("{");
@@ -339,7 +389,7 @@ Deno.serve(async (req: Request) => {
 
     if (error) { console.error("[process-food-ai] DB insert error:", error.message); throw error; }
 
-    return new Response(JSON.stringify({ success: true, data, message: "Food logged successfully" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: true, data, source: usedProvider, message: "Food logged successfully" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (error) {
     console.error("Unexpected error:", error);
