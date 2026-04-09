@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react'
-import { Plus, Droplets, Camera, Loader2, CheckCircle } from 'lucide-react'
+import { Plus, Droplets, Camera, Loader2, CheckCircle, ScanBarcode } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { scanAndSaveBarcode } from '../lib/barcodeService'
+import { BarcodeScanner } from './BarcodeScanner'
 
 interface QuickActionsBarProps {
   onWaterAdded?: () => void
@@ -14,6 +16,9 @@ export function QuickActionsBar({ onWaterAdded, onOpenAddFood, onFoodAdded }: Qu
   const [loading, setLoading] = useState(false)
   const [cameraState, setCameraState] = useState<'idle' | 'processing' | 'success' | 'error'>('idle')
   const [cameraError, setCameraError] = useState('')
+  const [barcodeOpen, setBarcodeOpen] = useState(false)
+  const [barcodeState, setBarcodeState] = useState<'idle' | 'processing' | 'success' | 'error'>('idle')
+  const [barcodeError, setBarcodeError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const addWaterQuick = async () => {
@@ -116,7 +121,39 @@ export function QuickActionsBar({ onWaterAdded, onOpenAddFood, onFoodAdded }: Qu
     }
   }
 
+  const handleBarcodeDetected = async (barcode: string) => {
+    if (!user) return
+    setBarcodeState('processing')
+    try {
+      const result = await scanAndSaveBarcode(barcode, user.id)
+      if (result.success) {
+        setBarcodeState('success')
+        setBarcodeOpen(false)
+        onFoodAdded?.()
+        setTimeout(() => setBarcodeState('idle'), 2000)
+      } else {
+        setBarcodeState('error')
+        setBarcodeError(result.error || 'Producto no encontrado')
+        setBarcodeOpen(false)
+        setTimeout(() => setBarcodeState('idle'), 3000)
+      }
+    } catch {
+      setBarcodeState('error')
+      setBarcodeError('Error al procesar código')
+      setBarcodeOpen(false)
+      setTimeout(() => setBarcodeState('idle'), 3000)
+    }
+  }
+
   return (
+    <>
+    {barcodeOpen && (
+      <BarcodeScanner
+        onBarcodeDetected={handleBarcodeDetected}
+        onClose={() => setBarcodeOpen(false)}
+        isProcessing={barcodeState === 'processing'}
+      />
+    )}
     <div className="fixed bottom-24 right-4 md:right-8 flex flex-col gap-3 z-40">
       {/* Hidden file input for camera capture */}
       <input
@@ -187,6 +224,42 @@ export function QuickActionsBar({ onWaterAdded, onOpenAddFood, onFoodAdded }: Qu
             : 'Foto de comida'}
         </span>
       </button>
+
+      {/* Barcode scanner */}
+      <button
+        onClick={() => setBarcodeOpen(true)}
+        disabled={barcodeState === 'processing'}
+        className={`group relative w-13 h-13 rounded-2xl backdrop-blur-xl border transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100 ${
+          barcodeState === 'processing'
+            ? 'bg-amber-500/10 border-amber-400/20 shadow-[0_4px_20px_-4px_rgba(245,158,11,0.2)] animate-pulse'
+            : barcodeState === 'success'
+            ? 'bg-emerald-500/12 border-emerald-400/25 shadow-[0_4px_20px_-4px_rgba(16,185,129,0.3)]'
+            : barcodeState === 'error'
+            ? 'bg-red-500/10 border-red-400/20 shadow-[0_4px_20px_-4px_rgba(239,68,68,0.2)]'
+            : 'bg-amber-500/[0.06] border-amber-400/[0.12] shadow-[0_4px_20px_-4px_rgba(245,158,11,0.15),inset_0_1px_0_rgba(245,158,11,0.06)] hover:bg-amber-500/[0.10] hover:border-amber-400/[0.18] hover:shadow-[0_8px_30px_-4px_rgba(245,158,11,0.25)]'
+        }`}
+        title="Escanear código de barras"
+      >
+        {barcodeState === 'processing' ? (
+          <Loader2 className="w-5 h-5 text-amber-400 animate-spin" />
+        ) : barcodeState === 'success' ? (
+          <CheckCircle className="w-5 h-5 text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
+        ) : (
+          <ScanBarcode className="w-5 h-5 text-amber-400/70 drop-shadow-[0_0_4px_rgba(245,158,11,0.2)]" />
+        )}
+        <span className={`absolute -left-[7rem] bg-[#0a1a1a]/90 backdrop-blur-xl border border-white/[0.08] rounded-xl px-3 py-1.5 text-[10px] font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-lg shadow-black/30 ${
+          barcodeState === 'error' ? 'text-red-400 border-red-500/15' : barcodeState === 'success' ? 'text-emerald-400 border-emerald-500/15' : 'text-amber-300/80'
+        }`}>
+          {barcodeState === 'processing'
+            ? 'Buscando producto...'
+            : barcodeState === 'success'
+            ? 'Producto registrado!'
+            : barcodeState === 'error'
+            ? barcodeError
+            : 'Escanear barcode'}
+        </span>
+      </button>
     </div>
+    </>
   )
 }

@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { saveUserMessage, saveAssistantMessage, loadChatHistory, sendMessageToAI } from '../lib/chatService'
 import { supabase } from '../lib/supabase'
-import { Send, Bot, User as UserIcon } from 'lucide-react'
+import { Send, Bot, User as UserIcon, ScanBarcode } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CompactFoodCard } from '../components/CompactFoodCard'
 import { AudioRecorder } from '../components/AudioRecorder'
 import { ImageUploader } from '../components/ImageUploader'
 import { ProcessingSteps } from '../components/ProcessingSteps'
+import { BarcodeScanner } from '../components/BarcodeScanner'
+import { lookupBarcode } from '../lib/barcodeService'
 
 interface Message {
   id: string
@@ -24,6 +26,8 @@ export function HealthChat() {
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [processingMessage, setProcessingMessage] = useState<string>('')
+  const [barcodeOpen, setBarcodeOpen] = useState(false)
+  const [barcodeProcessing, setBarcodeProcessing] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -286,6 +290,22 @@ export function HealthChat() {
     setMessages(prev => [...prev, errorMessage])
   }
 
+  const handleBarcodeDetected = async (barcode: string) => {
+    setBarcodeProcessing(true)
+    const result = await lookupBarcode(barcode)
+    setBarcodeProcessing(false)
+    setBarcodeOpen(false)
+
+    if (result.success && result.data) {
+      handleMultimediaAnalysis(
+        { success: true, data: result.data },
+        'image'
+      )
+    } else {
+      handleMultimediaError(result.error || 'Producto no encontrado')
+    }
+  }
+
   const renderMessageContent = (message: Message) => {
     // Si es un mensaje de "escribiendo" con pasos de procesamiento
     if (message.isTyping && message.processingType) {
@@ -309,6 +329,13 @@ export function HealthChat() {
 
   return (
     <div className="flex flex-col h-screen bg-dark-bg">
+      {barcodeOpen && (
+        <BarcodeScanner
+          onBarcodeDetected={handleBarcodeDetected}
+          onClose={() => setBarcodeOpen(false)}
+          isProcessing={barcodeProcessing}
+        />
+      )}
       {/* ── Premium Header ── */}
       <div className="sticky top-0 z-10 bg-[#080c14]/95 backdrop-blur-xl border-b border-primary/10">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -395,6 +422,14 @@ export function HealthChat() {
       <div className="fixed bottom-16 left-0 right-0 bg-[#080c14]/95 backdrop-blur-xl border-t border-dark-border/30">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-end gap-2">
+            <button
+              onClick={() => setBarcodeOpen(true)}
+              disabled={isLoading}
+              className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-dark-hover/40 border border-dark-border/40 rounded-xl hover:bg-amber-500/10 hover:border-amber-400/20 transition-all disabled:opacity-30"
+              title="Escanear código de barras"
+            >
+              <ScanBarcode className="w-4 h-4 text-amber-400/70" />
+            </button>
             <AudioRecorder
               onAnalysisComplete={(result) => handleMultimediaAnalysis(result, 'audio')}
               onError={handleMultimediaError}
