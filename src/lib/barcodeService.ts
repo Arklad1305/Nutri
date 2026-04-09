@@ -42,20 +42,41 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
       return { success: false, error: 'Código de barras inválido' }
     }
 
-    const response = await fetch(
-      `https://world.openfoodfacts.org/api/v2/product/${cleanBarcode}.json?fields=product_name,brands,nutriments,serving_size,product_quantity,image_front_url,image_front_small_url`
-    )
+    // Intentar primero con v2, fallback a v0 si falla
+    let data: any = null
 
-    if (!response.ok) {
-      return { success: false, error: `Error al consultar OpenFoodFacts: ${response.status}` }
+    for (const apiUrl of [
+      `https://world.openfoodfacts.net/api/v2/product/${cleanBarcode}.json?fields=product_name,brands,nutriments,serving_size,product_quantity,image_front_url,image_front_small_url`,
+      `https://world.openfoodfacts.org/api/v0/product/${cleanBarcode}.json`,
+    ]) {
+      try {
+        const response = await fetch(apiUrl, {
+          headers: { 'Accept': 'application/json' },
+        })
+
+        // 404 = producto no existe en OFF, no es un error de red
+        if (response.status === 404) {
+          continue
+        }
+
+        if (!response.ok) {
+          console.warn(`[barcodeService] ${apiUrl} → ${response.status}`)
+          continue
+        }
+
+        data = await response.json()
+        if (data.status === 1 && data.product) break
+        data = null
+      } catch (fetchErr) {
+        console.warn(`[barcodeService] fetch failed for ${apiUrl}:`, fetchErr)
+        continue
+      }
     }
 
-    const data = await response.json()
-
-    if (data.status !== 1 || !data.product) {
+    if (!data || !data.product) {
       return {
         success: false,
-        error: 'Producto no encontrado. Intenta registrarlo manualmente.',
+        error: 'Producto no encontrado en OpenFoodFacts. Intenta registrarlo manualmente.',
       }
     }
 
@@ -102,6 +123,10 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
     }
   } catch (error) {
     console.error('[barcodeService] Lookup error:', error)
+    // CORS o error de red → mensaje claro
+    if (error instanceof TypeError && (error.message.includes('fetch') || error.message.includes('network'))) {
+      return { success: false, error: 'Error de conexión. Verifica tu internet e intenta de nuevo.' }
+    }
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error al buscar producto',
