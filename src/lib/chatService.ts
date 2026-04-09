@@ -158,15 +158,8 @@ export async function sendMessageToAI(
       body: JSON.stringify({ message }),
     })
 
-    console.log('[chatService] Response received', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    })
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error('[chatService] API Error Response:', errorData)
       return {
         success: false,
         error: errorData.error || `Error del servidor: ${response.status}`,
@@ -175,16 +168,6 @@ export async function sendMessageToAI(
     }
 
     const result = await response.json()
-    console.log('[chatService] API Success Response:', result)
-    console.log('[chatService] result.data structure:', {
-      hasData: !!result.data,
-      hasReplyText: !!result.data?.reply_text,
-      hasFoodName: !!result.data?.food_name,
-      hasCalories: !!result.data?.calories,
-      hasProtein: !!result.data?.protein_g,
-      hasNutritionalMatrix: !!result.data?.nutritional_matrix,
-      nutritionalMatrixKeys: result.data?.nutritional_matrix ? Object.keys(result.data.nutritional_matrix) : []
-    })
 
     if (result.success && result.data) {
       return {

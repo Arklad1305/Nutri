@@ -119,18 +119,7 @@ Deno.serve(async (req: Request) => {
         );
     }
 
-    console.log("[generate-recipes] User:", user.id);
-
     const requestBody = await req.json();
-    console.log("[generate-recipes] Request body received", {
-      hasDeficits: !!requestBody.deficits,
-      deficitsIsArray: Array.isArray(requestBody.deficits),
-      deficitsCount: requestBody.deficits?.length,
-      hasDietType: !!requestBody.dietType,
-      hasCustomRequest: !!requestBody.customRequest,
-      hasUserContext: !!requestBody.userContext,
-      requestBodyKeys: Object.keys(requestBody)
-    });
 
     const { deficits, dietType, customRequest, userContext } = requestBody;
 
@@ -173,11 +162,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log("[generate-recipes] AI providers available:", {
-      gemini: !!GEMINI_API_KEY,
-      deepseek: !!DEEPSEEK_API_KEY,
-      deficitCount: deficits.length,
-    });
+    // AI providers configured
 
     // Construir prompt personalizado con déficits, perfil del usuario y preferencias
     let userPrompt = `DEFICITS NUTRICIONALES A CUBRIR:\n`;
@@ -279,7 +264,7 @@ Deno.serve(async (req: Request) => {
         rawText = await fn();
         if (rawText) {
           usedProvider = name;
-          console.log(`[generate-recipes] Success with ${name}`);
+          // Provider succeeded
           break;
         }
       } catch (err) {
@@ -314,11 +299,7 @@ Deno.serve(async (req: Request) => {
 
     const recipe = parsed.recipe;
 
-    console.log("[generate-recipes] Recipe generated successfully", {
-      title: recipe.title,
-      servings: recipe.servings,
-      totalTime: recipe.totalTime
-    });
+    // Recipe parsed successfully
 
     // Guardar receta en la base de datos con todos los datos nutricionales
     const nutrition = recipe.nutrition?.perServing || {};
@@ -371,10 +352,6 @@ Deno.serve(async (req: Request) => {
         code: dbError.code
       });
       // Continue anyway, the recipe was generated successfully
-    } else {
-      console.log("[generate-recipes] Recipe saved to database", {
-        recipeId: savedRecipe?.id
-      });
     }
 
     return new Response(

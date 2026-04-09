@@ -40,7 +40,6 @@ export function HealthChat() {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        console.log('[HealthChat] No user found, showing welcome message')
         const welcomeMessage: Message = {
           id: '0',
           content: 'Hola, soy tu asistente nutricional con IA. Puedo ayudarte a analizar alimentos, calcular macros y responder tus dudas sobre nutrición.\n\nMostrando conversaciones de hoy.\n\n¿Qué te gustaría saber?',
@@ -63,10 +62,8 @@ export function HealthChat() {
             data: msg.metadata,
           }
         })
-        console.log('[HealthChat] Setting loaded messages:', loadedMessages.length)
         setMessages(loadedMessages)
       } else {
-        console.log('[HealthChat] No messages found, showing welcome message')
         const welcomeMessage: Message = {
           id: '0',
           content: 'Hola, soy tu asistente nutricional con IA. Puedo ayudarte a analizar alimentos, calcular macros y responder tus dudas sobre nutrición.\n\nMostrando conversaciones de hoy.\n\n¿Qué te gustaría saber?',
@@ -137,11 +134,6 @@ export function HealthChat() {
 
       if (response.success && response.data) {
         const replyText = response.data.reply || 'Respuesta recibida'
-
-        console.log('[HealthChat] Saving assistant message with food data:', {
-          hasFood: !!response.data.food,
-          food: response.data.food
-        })
 
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -242,7 +234,7 @@ export function HealthChat() {
         await saveUserMessage(user.id, userMessage.content)
       }
 
-      console.log('Multimedia result:', result)
+
 
       // Remover mensaje temporal
       setMessages(prev => prev.filter(msg => !msg.isTyping))

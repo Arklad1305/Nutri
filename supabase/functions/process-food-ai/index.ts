@@ -144,7 +144,7 @@ async function tryCascadeLookup(
     if (idStart === -1 || idEnd === -1) return { hit: false };
 
     const identified = JSON.parse(identifyText.substring(idStart, idEnd + 1));
-    console.log("[cascade] Identified:", identified);
+    // identified object used internally
 
     if (identified.is_complex_dish || !identified.food_name_en) return { hit: false };
 
@@ -169,7 +169,7 @@ async function tryCascadeLookup(
     const lookupData = await lookupResp.json();
     if (!lookupData.success || lookupData.source === "none") return { hit: false };
 
-    console.log("[cascade] HIT from:", lookupData.source, "confidence:", lookupData.confidence);
+    // Cascade hit
     const s = lookupData.scaled;
     const v = (val: any) => Number(val) || 0;
     const srcLabel = lookupData.source === "usda" ? "USDA" : lookupData.source === "openfoodfacts" ? "OpenFoodFacts" : lookupData.original_source || lookupData.source;
@@ -202,7 +202,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    console.log("[process-food-ai] Request received");
+    // Request received
 
     const authHeader = req.headers.get("Authorization");
     const supabaseClient = createClient(
@@ -221,13 +221,20 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log("[process-food-ai] User OK:", user.id);
+    // User authenticated
 
     const { message, audioBase64, imageBase64, mimeType } = await req.json();
 
     if (message && message.length > 5000) {
       return new Response(JSON.stringify({ success: false, error: "El mensaje es demasiado largo (máximo 5000 caracteres)" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    // Sanitizar mensaje contra prompt injection
+    const sanitizedMessage = message
+      ? String(message)
+          .replace(/\bignore\b.*\binstructions?\b/gi, "[filtrado]")
+          .replace(/\bsystem\b.*\bprompt\b/gi, "[filtrado]")
+          .replace(/\brole\b.*\bassistant\b/gi, "[filtrado]")
+      : undefined;
     const ALLOWED_AUDIO_TYPES = ["audio/webm", "audio/wav", "audio/mpeg", "audio/ogg", "audio/mp4"];
     const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (mimeType && !ALLOWED_AUDIO_TYPES.includes(mimeType) && !ALLOWED_IMAGE_TYPES.includes(mimeType)) {
@@ -250,8 +257,8 @@ Deno.serve(async (req: Request) => {
     }
 
     // ─── CASCADE: texto sin imagen/audio ───────────────────
-    if (message && !audioBase64 && !imageBase64) {
-      const cascade = await tryCascadeLookup(message, authHeader, GEMINI_API_KEY);
+    if (sanitizedMessage && !audioBase64 && !imageBase64) {
+      const cascade = await tryCascadeLookup(sanitizedMessage, authHeader, GEMINI_API_KEY);
       if (cascade.hit && cascade.foodData) {
         const fd = cascade.foodData;
         const { data, error } = await supabaseClient.from("food_logs").insert({
@@ -270,9 +277,9 @@ Deno.serve(async (req: Request) => {
     }
 
     // ─── GEMINI FULL ANALYSIS (fallback / image / audio) ──
-    console.log("[process-food-ai] Calling Gemini full analysis");
+    // Gemini full analysis
     const parts: any[] = [];
-    if (message) { parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: "${message}"` }); }
+    if (sanitizedMessage) { parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: "${sanitizedMessage}"` }); }
     else if (audioBase64) { parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Audio describiendo alimentos consumidos]` }); }
     else if (imageBase64) { parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Imagen de alimentos]` }); }
     if (audioBase64) { parts.push({ inlineData: { mimeType: mimeType || "audio/webm", data: audioBase64 } }); }

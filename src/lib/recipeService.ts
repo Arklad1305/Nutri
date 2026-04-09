@@ -88,14 +88,6 @@ export async function generateRecipeWithAI(
       requestBody.userContext = cleanUserContext
     }
 
-    console.log('[recipeService] Sending request:', {
-      deficitsCount: requestBody.deficits.length,
-      dietType: requestBody.dietType,
-      hasCustomRequest: !!requestBody.customRequest,
-      hasUserContext: !!requestBody.userContext,
-      userContextKeys: requestBody.userContext ? Object.keys(requestBody.userContext) : []
-    })
-
     // Llamar a edge function para generar receta con IA
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -103,15 +95,8 @@ export async function generateRecipeWithAI(
       body: JSON.stringify(requestBody),
     })
 
-    console.log('[recipeService] Response received', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    })
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error('[recipeService] API Error Response:', errorData)
       return {
         success: false,
         error: errorData.error || `Error del servidor: ${response.status}`,
@@ -120,7 +105,6 @@ export async function generateRecipeWithAI(
     }
 
     const result = await response.json()
-    console.log('[recipeService] API Success Response:', result)
 
     if (result.success) {
       return {
