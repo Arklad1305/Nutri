@@ -52,26 +52,26 @@ export function CompactNutritionCard({ data }: CompactNutritionCardProps) {
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        <div className="bg-gradient-to-br from-rose-500/10 to-rose-500/5 border border-rose-500/20 rounded-lg p-2">
+        <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-lg p-2">
           <div className="flex items-center gap-1 mb-1">
-            <Drumstick className="w-3 h-3 text-rose-400" />
-            <span className="text-[10px] text-rose-200 uppercase tracking-wide">Proteína</span>
+            <Drumstick className="w-3 h-3 text-blue-400" />
+            <span className="text-[10px] text-blue-200 uppercase tracking-wide">Proteína</span>
           </div>
           <p className="text-sm font-bold text-white">{protein}g</p>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg p-2">
+        <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-lg p-2">
           <div className="flex items-center gap-1 mb-1">
-            <Wheat className="w-3 h-3 text-amber-400" />
-            <span className="text-[10px] text-amber-200 uppercase tracking-wide">Carbos</span>
+            <Wheat className="w-3 h-3 text-emerald-400" />
+            <span className="text-[10px] text-emerald-200 uppercase tracking-wide">Carbos</span>
           </div>
           <p className="text-sm font-bold text-white">{carbs}g</p>
         </div>
 
-        <div className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border border-yellow-500/20 rounded-lg p-2">
+        <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg p-2">
           <div className="flex items-center gap-1 mb-1">
-            <Droplet className="w-3 h-3 text-yellow-400" />
-            <span className="text-[10px] text-yellow-200 uppercase tracking-wide">Grasas</span>
+            <Droplet className="w-3 h-3 text-amber-400" />
+            <span className="text-[10px] text-amber-200 uppercase tracking-wide">Grasas</span>
           </div>
           <p className="text-sm font-bold text-white">{fat}g</p>
         </div>

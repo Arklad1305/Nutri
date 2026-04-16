@@ -1,10 +1,14 @@
 import { supabase } from './supabase'
+import { getNutritionalStandards, analyzeNutrient } from './nutritionStandards'
+import { calculateNutritionTargets, type UserProfile } from './nutritionTargetCalculator'
 
 export interface RecipeDeficit {
   nutrient: string
-  status: string
+  status: 'critical' | 'survival' | 'functional' | string
   current: number
   target: number
+  unit?: string
+  percentCovered?: number
 }
 
 export interface UserContext {
@@ -84,14 +88,6 @@ export async function generateRecipeWithAI(
       requestBody.userContext = cleanUserContext
     }
 
-    console.log('[recipeService] Sending request:', {
-      deficitsCount: requestBody.deficits.length,
-      dietType: requestBody.dietType,
-      hasCustomRequest: !!requestBody.customRequest,
-      hasUserContext: !!requestBody.userContext,
-      userContextKeys: requestBody.userContext ? Object.keys(requestBody.userContext) : []
-    })
-
     // Llamar a edge function para generar receta con IA
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -99,15 +95,8 @@ export async function generateRecipeWithAI(
       body: JSON.stringify(requestBody),
     })
 
-    console.log('[recipeService] Response received', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    })
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error('[recipeService] API Error Response:', errorData)
       return {
         success: false,
         error: errorData.error || `Error del servidor: ${response.status}`,
@@ -116,7 +105,6 @@ export async function generateRecipeWithAI(
     }
 
     const result = await response.json()
-    console.log('[recipeService] API Success Response:', result)
 
     if (result.success) {
       return {
@@ -139,18 +127,121 @@ export async function generateRecipeWithAI(
   }
 }
 
+// Aggregate food_logs into nutrient totals using VIP-first pattern (same as Dashboard)
+function aggregateFoodLogs(foodLogs: any[]): Record<string, number> {
+  const totals: Record<string, number> = {}
+  const add = (key: string, val: any) => {
+    const n = Number(val)
+    if (n && !isNaN(n)) totals[key] = (totals[key] || 0) + n
+  }
+
+  foodLogs.forEach(log => {
+    const m = log.nutritional_matrix as any
+    const has = !!m
+
+    // Macros (VIP columns)
+    add('calories', log.calories)
+    add('protein_g', log.protein_g)
+    add('carbs_g', log.carbs_g)
+    add('fat_g', log.fat_g)
+
+    // Fiber: matrix only
+    if (has) add('fiber_g', m.motor?.fiber_g)
+
+    // Sugar: matrix only
+    if (has) add('sugar_g', m.motor?.sugar_g)
+
+    // Water
+    add('water_ml', log.water_ml)
+
+    // Electrolytes (motor subsystem is primary)
+    if (log.sodium_mg) add('sodium_mg', log.sodium_mg)
+    else if (has) add('sodium_mg', m.motor?.electrolytes?.sodium_mg)
+
+    if (has) add('potassium_mg', m.motor?.electrolytes?.potassium_mg)
+
+    // Minerals - VIP first, then matrix
+    if (log.zinc_mg) add('zinc_mg', log.zinc_mg)
+    else if (has) add('zinc_mg', m.motor?.structure_minerals?.zinc_mg || m.hormonal?.thyroid_insulin?.zinc_mg)
+
+    if (log.magnesium_mg) add('magnesium_mg', log.magnesium_mg)
+    else if (has) add('magnesium_mg', m.motor?.structure_minerals?.magnesium_mg || m.hormonal?.thyroid_insulin?.magnesium_mg)
+
+    if (has) {
+      add('iron_mg', m.motor?.structure_minerals?.iron_mg || m.hormonal?.structure?.iron_mg)
+      add('calcium_mg', m.hormonal?.structure?.calcium_mg)
+      add('phosphorus_mg', m.hormonal?.structure?.phosphorus_mg)
+      add('copper_mg', m.hormonal?.structure?.copper_mg)
+      add('manganese_mg', m.hormonal?.thyroid_insulin?.manganese_mg)
+      add('selenium_mcg', m.cognitive?.trace_minerals?.selenium_mcg || m.hormonal?.thyroid_insulin?.selenium_mcg)
+      add('chromium_mcg', m.cognitive?.trace_minerals?.chromium_mcg || m.hormonal?.thyroid_insulin?.chromium_mcg)
+      add('iodine_mcg', m.hormonal?.thyroid_insulin?.iodine_mcg)
+    }
+
+    // Vitamins
+    if (has) {
+      // B vitamins (cognitive subsystem)
+      add('vitamin_b1_thiamin_mg', m.cognitive?.energy_vitamins?.vit_b1_thiamin_mg)
+      add('vitamin_b2_riboflavin_mg', m.cognitive?.energy_vitamins?.vit_b2_riboflavin_mg)
+      add('vitamin_b3_niacin_mg', m.cognitive?.energy_vitamins?.vit_b3_niacin_mg)
+      add('vitamin_b5_pantothenic_mg', m.cognitive?.energy_vitamins?.vit_b5_pantothenic_mg)
+      add('vitamin_b6_pyridoxine_mg', m.cognitive?.energy_vitamins?.vit_b6_mg)
+      add('vitamin_b7_biotin_mcg', m.cognitive?.energy_vitamins?.vit_b7_biotin_mcg)
+      add('folate_mcg', m.cognitive?.energy_vitamins?.folate_mcg)
+      add('vitamin_b12_mcg', m.cognitive?.energy_vitamins?.vit_b12_mcg)
+      add('vit_c_mg', m.cognitive?.energy_vitamins?.vit_c_mg)
+
+      // Fat-soluble vitamins (hormonal subsystem)
+      add('vit_a_iu', m.hormonal?.liposolubles?.vit_a_mcg)
+      add('vit_d3_iu', m.hormonal?.liposolubles?.vit_d3_iu)
+      add('vit_e_iu', m.hormonal?.liposolubles?.vit_e_iu)
+      add('vit_k_mcg', m.hormonal?.liposolubles?.vit_k1_mcg)
+    }
+
+    // Choline
+    if (log.choline_mg) add('choline_mg', log.choline_mg)
+    else if (has) add('choline_mg', m.cognitive?.neuro_others?.choline_mg)
+
+    // Omega & lipids (inflammation subsystem)
+    if (log.omega_3_total_g) add('omega_3_total_g', log.omega_3_total_g)
+    else if (has && m.inflammation?.omega?.omega_3_total_mg) add('omega_3_total_g', Number(m.inflammation.omega.omega_3_total_mg) / 1000)
+
+    if (has) {
+      if (m.inflammation?.omega?.epa_dha_mg) add('omega_3_epa_dha_g', Number(m.inflammation.omega.epa_dha_mg) / 1000)
+      if (m.inflammation?.omega?.omega_6_mg) add('omega_6_g', Number(m.inflammation.omega.omega_6_mg) / 1000)
+      add('sat_fat_g', m.inflammation?.sat_fats?.saturated_g)
+      add('cholesterol_mg', m.inflammation?.sat_fats?.cholesterol_mg)
+    }
+
+    // Polyphenols
+    if (log.polyphenols_total_mg) add('polyphenols_total_mg', log.polyphenols_total_mg)
+    else if (has) add('polyphenols_total_mg', m.inflammation?.bioactives?.polyphenols_total_mg)
+
+    // Amino acids (motor subsystem)
+    if (has) {
+      if (m.motor?.aminos_muscle?.leucine_mg) add('leucine_g', Number(m.motor.aminos_muscle.leucine_mg) / 1000)
+    }
+    if (log.leucine_g) add('leucine_g', log.leucine_g)
+  })
+
+  return totals
+}
+
 export async function getUserNutrientDeficits(
-  userId: string
-): Promise<{ success: boolean; deficits?: RecipeDeficit[]; error?: string }> {
+  userId: string,
+  days: number = 7
+): Promise<{ success: boolean; deficits?: RecipeDeficit[]; dailyAvg?: Record<string, number>; error?: string }> {
   try {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    // 1. Fetch food_logs for the time window
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
+    startDate.setHours(0, 0, 0, 0)
 
     const { data: foodLogs, error } = await supabase
       .from('food_logs')
       .select('*')
       .eq('user_id', userId)
-      .gte('logged_at', today.toISOString())
+      .gte('logged_at', startDate.toISOString())
 
     if (error) {
       console.error('[recipeService] Error fetching food logs:', error)
@@ -161,89 +252,101 @@ export async function getUserNutrientDeficits(
       return { success: true, deficits: [] }
     }
 
-    const totals: Record<string, number> = {
-      calories: 0,
-      protein_g: 0,
-      carbs_g: 0,
-      fat_g: 0,
-      fiber_g: 0,
-      omega_3_total_g: 0,
-      magnesium_mg: 0,
-      zinc_mg: 0,
-      vit_d3_iu: 0,
+    // 2. Aggregate all nutrients
+    const totals = aggregateFoodLogs(foodLogs)
+
+    // 3. Calculate daily averages
+    const dailyAvg: Record<string, number> = {}
+    for (const [key, val] of Object.entries(totals)) {
+      dailyAvg[key] = val / days
     }
 
-    foodLogs.forEach((log: any) => {
-      totals.calories += Number(log.calories) || 0
-      totals.protein_g += Number(log.protein_g) || 0
-      totals.carbs_g += Number(log.carbs_g) || 0
-      totals.fat_g += Number(log.fat_g) || 0
+    // 4. Load standards from DB
+    const standards = await getNutritionalStandards()
+    if (!standards.length) {
+      return { success: false, error: 'No se pudieron cargar los estándares nutricionales' }
+    }
 
-      if (log.zinc_mg) totals.zinc_mg += Number(log.zinc_mg)
-      if (log.magnesium_mg) totals.magnesium_mg += Number(log.magnesium_mg)
+    // 5. Load personalized targets from user profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('weight_kg, height_cm, age, gender, activity_level, goal')
+      .eq('id', userId)
+      .single()
 
-      const matrix = log.nutritional_matrix as any
-      if (matrix) {
-        if (matrix.motor?.fiber_g) totals.fiber_g += Number(matrix.motor.fiber_g)
+    // Map personalized macro targets to override standards
+    const personalizedOverrides: Record<string, number> = {}
+    if (profile?.weight_kg && profile?.height_cm && profile?.age) {
+      const targets = calculateNutritionTargets({
+        weight_kg: profile.weight_kg,
+        height_cm: profile.height_cm,
+        age: profile.age,
+        gender: profile.gender || 'male',
+        activity_level: profile.activity_level || 'moderate',
+        goal: profile.goal || 'maintain',
+      } as UserProfile)
 
-        if (matrix.inflammation?.omega?.omega_3_total_mg) {
-          totals.omega_3_total_g += Number(matrix.inflammation.omega.omega_3_total_mg) / 1000
-        }
+      personalizedOverrides['calories'] = targets.meta_calorias
+      personalizedOverrides['protein_g'] = targets.macros.proteina_g
+      personalizedOverrides['carbs_g'] = targets.macros.carbos_g
+      personalizedOverrides['fat_g'] = targets.macros.grasas_g
+      personalizedOverrides['vit_d3_iu'] = targets.micros_objetivo.vit_d3_iu
+      personalizedOverrides['magnesium_mg'] = targets.micros_objetivo.magnesium_mg
+      personalizedOverrides['zinc_mg'] = targets.micros_objetivo.zinc_mg
+      personalizedOverrides['iron_mg'] = targets.micros_objetivo.iron_mg
+      personalizedOverrides['calcium_mg'] = targets.micros_objetivo.calcium_mg
+      personalizedOverrides['potassium_mg'] = targets.micros_objetivo.potassium_mg
+      personalizedOverrides['vit_c_mg'] = targets.micros_objetivo.vitamin_c_mg
+      personalizedOverrides['folate_mcg'] = targets.micros_objetivo.folate_mcg
+      personalizedOverrides['vitamin_b12_mcg'] = targets.micros_objetivo.vitamin_b12_mcg
+      personalizedOverrides['water_ml'] = targets.micros_objetivo.water_ml
+    }
 
-        if (matrix.hormonal?.liposolubles?.vit_d3_iu) {
-          totals.vit_d3_iu += Number(matrix.hormonal.liposolubles.vit_d3_iu)
-        }
-      }
-    })
-
+    // 6. Analyze each nutrient and find deficits
+    // Skip inverted nutrients (sugar, methionine, omega-6) — lower is better for those
+    const invertedNutrients = new Set(['sugar_g', 'methionine_g', 'omega_6_g'])
     const deficits: RecipeDeficit[] = []
 
-    if (totals.protein_g < 120) {
-      deficits.push({
-        nutrient: 'Proteína',
-        status: totals.protein_g < 80 ? 'critical' : 'low',
-        current: totals.protein_g,
-        target: 150,
-      })
+    for (const standard of standards) {
+      if (invertedNutrients.has(standard.nutrient_key)) continue
+
+      const current = dailyAvg[standard.nutrient_key] || 0
+
+      // Use personalized target if available, else standard
+      let adjustedStandard = standard
+      const override = personalizedOverrides[standard.nutrient_key]
+      if (override) {
+        adjustedStandard = {
+          ...standard,
+          min_optimal_value: override,
+          min_survival_value: Math.round(override * 0.7),
+        }
+      }
+
+      const status = analyzeNutrient(standard.nutrient_key, current, adjustedStandard)
+
+      if (status.level === 'critical' || status.level === 'survival' || status.level === 'functional') {
+        const target = override || standard.min_optimal_value || standard.min_survival_value
+        deficits.push({
+          nutrient: standard.label,
+          status: status.level,
+          current: Math.round(current * 10) / 10,
+          target,
+          unit: standard.unit,
+          percentCovered: target > 0 ? Math.round((current / target) * 100) : 0,
+        })
+      }
     }
 
-    if (totals.omega_3_total_g < 1.5) {
-      deficits.push({
-        nutrient: 'Omega-3',
-        status: totals.omega_3_total_g < 1 ? 'critical' : 'low',
-        current: totals.omega_3_total_g,
-        target: 2.5,
-      })
-    }
+    // 7. Sort by severity (critical > survival > functional), then by % covered (lowest first)
+    const severityOrder: Record<string, number> = { critical: 0, survival: 1, functional: 2 }
+    deficits.sort((a, b) => {
+      const sev = (severityOrder[a.status] ?? 3) - (severityOrder[b.status] ?? 3)
+      if (sev !== 0) return sev
+      return (a.percentCovered || 0) - (b.percentCovered || 0)
+    })
 
-    if (totals.magnesium_mg < 300) {
-      deficits.push({
-        nutrient: 'Magnesio',
-        status: totals.magnesium_mg < 200 ? 'critical' : 'low',
-        current: totals.magnesium_mg,
-        target: 420,
-      })
-    }
-
-    if (totals.zinc_mg < 8) {
-      deficits.push({
-        nutrient: 'Zinc',
-        status: totals.zinc_mg < 5 ? 'critical' : 'low',
-        current: totals.zinc_mg,
-        target: 11,
-      })
-    }
-
-    if (totals.vit_d3_iu < 1000) {
-      deficits.push({
-        nutrient: 'Vitamina D3',
-        status: totals.vit_d3_iu < 400 ? 'critical' : 'low',
-        current: totals.vit_d3_iu,
-        target: 2000,
-      })
-    }
-
-    return { success: true, deficits }
+    return { success: true, deficits: deficits.slice(0, 15), dailyAvg }
   } catch (error) {
     console.error('[recipeService] Error analyzing deficits:', error)
     return {

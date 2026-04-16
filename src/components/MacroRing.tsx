@@ -26,18 +26,21 @@ export function MacroRing({
   const reducedMotion = useReducedMotion()
   const ringRef = useRef<SVGCircleElement>(null)
   const calorieRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [hasAnimated, setHasAnimated] = useState(false)
 
   const caloriePercentage = Math.min((calories / calorieGoal) * 100, 100)
-  const proteinPercentage = (protein / proteinGoal) * 100
-  const carbsPercentage = (carbs / carbsGoal) * 100
-  const fatPercentage = (fat / fatGoal) * 100
+  const proteinPercentage = Math.min((protein / proteinGoal) * 100, 100)
+  const carbsPercentage = Math.min((carbs / carbsGoal) * 100, 100)
+  const fatPercentage = Math.min((fat / fatGoal) * 100, 100)
 
-  const circumference = 2 * Math.PI * 70
+  const R = 52
+  const circumference = 2 * Math.PI * R
   const targetOffset = circumference - (caloriePercentage / 100) * circumference
 
   useGSAP(() => {
     if (reducedMotion || !ringRef.current || !calorieRef.current) return
+    const trigger = containerRef.current
 
     gsap.fromTo(ringRef.current,
       { strokeDashoffset: circumference },
@@ -45,12 +48,7 @@ export function MacroRing({
         strokeDashoffset: targetOffset,
         duration: 1.6,
         ease: 'power3.out',
-        scrollTrigger: {
-          trigger: ringRef.current.closest('.macro-ring-container'),
-          start: 'top 85%',
-          once: true,
-          onEnter: () => setHasAnimated(true),
-        },
+        scrollTrigger: { trigger, start: 'top 85%', once: true, onEnter: () => setHasAnimated(true) },
       }
     )
 
@@ -59,137 +57,104 @@ export function MacroRing({
       val: Math.round(calories),
       duration: 1.3,
       ease: 'power2.out',
-      scrollTrigger: {
-        trigger: ringRef.current.closest('.macro-ring-container'),
-        start: 'top 85%',
-        once: true,
-      },
+      scrollTrigger: { trigger, start: 'top 85%', once: true },
       onUpdate: () => {
-        if (calorieRef.current) {
-          calorieRef.current.textContent = String(Math.round(obj.val))
-        }
+        if (calorieRef.current) calorieRef.current.textContent = String(Math.round(obj.val))
       },
     })
   }, { dependencies: [calories, calorieGoal, reducedMotion], revertOnUpdate: true })
 
+  // Radios internos para los macro arcs
+  const rProt = 43
+  const rCarb = 38
+  const rFat = 33
+
   return (
-    <div className="macro-ring-container relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border/50 rounded-3xl p-6 md:p-8 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full blur-3xl" />
+    <div ref={containerRef} className="macro-ring-container relative overflow-hidden rounded-2xl border border-primary/10 bg-[#050a0a] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.04)]">
+      {/* Glow sutil */}
+      <div className="absolute top-1/2 left-[15%] -translate-y-1/2 w-32 h-32 rounded-full bg-primary/[0.06] blur-3xl pointer-events-none" />
 
-      <div className="relative z-10">
-        <h3 className="text-sm font-semibold text-dark-muted mb-6">Macronutrientes del Día</h3>
+      <div className="relative z-10 p-4 md:p-5">
+        <div className="flex items-center gap-5">
+          {/* Ring compacto */}
+          <div className="relative shrink-0">
+            <svg width="120" height="120" viewBox="0 0 120 120" className="transform -rotate-90">
+              {/* Fondo */}
+              <circle cx="60" cy="60" r={R} stroke="rgba(255,255,255,0.05)" strokeWidth="7" fill="none" />
+              <circle cx="60" cy="60" r={R} stroke="rgba(255,255,255,0.03)" strokeWidth="7" fill="none" strokeDasharray="1.5 6" />
 
-        <div className="flex items-center justify-center mb-8">
-          {/* SVG Ring */}
-          <div className="relative">
-            <svg width="160" height="160" viewBox="0 0 160 160" className="transform -rotate-90">
-              {/* Background ring */}
-              <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="none" className="text-dark-border" />
-
-              {/* Colored segments for each macro */}
-              <circle
-                cx="80"
-                cy="80"
-                r="70"
-                stroke="url(#proteinGradient)"
-                strokeWidth="8"
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference - (proteinPercentage / 100) * circumference}
-                strokeLinecap="round"
-                opacity="0.3"
+              {/* Macro arcs internos */}
+              <circle cx="60" cy="60" r={rProt} stroke="#3b82f6" strokeWidth="3" fill="none"
+                strokeDasharray={2 * Math.PI * rProt} strokeDashoffset={2 * Math.PI * rProt - (proteinPercentage / 100) * 2 * Math.PI * rProt}
+                strokeLinecap="round" opacity="0.35"
+                style={{ filter: 'drop-shadow(0 0 3px rgba(59,130,246,0.3))' }}
               />
-              <circle
-                cx="80"
-                cy="80"
-                r="70"
-                stroke="url(#carbsGradient)"
-                strokeWidth="8"
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference - (carbsPercentage / 100) * circumference}
-                strokeLinecap="round"
-                opacity="0.3"
+              <circle cx="60" cy="60" r={rCarb} stroke="#10b981" strokeWidth="3" fill="none"
+                strokeDasharray={2 * Math.PI * rCarb} strokeDashoffset={2 * Math.PI * rCarb - (carbsPercentage / 100) * 2 * Math.PI * rCarb}
+                strokeLinecap="round" opacity="0.35"
+                style={{ filter: 'drop-shadow(0 0 3px rgba(16,185,129,0.3))' }}
               />
-              <circle
-                cx="80"
-                cy="80"
-                r="70"
-                stroke="url(#fatGradient)"
-                strokeWidth="8"
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference - (fatPercentage / 100) * circumference}
-                strokeLinecap="round"
-                opacity="0.3"
+              <circle cx="60" cy="60" r={rFat} stroke="#f59e0b" strokeWidth="3" fill="none"
+                strokeDasharray={2 * Math.PI * rFat} strokeDashoffset={2 * Math.PI * rFat - (fatPercentage / 100) * 2 * Math.PI * rFat}
+                strokeLinecap="round" opacity="0.35"
+                style={{ filter: 'drop-shadow(0 0 3px rgba(245,158,11,0.3))' }}
               />
 
-              {/* Main calorie ring */}
+              {/* Arco principal */}
               <circle
                 ref={ringRef}
-                cx="80"
-                cy="80"
-                r="70"
-                stroke="url(#calorieGradient)"
-                strokeWidth="8"
-                fill="none"
+                cx="60" cy="60" r={R}
+                stroke="url(#calorieGradCompact)"
+                strokeWidth="7" fill="none"
                 strokeDasharray={circumference}
                 strokeDashoffset={reducedMotion || hasAnimated ? targetOffset : circumference}
                 strokeLinecap="round"
+                style={{ filter: 'drop-shadow(0 0 6px rgba(13,148,136,0.35))' }}
               />
 
               <defs>
-                <linearGradient id="calorieGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#f97316" />
-                  <stop offset="100%" stopColor="#f59e0b" />
-                </linearGradient>
-                <linearGradient id="proteinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#3b82f6" />
-                  <stop offset="100%" stopColor="#06b6d4" />
-                </linearGradient>
-                <linearGradient id="carbsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#10b981" />
+                <linearGradient id="calorieGradCompact" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#0d9488" />
+                  <stop offset="50%" stopColor="#2dd4bf" />
                   <stop offset="100%" stopColor="#14b8a6" />
-                </linearGradient>
-                <linearGradient id="fatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#f43f5e" />
-                  <stop offset="100%" stopColor="#ec4899" />
                 </linearGradient>
               </defs>
             </svg>
 
-            {/* Center display */}
+            {/* Centro del ring */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div ref={calorieRef} className="text-4xl font-black text-orange-400">
+              <div ref={calorieRef} className="text-2xl font-black text-white leading-none">
                 {Math.round(calories)}
               </div>
-              <div className="text-xs text-dark-muted mt-1">kcal</div>
+              <div className="text-[9px] text-dark-muted mt-0.5">de {calorieGoal} kcal</div>
+              <div className="mt-1 px-1.5 py-px rounded-full bg-primary/10 border border-primary/15">
+                <span className="text-[8px] font-bold text-primary">{Math.round(caloriePercentage)}%</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Macro pills */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 text-center">
-            <div className="text-xs text-dark-muted mb-1">Proteína</div>
-            <div className="text-lg font-bold text-blue-400">{Math.round(protein)}g</div>
-            <div className="text-xs text-dark-muted">{Math.round(proteinPercentage)}%</div>
-          </div>
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-center">
-            <div className="text-xs text-dark-muted mb-1">Carbos</div>
-            <div className="text-lg font-bold text-green-400">{Math.round(carbs)}g</div>
-            <div className="text-xs text-dark-muted">{Math.round(carbsPercentage)}%</div>
-          </div>
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-center">
-            <div className="text-xs text-dark-muted mb-1">Grasas</div>
-            <div className="text-lg font-bold text-red-400">{Math.round(fat)}g</div>
-            <div className="text-xs text-dark-muted">{Math.round(fatPercentage)}%</div>
-          </div>
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-center">
-            <div className="text-xs text-dark-muted mb-1">Objetivo</div>
-            <div className="text-lg font-bold text-amber-400">{calorieGoal}</div>
-            <div className="text-xs text-dark-muted">{Math.round(caloriePercentage)}%</div>
+          {/* Info al costado */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-white mb-3">Balance Nutricional</h3>
+
+            {/* Leyenda de macros */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_4px_rgba(59,130,246,0.4)]" />
+                <span className="text-[10px] text-white/50 font-medium">Proteína</span>
+                <span className="text-[10px] text-blue-400 font-bold">{Math.round(protein)}g</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_4px_rgba(16,185,129,0.4)]" />
+                <span className="text-[10px] text-white/50 font-medium">Carbos</span>
+                <span className="text-[10px] text-emerald-400 font-bold">{Math.round(carbs)}g</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_4px_rgba(245,158,11,0.4)]" />
+                <span className="text-[10px] text-white/50 font-medium">Grasas</span>
+                <span className="text-[10px] text-amber-400 font-bold">{Math.round(fat)}g</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

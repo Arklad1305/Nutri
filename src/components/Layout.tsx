@@ -27,9 +27,9 @@ export function Layout({ children }: LayoutProps) {
         {children}
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-dark-card/90 backdrop-blur-xl border-t border-dark-border/50 z-50 shadow-2xl">
+      <nav className="fixed bottom-0 left-0 right-0 bg-dark-card/95 backdrop-blur-xl border-t border-dark-border/50 z-50">
         <div className="max-w-7xl mx-auto px-2">
-          <div className="flex items-center justify-around h-18 py-2">
+          <div className="flex items-center justify-around h-16 py-1.5">
             <NavLink
               to="/"
               className={({ isActive }) =>
@@ -43,11 +43,11 @@ export function Layout({ children }: LayoutProps) {
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-2xl blur-sm" />
+                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
                   )}
                   <div className={`relative p-2 rounded-xl transition-all duration-300 ${
                     isActive
-                      ? 'bg-gradient-to-br from-primary/20 to-orange-500/20 shadow-lg shadow-primary/20'
+                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
                       : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
                   }`}>
                     <Home className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
@@ -72,11 +72,11 @@ export function Layout({ children }: LayoutProps) {
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-2xl blur-sm" />
+                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
                   )}
                   <div className={`relative p-2 rounded-xl transition-all duration-300 ${
                     isActive
-                      ? 'bg-gradient-to-br from-primary/20 to-orange-500/20 shadow-lg shadow-primary/20'
+                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
                       : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
                   }`}>
                     <MessageCircle className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
@@ -101,11 +101,11 @@ export function Layout({ children }: LayoutProps) {
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-2xl blur-sm" />
+                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
                   )}
                   <div className={`relative p-2 rounded-xl transition-all duration-300 ${
                     isActive
-                      ? 'bg-gradient-to-br from-primary/20 to-orange-500/20 shadow-lg shadow-primary/20'
+                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
                       : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
                   }`}>
                     <ChefHat className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
@@ -130,11 +130,11 @@ export function Layout({ children }: LayoutProps) {
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-2xl blur-sm" />
+                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
                   )}
                   <div className={`relative p-2 rounded-xl transition-all duration-300 ${
                     isActive
-                      ? 'bg-gradient-to-br from-primary/20 to-orange-500/20 shadow-lg shadow-primary/20'
+                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
                       : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
                   }`}>
                     <BarChart3 className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
@@ -159,11 +159,11 @@ export function Layout({ children }: LayoutProps) {
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-2xl blur-sm" />
+                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
                   )}
                   <div className={`relative p-2 rounded-xl transition-all duration-300 ${
                     isActive
-                      ? 'bg-gradient-to-br from-primary/20 to-orange-500/20 shadow-lg shadow-primary/20'
+                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
                       : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
                   }`}>
                     <User className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />

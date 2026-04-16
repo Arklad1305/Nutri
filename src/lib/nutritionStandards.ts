@@ -63,21 +63,22 @@ export function analyzeNutrient(
 
   const optimalTarget = min_optimal_value || min_survival_value
 
+  // Inverted nutrients: lower is better (sugar, methionine, omega-6)
   if (nutrientKey === 'sugar_g' || nutrientKey === 'methionine_g' || nutrientKey === 'omega_6_g') {
     if (currentValue === 0) {
       level = 'optimal'
       color = '#10b981'
       message = nutrientKey === 'sugar_g'
-        ? '¡Perfecto! Cero azúcar añadido = nivel pro.'
-        : '¡Excelente! Nivel mínimo alcanzado.'
+        ? 'Cero azúcar añadido. Nivel ideal.'
+        : 'Nivel mínimo alcanzado.'
       percentage = 0
-    } else if (currentValue <= (min_optimal_value || 0)) {
+    } else if (min_optimal_value && min_optimal_value > 0 && currentValue <= min_optimal_value) {
       level = 'functional'
       color = '#fbbf24'
       message = nutrientKey === 'sugar_g'
         ? 'Nivel bueno. Puedes reducir un poco más.'
-        : 'Nivel óptimo. Ideal mantenerlo bajo.'
-      percentage = currentValue > 0 ? (currentValue / (max_optimal_value || min_survival_value)) * 100 : 0
+        : 'Nivel aceptable. Ideal mantenerlo bajo.'
+      percentage = (currentValue / (max_optimal_value || min_survival_value)) * 100
     } else if (currentValue <= min_survival_value) {
       level = 'survival'
       color = '#f59e0b'
@@ -85,39 +86,40 @@ export function analyzeNutrient(
       percentage = (currentValue / min_survival_value) * 100
     } else {
       level = 'critical'
-      color = '#f59e0b'
+      color = '#ef4444' // Red for excess (was amber — visually indistinguishable from deficiency)
       message = nutrientKey === 'sugar_g'
         ? 'Exceso alto. Reducir azúcar mejorará tu metabolismo.'
         : 'Exceso. Reducir ayudará a disminuir inflamación.'
       percentage = Math.min((currentValue / min_survival_value) * 100, 150)
     }
   } else {
+    // Normal nutrients: higher is better (up to max)
     if (currentValue < min_survival_value * 0.5) {
       level = 'critical'
-      color = '#f59e0b'
-      message = '¡Área de oportunidad! Es momento de reforzar este nutriente.'
+      color = '#ef4444'
+      message = 'Nivel bajo. Considera añadir alimentos ricos en este nutriente.'
       percentage = (currentValue / min_survival_value) * 100
     } else if (currentValue < min_survival_value) {
       level = 'survival'
       color = '#f59e0b'
-      message = 'En desarrollo. ¡Aumenta este nutriente para optimizar!'
+      message = 'Podrías beneficiarte de más de este nutriente.'
       percentage = (currentValue / min_survival_value) * 100
     } else if (min_optimal_value && currentValue < min_optimal_value) {
       level = 'functional'
       color = '#fbbf24'
-      message = 'Buen progreso. Falta poco para alcanzar el nivel óptimo.'
+      message = 'Vas bien. Un poco más te llevará al óptimo.'
       percentage = (currentValue / min_optimal_value) * 100
     } else {
       level = 'optimal'
       color = '#10b981'
-      message = '¡Excelente! Nivel óptimo alcanzado. 🎯'
+      message = 'Nivel óptimo alcanzado.'
       percentage = Math.min((currentValue / optimalTarget) * 100, 150)
     }
 
     if (max_optimal_value && currentValue > max_optimal_value) {
       level = 'critical'
-      color = '#f59e0b'
-      message = 'Excedido. Considera reducir un poco este nutriente.'
+      color = '#ef4444'
+      message = 'Has superado el rango óptimo. Considera moderar este nutriente.'
       percentage = 150
     }
   }
@@ -161,7 +163,7 @@ export async function analyzeAllNutrients(
         adjustedStandard = {
           ...standard,
           min_optimal_value: targetValue,
-          min_survival_value: Math.round(targetValue * 0.7)
+          min_survival_value: Math.round(targetValue * 0.8) // 80% of target = minimum acceptable
         }
       }
     }
@@ -198,11 +200,11 @@ export function getNutrientMapping(): Record<string, string> {
     'omega_6_g': 'omega_6_g',
     'sat_fat_g': 'sat_fat_g',
     'cholesterol_mg': 'cholesterol_mg',
-    'vit_a_iu': 'vitamin_a_mcg',
+    'vit_a_iu': 'vit_a_iu',
     'vit_c_mg': 'vitamin_c_mg',
-    'vit_d3_iu': 'vitamin_d_mcg',
+    'vit_d3_iu': 'vit_d3_iu',
     'vit_e_iu': 'vit_e_iu',
-    'vit_k2_mcg': 'vitamin_k_mcg',
+    'vit_k_mcg': 'vitamin_k_mcg',
     'vitamin_k1_mcg': 'vitamin_k1_mcg',
     'b12_mcg': 'vitamin_b12_mcg',
     'folate_mcg': 'folate_mcg',

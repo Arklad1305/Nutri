@@ -71,6 +71,9 @@ BEGIN
   END IF;
 END$$;
 
+-- Limpiar datos inválidos antes del constraint
+UPDATE food_logs SET quantity_g = NULL WHERE quantity_g IS NOT NULL AND quantity_g <= 0;
+
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -79,6 +82,6 @@ BEGIN
   ) THEN
     ALTER TABLE food_logs
       ADD CONSTRAINT food_logs_quantity_positive
-      CHECK (quantity_g > 0);
+      CHECK (quantity_g IS NULL OR quantity_g > 0);
   END IF;
 END$$;

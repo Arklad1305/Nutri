@@ -94,15 +94,11 @@ export function MacroCard({ title, current, goal, unit, icon: Icon, color, perce
   }, { scope: cardRef, dependencies: [current, percentage, reducedMotion], revertOnUpdate: true })
 
   return (
-    <div ref={cardRef} className="macro-card relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-5 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
-      <div className={`absolute inset-0 bg-gradient-to-br ${config.bgGradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
-
-      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-2xl"></div>
-
+    <div ref={cardRef} className="macro-card relative bg-dark-card border border-dark-border rounded-2xl p-5 overflow-hidden group hover:border-dark-border/80 transition-colors duration-300">
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-4">
-          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${config.gradient} ${config.glowColor} shadow-lg`}>
-            <Icon className="w-5 h-5 text-white" />
+          <div className={`p-2.5 rounded-xl bg-dark-bg/60 border border-dark-border/50`}>
+            <Icon className={`w-5 h-5 ${config.textColor}`} />
           </div>
           {isOnTarget && (
             <CheckCircle2 className="w-5 h-5 text-green-400" />
@@ -177,10 +173,10 @@ export function MacroCard({ title, current, goal, unit, icon: Icon, color, perce
                 : 'text-yellow-400'
             }`}>
               {isOverGoal
-                ? `+${Math.round(current - goal)} ${unit} sobre meta`
+                ? `+${Math.round(current - goal)} ${unit} excedente`
                 : isOnTarget
                 ? 'En objetivo'
-                : `${Math.round(goal - current)} ${unit} restantes`}
+                : `${Math.round(goal - current)} ${unit} por alcanzar`}
             </span>
             <span className="text-dark-muted">
               {current > 0 ? Math.round((current / goal) * 100) : 0}%

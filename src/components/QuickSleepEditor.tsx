@@ -26,7 +26,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
       glowColor: 'shadow-red-500/50',
       textColor: 'text-red-400',
       message: 'Privación severa. Ajustes metabólicos críticos activos.',
-      emoji: '🚨'
+      emoji: ''
     }
     if (hours < 6.5) return {
       phase: 'Recuperación',
@@ -35,7 +35,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
       glowColor: 'shadow-yellow-500/50',
       textColor: 'text-yellow-400',
       message: 'Déficit moderado. Protección metabólica activa.',
-      emoji: '⚠️'
+      emoji: ''
     }
     if (hours < 7.5) return {
       phase: 'Bueno',
@@ -44,7 +44,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
       glowColor: 'shadow-blue-500/50',
       textColor: 'text-blue-400',
       message: 'Sueño adecuado. Funcionamiento normal.',
-      emoji: '😌'
+      emoji: ''
     }
     return {
       phase: 'Óptimo',
@@ -53,7 +53,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
       glowColor: 'shadow-green-500/50',
       textColor: 'text-green-400',
       message: 'Recuperación completa. Rendimiento máximo.',
-      emoji: '✨'
+      emoji: ''
     }
   }
 
@@ -95,12 +95,22 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
   const Icon = phase.icon
 
   return (
-    <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
+    <div className="relative bg-gradient-to-br from-[#080c1a] to-[#0a0e20] border border-indigo-500/15 rounded-2xl p-6 overflow-hidden group hover:border-indigo-500/25 transition-all duration-300">
       {/* Ambient gradient overlay */}
       <div className={`absolute inset-0 bg-gradient-to-br ${phase.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
 
       {/* Decorative blur effect */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl"></div>
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-400/5 to-transparent rounded-full blur-3xl"></div>
+
+      {/* Twinkling stars */}
+      <div className="absolute top-4 left-8 w-0.5 h-0.5 rounded-full bg-white/40 animate-[star-twinkle_3s_ease-in-out_infinite_0s] pointer-events-none"></div>
+      <div className="absolute top-8 right-12 w-1 h-1 rounded-full bg-indigo-300/40 animate-[star-twinkle_4s_ease-in-out_infinite_1s] pointer-events-none"></div>
+      <div className="absolute top-16 left-1/3 w-0.5 h-0.5 rounded-full bg-white/40 animate-[star-twinkle_5s_ease-in-out_infinite_0.5s] pointer-events-none"></div>
+      <div className="absolute top-6 right-1/3 w-1 h-1 rounded-full bg-indigo-300/40 animate-[star-twinkle_3.5s_ease-in-out_infinite_2s] pointer-events-none"></div>
+      <div className="absolute top-12 left-16 w-0.5 h-0.5 rounded-full bg-white/40 animate-[star-twinkle_4.5s_ease-in-out_infinite_1.5s] pointer-events-none"></div>
+
+      {/* Aurora band */}
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-r from-indigo-500/[0.03] via-violet-500/[0.05] to-indigo-500/[0.03] blur-xl animate-[aurora-drift_8s_ease-in-out_infinite] pointer-events-none"></div>
 
       <div className="relative z-10">
         {/* Header section with sleep phase indicator */}
@@ -110,9 +120,8 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
               <Icon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-white">
                 Estado de Sueño
-                <span className="text-xl">{phase.emoji}</span>
               </h3>
               <p className={`text-sm font-medium ${phase.textColor}`}>{phase.phase}</p>
             </div>
@@ -175,7 +184,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
           <div className="flex gap-2">
             <button
               onClick={() => setIsEditing(true)}
-              className="flex-1 px-4 py-3 bg-dark-hover hover:bg-dark-border border border-dark-border rounded-xl text-sm font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="flex-1 px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/20 hover:border-indigo-500/30 rounded-xl text-sm font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               Ajustar horas
             </button>
@@ -183,7 +192,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
         ) : (
           <div className="space-y-4">
             {/* Sleep hours slider control */}
-            <div className="bg-dark-bg/50 backdrop-blur-sm rounded-xl p-4 border border-dark-border/50">
+            <div className="bg-[#0a0e20]/60 backdrop-blur-sm rounded-xl p-4 border border-indigo-500/15">
               <label className="block text-xs font-medium text-dark-muted mb-3">
                 Desliza para ajustar
               </label>
@@ -196,12 +205,20 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
                 step="0.5"
                 className="w-full h-2 bg-dark-border rounded-lg appearance-none cursor-pointer slider-sleep"
                 style={{
-                  background: `linear-gradient(to right,
-                    rgb(239 68 68) 0%,
-                    rgb(234 179 8) 30%,
-                    rgb(59 130 246) 60%,
-                    rgb(34 197 94) ${(tempHours / 12) * 100}%,
-                    rgb(30 41 59) ${(tempHours / 12) * 100}%)`
+                  background: (() => {
+                    const pct = (tempHours / 12) * 100
+                    if (pct <= 0) return 'rgb(30 41 59)'
+                    // Color stops proportional to fill: red(0%) → amber(40%) → blue(65%) → green(85%) → slate(pct%+)
+                    const stops = [
+                      `rgb(239 68 68) 0%`,
+                      `rgb(234 179 8) ${pct * 0.4}%`,
+                      `rgb(59 130 246) ${pct * 0.65}%`,
+                      `rgb(34 197 94) ${pct}%`,
+                      `rgb(30 41 59) ${pct}%`,
+                      `rgb(30 41 59) 100%`,
+                    ]
+                    return `linear-gradient(to right, ${stops.join(', ')})`
+                  })()
                 }}
               />
               <div className="flex justify-between text-xs text-dark-muted mt-2">
@@ -216,7 +233,7 @@ export function QuickSleepEditor({ sleepHours, onSleepUpdated }: QuickSleepEdito
               <button
                 onClick={handleCancel}
                 disabled={isLoading}
-                className="flex-1 px-4 py-3 bg-dark-hover hover:bg-dark-border border border-dark-border rounded-xl text-sm font-medium text-dark-muted hover:text-white transition-all disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-indigo-500/5 hover:bg-indigo-500/10 border border-indigo-500/15 rounded-xl text-sm font-medium text-dark-muted hover:text-white transition-all disabled:opacity-50"
               >
                 Cancelar
               </button>

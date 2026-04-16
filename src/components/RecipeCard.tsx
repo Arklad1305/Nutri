@@ -150,9 +150,9 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   // Obtiene el color según categoría
   const getCategoryColor = (category?: string): string => {
     switch (category) {
-      case 'protein': return 'text-red-400 bg-red-500/10 border-red-500/30'
-      case 'carbs': return 'text-amber-400 bg-amber-500/10 border-amber-500/30'
-      case 'fats': return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30'
+      case 'protein': return 'text-blue-400 bg-blue-500/10 border-blue-500/30'
+      case 'carbs': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
+      case 'fats': return 'text-amber-400 bg-amber-500/10 border-amber-500/30'
       case 'vegetables': return 'text-green-400 bg-green-500/10 border-green-500/30'
       case 'seasoning': return 'text-purple-400 bg-purple-500/10 border-purple-500/30'
       default: return 'text-gray-400 bg-gray-500/10 border-gray-500/30'
@@ -386,12 +386,12 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                           )}
                           {ingredient.category && (
                             <span className="inline-block mt-2 px-2 py-0.5 bg-current/20 rounded text-[10px] font-semibold uppercase tracking-wide">
-                              {ingredient.category === 'protein' && '🥩 Proteína'}
-                              {ingredient.category === 'carbs' && '🌾 Carbohidrato'}
-                              {ingredient.category === 'fats' && '🥑 Grasa Saludable'}
-                              {ingredient.category === 'vegetables' && '🥬 Vegetal'}
-                              {ingredient.category === 'seasoning' && '🧂 Condimento'}
-                              {ingredient.category === 'other' && '📦 Otro'}
+                              {ingredient.category === 'protein' && 'Proteína'}
+                              {ingredient.category === 'carbs' && 'Carbohidrato'}
+                              {ingredient.category === 'fats' && 'Grasa'}
+                              {ingredient.category === 'vegetables' && 'Vegetal'}
+                              {ingredient.category === 'seasoning' && 'Condimento'}
+                              {ingredient.category === 'other' && 'Otro'}
                             </span>
                           )}
                         </div>

@@ -75,13 +75,13 @@ export function FoodDetailsFullModal({ data, isOpen, onClose }: FoodDetailsFullM
               <p className="text-xs text-dark-muted">Proteína</p>
               <p className="text-sm font-semibold text-blue-400">{protein}g</p>
             </div>
-            <div className="bg-green-500/10 rounded-lg p-2 text-center border border-green-500/20">
+            <div className="bg-emerald-500/10 rounded-lg p-2 text-center border border-emerald-500/20">
               <p className="text-xs text-dark-muted">Carbos</p>
-              <p className="text-sm font-semibold text-green-400">{carbs}g</p>
+              <p className="text-sm font-semibold text-emerald-400">{carbs}g</p>
             </div>
-            <div className="bg-yellow-500/10 rounded-lg p-2 text-center border border-yellow-500/20">
+            <div className="bg-amber-500/10 rounded-lg p-2 text-center border border-amber-500/20">
               <p className="text-xs text-dark-muted">Grasas</p>
-              <p className="text-sm font-semibold text-yellow-400">{fat}g</p>
+              <p className="text-sm font-semibold text-amber-400">{fat}g</p>
             </div>
           </div>
         </div>

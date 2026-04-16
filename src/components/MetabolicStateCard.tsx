@@ -70,10 +70,12 @@ export function MetabolicStateCard() {
 
   if (isLoading) {
     return (
-      <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-[#081210] to-[#060e0c] border border-emerald-500/15 rounded-2xl p-6 overflow-hidden">
+        <div className="absolute top-4 right-4 w-32 h-32 rounded-full border border-emerald-500/8 animate-[pulse-ring_4s_ease-out_infinite] pointer-events-none"></div>
+        <div className="absolute top-4 right-4 w-48 h-48 rounded-full border border-emerald-500/8 animate-[pulse-ring_4s_ease-out_infinite_1s] pointer-events-none"></div>
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-dark-border rounded w-1/2"></div>
-          <div className="h-4 bg-dark-border rounded w-3/4"></div>
+          <div className="h-6 bg-emerald-500/10 rounded w-1/2"></div>
+          <div className="h-4 bg-emerald-500/10 rounded w-3/4"></div>
         </div>
       </div>
     )
@@ -81,7 +83,9 @@ export function MetabolicStateCard() {
 
   if (!metabolicState) {
     return (
-      <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-[#081210] to-[#060e0c] border border-emerald-500/15 rounded-2xl p-6 overflow-hidden">
+        <div className="absolute top-4 right-4 w-32 h-32 rounded-full border border-emerald-500/8 animate-[pulse-ring_4s_ease-out_infinite] pointer-events-none"></div>
+        <div className="absolute top-4 right-4 w-48 h-48 rounded-full border border-emerald-500/8 animate-[pulse-ring_4s_ease-out_infinite_1s] pointer-events-none"></div>
         <div className="absolute inset-0 bg-gradient-to-br from-slate-500/5 to-transparent"></div>
         <div className="relative z-10">
           <div className="flex items-center gap-3">
@@ -120,16 +124,16 @@ export function MetabolicStateCard() {
   const minutes = Math.floor((metabolicState.hoursSinceLastMeal % 1) * 60)
 
   return (
-    <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
+    <div className="relative bg-gradient-to-br from-[#081210] to-[#060e0c] border border-emerald-500/15 rounded-2xl p-6 overflow-hidden group hover:border-emerald-500/25 transition-all duration-300">
+      <div className="absolute top-4 right-4 w-32 h-32 rounded-full border border-emerald-500/8 animate-[pulse-ring_4s_ease-out_infinite] pointer-events-none"></div>
+      <div className="absolute top-4 right-4 w-48 h-48 rounded-full border border-emerald-500/8 animate-[pulse-ring_4s_ease-out_infinite_1s] pointer-events-none"></div>
       <div className={`absolute inset-0 bg-gradient-to-br ${metabolicState.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
-
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl"></div>
 
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-xl bg-gradient-to-br ${metabolicState.gradient} ${metabolicState.glowColor} shadow-lg`}>
-              <Icon className="w-6 h-6 text-white" />
+            <div className={`p-2.5 rounded-xl bg-gradient-to-br ${metabolicState.gradient} ${metabolicState.glowColor} shadow-md`}>
+              <Icon className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -228,14 +232,14 @@ export function MetabolicStateCard() {
 
         {metabolicState.state === 'mTOR_ACTIVE' && (
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-lg bg-dark-bg/50 border border-dark-border/50">
+            <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="w-3 h-3 text-green-400" />
                 <p className="text-xs text-dark-muted">Anabolismo</p>
               </div>
               <p className="text-sm font-bold text-green-400">Activo</p>
             </div>
-            <div className="p-3 rounded-lg bg-dark-bg/50 border border-dark-border/50">
+            <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
               <div className="flex items-center gap-2 mb-1">
                 <Flame className={`w-3 h-3 ${
                   metabolicState.insulinLevel === 'high' ? 'text-red-400' :
@@ -267,14 +271,14 @@ export function MetabolicStateCard() {
 
         {metabolicState.state === 'NEUTRAL' && metabolicState.insulinLevel && (
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-lg bg-dark-bg/50 border border-dark-border/50">
+            <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
               <div className="flex items-center gap-2 mb-1">
                 <Shield className="w-3 h-3 text-slate-400" />
                 <p className="text-xs text-dark-muted">Balance</p>
               </div>
               <p className="text-sm font-bold text-slate-400">Estable</p>
             </div>
-            <div className="p-3 rounded-lg bg-dark-bg/50 border border-dark-border/50">
+            <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
               <div className="flex items-center gap-2 mb-1">
                 <Flame className={`w-3 h-3 ${
                   metabolicState.insulinLevel === 'moderate' ? 'text-orange-400' :
@@ -303,7 +307,7 @@ export function MetabolicStateCard() {
 
         {(metabolicState.state === 'AUTOPHAGY_EARLY' || metabolicState.state === 'AUTOPHAGY_DEEP') && (
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-lg bg-dark-bg/50 border border-dark-border/50">
+            <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-3 h-3 text-blue-400" />
                 <p className="text-xs text-dark-muted">Autofagia</p>
@@ -312,7 +316,7 @@ export function MetabolicStateCard() {
                 {metabolicState.state === 'AUTOPHAGY_DEEP' ? 'Profunda' : 'Moderada'}
               </p>
             </div>
-            <div className="p-3 rounded-lg bg-dark-bg/50 border border-dark-border/50">
+            <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
               <div className="flex items-center gap-2 mb-1">
                 <Shield className="w-3 h-3 text-purple-400" />
                 <p className="text-xs text-dark-muted">Longevidad</p>

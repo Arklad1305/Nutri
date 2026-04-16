@@ -7,13 +7,28 @@ interface DayTypeSelectorProps {
 
 export default function DayTypeSelector({ isTrainingDay, onChange }: DayTypeSelectorProps) {
   return (
-    <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-xl p-4 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 pointer-events-none"></div>
+    <div className={`relative bg-gradient-to-br ${isTrainingDay ? 'from-[#140606] to-[#100505] border border-red-500/15' : 'from-[#060810] to-[#050710] border border-blue-500/15'} rounded-2xl p-4 overflow-hidden`}>
+      <div className={`absolute inset-0 bg-gradient-to-br ${isTrainingDay ? 'from-red-500/5 to-orange-500/5' : 'from-blue-500/5 to-blue-400/5'} pointer-events-none`}></div>
+
+      {/* Decorative animations */}
+      {isTrainingDay ? (
+        <>
+          <div className="absolute bottom-4 left-6 w-1.5 h-1.5 rounded-full bg-red-400/20 animate-[float-up_3s_ease-out_infinite] pointer-events-none"></div>
+          <div className="absolute bottom-6 right-8 w-1 h-1 rounded-full bg-red-400/20 animate-[float-up_4s_ease-out_infinite_1s] pointer-events-none"></div>
+          <div className="absolute bottom-3 left-1/2 w-1 h-1 rounded-full bg-red-400/20 animate-[float-up_3.5s_ease-out_infinite_0.5s] pointer-events-none"></div>
+        </>
+      ) : (
+        <>
+          <div className="absolute top-4 right-6 w-1 h-1 rounded-full bg-blue-400/15 animate-[star-twinkle_3s_ease-in-out_infinite] pointer-events-none"></div>
+          <div className="absolute top-8 left-8 w-1.5 h-1.5 rounded-full bg-blue-400/15 animate-[star-twinkle_4s_ease-in-out_infinite_1s] pointer-events-none"></div>
+          <div className="absolute bottom-6 right-12 w-1 h-1 rounded-full bg-blue-400/15 animate-[star-twinkle_3.5s_ease-in-out_infinite_0.5s] pointer-events-none"></div>
+        </>
+      )}
 
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-3">
-          <div className="p-1.5 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg">
-            <Zap className="w-3.5 h-3.5 text-cyan-400" />
+          <div className={`p-1.5 bg-gradient-to-br ${isTrainingDay ? 'from-red-500/20 to-orange-500/20' : 'from-blue-500/20 to-blue-400/20'} rounded-lg`}>
+            <Zap className={`w-3.5 h-3.5 ${isTrainingDay ? 'text-red-400' : 'text-blue-400'}`} />
           </div>
           <h3 className="text-xs font-bold text-white">Tipo de Día</h3>
         </div>

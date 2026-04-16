@@ -52,119 +52,58 @@ FORMATO JSON DE RESPUESTA OBLIGATORIO:
     "food_name": "Nombre descriptivo del alimento",
     "quantity_g": 0,
     "group_1_motor": {
-      "calories": 0,
-      "protein_g": 0,
-      "carbs_g": 0,
-      "fat_g": 0,
-      "fiber_g": 0,
-      "sugar_g": 0,
-      "water_ml": 0,
-      "electrolytes": {
-        "sodium_mg": 0,
-        "potassium_mg": 0,
-        "chloride_mg": 0
-      },
-      "aminos_muscle": {
-        "leucine_mg": 0,
-        "isoleucine_mg": 0,
-        "valine_mg": 0,
-        "lysine_mg": 0,
-        "methionine_mg": 0,
-        "threonine_mg": 0
-      },
-      "structure_minerals": {
-        "iron_mg": 0,
-        "zinc_mg": 0,
-        "magnesium_mg": 0
-      }
+      "calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0, "fiber_g": 0, "sugar_g": 0, "water_ml": 0,
+      "electrolytes": { "sodium_mg": 0, "potassium_mg": 0, "chloride_mg": 0 },
+      "aminos_muscle": { "leucine_mg": 0, "isoleucine_mg": 0, "valine_mg": 0, "lysine_mg": 0, "methionine_mg": 0, "threonine_mg": 0 },
+      "structure_minerals": { "iron_mg": 0, "zinc_mg": 0, "magnesium_mg": 0 }
     },
     "group_2_cognitive": {
-      "aminos_brain": {
-        "tryptophan_mg": 0,
-        "phenylalanine_mg": 0,
-        "tyrosine_mg": 0,
-        "histidine_mg": 0
-      },
-      "neuro_others": {
-        "taurine_mg": 0,
-        "choline_mg": 0,
-        "creatine_mg": 0
-      },
-      "energy_vitamins": {
-        "vit_b1_thiamin_mg": 0,
-        "vit_b2_riboflavin_mg": 0,
-        "vit_b3_niacin_mg": 0,
-        "vit_b5_pantothenic_mg": 0,
-        "vit_b6_mg": 0,
-        "vit_b7_biotin_mcg": 0,
-        "folate_mcg": 0,
-        "vit_b12_mcg": 0,
-        "vit_c_mg": 0
-      },
-      "trace_minerals": {
-        "selenium_mcg": 0,
-        "chromium_mcg": 0
-      },
-      "electrolytes": {
-        "sodium_mg": 0,
-        "potassium_mg": 0
-      }
+      "aminos_brain": { "tryptophan_mg": 0, "phenylalanine_mg": 0, "tyrosine_mg": 0, "histidine_mg": 0 },
+      "neuro_others": { "taurine_mg": 0, "choline_mg": 0, "creatine_mg": 0 },
+      "energy_vitamins": { "vit_b1_thiamin_mg": 0, "vit_b2_riboflavin_mg": 0, "vit_b3_niacin_mg": 0, "vit_b5_pantothenic_mg": 0, "vit_b6_mg": 0, "vit_b7_biotin_mcg": 0, "folate_mcg": 0, "vit_b12_mcg": 0, "vit_c_mg": 0 },
+      "trace_minerals": { "selenium_mcg": 0, "chromium_mcg": 0 },
+      "electrolytes": { "sodium_mg": 0, "potassium_mg": 0 }
     },
     "group_3_hormonal": {
-      "thyroid_insulin": {
-        "zinc_mg": 0,
-        "magnesium_mg": 0,
-        "selenium_mcg": 0,
-        "chromium_mcg": 0,
-        "iodine_mcg": 0,
-        "manganese_mg": 0
-      },
-      "liposolubles": {
-        "vit_a_mcg": 0,
-        "vit_d3_iu": 0,
-        "vit_e_iu": 0,
-        "vit_k1_mcg": 0,
-        "vit_k2_mcg": 0
-      },
-      "structure": {
-        "calcium_mg": 0,
-        "phosphorus_mg": 0,
-        "copper_mg": 0,
-        "iron_mg": 0
-      }
+      "thyroid_insulin": { "zinc_mg": 0, "magnesium_mg": 0, "selenium_mcg": 0, "chromium_mcg": 0, "iodine_mcg": 0, "manganese_mg": 0 },
+      "liposolubles": { "vit_a_mcg": 0, "vit_d3_iu": 0, "vit_e_iu": 0, "vit_k1_mcg": 0, "vit_k2_mcg": 0 },
+      "structure": { "calcium_mg": 0, "phosphorus_mg": 0, "copper_mg": 0, "iron_mg": 0 }
     },
     "group_4_inflammation": {
-      "omega": {
-        "omega_3_total_mg": 0,
-        "epa_dha_mg": 0,
-        "omega_6_mg": 0
-      },
-      "sat_fats": {
-        "saturated_g": 0,
-        "monounsaturated_g": 0,
-        "polyunsaturated_g": 0,
-        "trans_fat_g": 0,
-        "cholesterol_mg": 0
-      },
-      "bioactives": {
-        "polyphenols_total_mg": 0,
-        "anthocyanins_mg": 0,
-        "quercetin_mg": 0,
-        "resveratrol_mg": 0,
-        "curcumin_mg": 0
-      }
+      "omega": { "omega_3_total_mg": 0, "epa_dha_mg": 0, "omega_6_mg": 0 },
+      "sat_fats": { "saturated_g": 0, "monounsaturated_g": 0, "polyunsaturated_g": 0, "trans_fat_g": 0, "cholesterol_mg": 0 },
+      "bioactives": { "polyphenols_total_mg": 0, "anthocyanins_mg": 0, "quercetin_mg": 0, "resveratrol_mg": 0, "curcumin_mg": 0 }
     }
   }
 }
 
+DETECCIÓN DE ETIQUETAS NUTRICIONALES:
+Si la imagen muestra una etiqueta nutricional, tabla de información nutricional o empaque de producto:
+1. Extrae los valores EXACTOS que aparecen en la tabla (no inferir, leer directamente).
+2. Usa el nombre del producto como food_name.
+3. Usa la porción indicada en la etiqueta como quantity_g.
+4. Prioriza los datos impresos sobre cualquier estimación.
+
 IMPORTANTE: Devuelve SOLO el JSON limpio, sin markdown, sin backticks, sin explicaciones adicionales.`;
+
+const IDENTIFY_PROMPT = `Eres un identificador de alimentos. El usuario describe lo que comió.
+Extrae SOLO la identificación del alimento. Responde ÚNICAMENTE con JSON:
+{
+  "food_name_es": "nombre en español (singular, genérico)",
+  "food_name_en": "English name (singular, generic, for USDA database)",
+  "quantity_g": número estimado en gramos,
+  "cooking_method": "raw/cooked/fried/baked/boiled/steamed/none",
+  "is_complex_dish": false
+}
+Reglas:
+- Si es un plato compuesto (ej: "cazuela", "pastel de choclo"), pon is_complex_dish: true
+- Si no hay cantidad explícita, estima por porción estándar
+- Responde SOLO JSON, sin backticks ni explicaciones`;
 
 interface FoodData {
   food_name: string;
   quantity_g?: number;
   reply_text?: string;
-
-  // VIP Columns - MOTOR
   calories?: number;
   protein_g?: number;
   carbs_g?: number;
@@ -172,384 +111,295 @@ interface FoodData {
   water_ml?: number;
   leucine_g?: number;
   sodium_mg?: number;
-
-  // VIP Columns - COGNITIVE
   choline_mg?: number;
-
-  // VIP Columns - HORMONAL
   zinc_mg?: number;
   magnesium_mg?: number;
   vit_d3_iu?: number;
-
-  // VIP Columns - INFLAMMATION
   omega_3_total_g?: number;
   polyphenols_total_mg?: number;
-
-  // Optional: Complete nutritional matrix (new format)
   nutritional_matrix?: {
     motor?: any;
     cognitive?: any;
     hormonal?: any;
     inflammation?: any;
-    other?: any;
   };
-
-  // Optional timestamp
-  logged_at?: string;
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
-  }
-
+async function tryCascadeLookup(
+  message: string,
+  authHeader: string | null,
+  geminiKey: string
+): Promise<{ hit: boolean; foodData?: FoodData; source?: string; confidence?: number }> {
   try {
-    console.log("[process-food-ai] Request received", {
-      method: req.method,
-      url: req.url,
-    });
-
-    const authHeader = req.headers.get("Authorization");
-    console.log("[process-food-ai] Auth header check", {
-      hasAuth: !!authHeader,
-      authPreview: authHeader ? authHeader.substring(0, 30) + "..." : "none"
-    });
-
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: authHeader ? { Authorization: authHeader } : {},
-        },
-      }
-    );
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.getUser();
-
-    if (authError || !user) {
-      console.error("[process-food-ai] Auth failed", {
-        error: authError?.message,
-        hasUser: !!user
-      });
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Autenticación fallida. Por favor, cierra sesión e inicia nuevamente.",
-          details: authError?.message || "User not found"
-        }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    console.log("[process-food-ai] User OK", {
-      userId: user.id,
-      email: user.email
-    });
-
-    const { message, audioBase64, imageBase64, mimeType } = await req.json();
-
-    // Validar longitud del mensaje
-    if (message && message.length > 5000) {
-      return new Response(
-        JSON.stringify({ success: false, error: "El mensaje es demasiado largo (máximo 5000 caracteres)" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validar mimeType permitido
-    const ALLOWED_AUDIO_TYPES = ["audio/webm", "audio/wav", "audio/mpeg", "audio/ogg", "audio/mp4"];
-    const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (mimeType && !ALLOWED_AUDIO_TYPES.includes(mimeType) && !ALLOWED_IMAGE_TYPES.includes(mimeType)) {
-      return new Response(
-        JSON.stringify({ success: false, error: `Tipo de archivo no permitido: ${mimeType}` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validar tamaño base64 (máximo 10MB)
-    const MAX_BASE64_SIZE = 10 * 1024 * 1024;
-    if (audioBase64 && audioBase64.length > MAX_BASE64_SIZE) {
-      return new Response(
-        JSON.stringify({ success: false, error: "El archivo de audio es demasiado grande (máximo 10MB)" }),
-        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    if (imageBase64 && imageBase64.length > MAX_BASE64_SIZE) {
-      return new Response(
-        JSON.stringify({ success: false, error: "La imagen es demasiado grande (máximo 10MB)" }),
-        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!message && !audioBase64 && !imageBase64) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "message, audioBase64, or imageBase64 is required"
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Call Gemini API
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "GEMINI_API_KEY not configured. Please set it in Supabase Dashboard > Edge Functions > Secrets"
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    console.log("[process-food-ai] Calling Gemini API", {
-      hasMessage: !!message,
-      hasAudio: !!audioBase64,
-      hasImage: !!imageBase64,
-      messagePreview: message ? message.substring(0, 50) + "..." : "N/A"
-    });
-
-    // Build parts array for multimodal input
-    const parts: any[] = [];
-
-    // Add text prompt
-    if (message) {
-      parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: "${message}"` });
-    } else if (audioBase64) {
-      parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Audio describiendo alimentos consumidos]` });
-    } else if (imageBase64) {
-      parts.push({ text: `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Imagen de alimentos]` });
-    }
-
-    // Add audio if present
-    if (audioBase64) {
-      parts.push({
-        inlineData: {
-          mimeType: mimeType || "audio/webm",
-          data: audioBase64
-        }
-      });
-    }
-
-    // Add image if present
-    if (imageBase64) {
-      parts.push({
-        inlineData: {
-          mimeType: mimeType || "image/jpeg",
-          data: imageBase64
-        }
-      });
-    }
-
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    const identifyResp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{
-            parts
-          }]
-        })
+          contents: [{ parts: [{ text: `${IDENTIFY_PROMPT}\n\nINPUT: "${message}"` }] }],
+          generationConfig: { maxOutputTokens: 200, temperature: 0.1 },
+        }),
       }
     );
+    if (!identifyResp.ok) return { hit: false };
 
-    console.log("[process-food-ai] Gemini API responded", {
-      status: geminiResponse.status,
-      ok: geminiResponse.ok
-    });
+    const identifyData = await identifyResp.json();
+    const identifyText = identifyData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const idStart = identifyText.indexOf("{");
+    const idEnd = identifyText.lastIndexOf("}");
+    if (idStart === -1 || idEnd === -1) return { hit: false };
 
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("[process-food-ai] Gemini API error:", errorText);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: `Gemini API error: ${geminiResponse.status}`,
-          details: errorText
+    const identified = JSON.parse(identifyText.substring(idStart, idEnd + 1));
+    // identified object used internally
+
+    if (identified.is_complex_dish || !identified.food_name_en) return { hit: false };
+
+    const lookupResp = await fetch(
+      `${Deno.env.get("SUPABASE_URL")}/functions/v1/nutrition-lookup`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader || "",
+          apikey: Deno.env.get("SUPABASE_ANON_KEY") || "",
+        },
+        body: JSON.stringify({
+          food_name_es: identified.food_name_es,
+          food_name_en: identified.food_name_en,
+          quantity_g: identified.quantity_g || 100,
         }),
-        {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+      }
+    );
+    if (!lookupResp.ok) return { hit: false };
+
+    const lookupData = await lookupResp.json();
+    if (!lookupData.success || lookupData.source === "none") return { hit: false };
+
+    // Cascade hit
+    const s = lookupData.scaled;
+    const v = (val: any) => Number(val) || 0;
+    const srcLabel = lookupData.source === "usda" ? "USDA" : lookupData.source === "openfoodfacts" ? "OpenFoodFacts" : lookupData.original_source || lookupData.source;
+
+    return {
+      hit: true,
+      source: lookupData.source,
+      confidence: lookupData.confidence,
+      foodData: {
+        food_name: identified.food_name_es || lookupData.food_name,
+        quantity_g: identified.quantity_g || lookupData.quantity_g,
+        reply_text: `✅ ${identified.food_name_es} registrado (${lookupData.quantity_g}g) — Datos verificados de ${srcLabel} (confianza: ${Math.round((lookupData.confidence || 0.8) * 100)}%)`,
+        calories: v(s.calories), protein_g: v(s.protein_g), carbs_g: v(s.carbs_g), fat_g: v(s.fat_g),
+        water_ml: v(s.water_ml), sodium_mg: v(s.sodium_mg), leucine_g: v(s.leucine_mg) / 1000,
+        choline_mg: v(s.choline_mg), zinc_mg: v(s.zinc_mg), magnesium_mg: v(s.magnesium_mg), vit_d3_iu: v(s.vit_d3_iu),
+        omega_3_total_g: (v(s.epa_mg) + v(s.dha_mg) + v(s.ala_mg)) / 1000,
+        polyphenols_total_mg: v(s.polyphenols_total_mg),
+        nutritional_matrix: lookupData.nutritional_matrix,
+      },
+    };
+  } catch (err) {
+    console.warn("[cascade] Error (non-fatal):", err);
+    return { hit: false };
+  }
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
+  try {
+    // Request received
+
+    const authHeader = req.headers.get("Authorization");
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: authHeader ? { Authorization: authHeader } : {} } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+
+    if (authError || !user) {
+      console.error("[process-food-ai] Auth failed:", authError?.message);
+      return new Response(
+        JSON.stringify({ success: false, error: "Autenticación fallida. Por favor, cierra sesión e inicia nuevamente.", details: authError?.message || "User not found" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const geminiData = await geminiResponse.json();
-    const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    // User authenticated
+
+    const { message, audioBase64, imageBase64, mimeType } = await req.json();
+
+    if (message && message.length > 5000) {
+      return new Response(JSON.stringify({ success: false, error: "El mensaje es demasiado largo (máximo 5000 caracteres)" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    // Sanitizar mensaje contra prompt injection
+    const sanitizedMessage = message
+      ? String(message)
+          .replace(/\bignore\b.*\binstructions?\b/gi, "[filtrado]")
+          .replace(/\bsystem\b.*\bprompt\b/gi, "[filtrado]")
+          .replace(/\brole\b.*\bassistant\b/gi, "[filtrado]")
+      : undefined;
+    const ALLOWED_AUDIO_TYPES = ["audio/webm", "audio/wav", "audio/mpeg", "audio/ogg", "audio/mp4"];
+    const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (mimeType && !ALLOWED_AUDIO_TYPES.includes(mimeType) && !ALLOWED_IMAGE_TYPES.includes(mimeType)) {
+      return new Response(JSON.stringify({ success: false, error: `Tipo de archivo no permitido: ${mimeType}` }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const MAX_BASE64_SIZE = 10 * 1024 * 1024;
+    if (audioBase64 && audioBase64.length > MAX_BASE64_SIZE) {
+      return new Response(JSON.stringify({ success: false, error: "El archivo de audio es demasiado grande (máximo 10MB)" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (imageBase64 && imageBase64.length > MAX_BASE64_SIZE) {
+      return new Response(JSON.stringify({ success: false, error: "La imagen es demasiado grande (máximo 10MB)" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (!message && !audioBase64 && !imageBase64) {
+      return new Response(JSON.stringify({ success: false, error: "message, audioBase64, or imageBase64 is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
+
+    if (!GEMINI_API_KEY && !DEEPSEEK_API_KEY) {
+      return new Response(JSON.stringify({ success: false, error: "No hay API keys configuradas" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // ─── CASCADE: texto sin imagen/audio ───────────────────
+    if (sanitizedMessage && !audioBase64 && !imageBase64) {
+      const cascade = await tryCascadeLookup(sanitizedMessage, authHeader, GEMINI_API_KEY);
+      if (cascade.hit && cascade.foodData) {
+        const fd = cascade.foodData;
+        const { data, error } = await supabaseClient.from("food_logs").insert({
+          user_id: user.id, food_name: fd.food_name, quantity_g: fd.quantity_g || null, reply_text: fd.reply_text || null,
+          calories: fd.calories || 0, protein_g: fd.protein_g || 0, carbs_g: fd.carbs_g || 0, fat_g: fd.fat_g || 0,
+          water_ml: fd.water_ml || 0, leucine_g: fd.leucine_g || 0, sodium_mg: fd.sodium_mg || 0, choline_mg: fd.choline_mg || 0,
+          zinc_mg: fd.zinc_mg || 0, magnesium_mg: fd.magnesium_mg || 0, vit_d3_iu: fd.vit_d3_iu || 0,
+          omega_3_total_g: fd.omega_3_total_g || 0, polyphenols_total_mg: fd.polyphenols_total_mg || 0,
+          nutritional_matrix: fd.nutritional_matrix, logged_at: new Date(),
+        }).select().single();
+        if (!error) {
+          return new Response(JSON.stringify({ success: true, data, source: cascade.source, confidence: cascade.confidence, message: `Food logged via ${cascade.source} (cascade).` }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        console.error("[process-food-ai] CASCADE insert error:", error.message);
+      }
+    }
+
+    // ─── MULTI-PROVIDER AI: Gemini → DeepSeek fallback ──
+    const isMultimedia = !!(audioBase64 || imageBase64);
+    const textPrompt = sanitizedMessage
+      ? `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: "${sanitizedMessage}"`
+      : audioBase64
+        ? `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Audio describiendo alimentos consumidos]`
+        : `${SYSTEM_PROMPT}\n\nINPUT DEL USUARIO: [Imagen de alimentos]`;
+
+    // Helper: llamar Gemini (soporta texto + multimedia)
+    async function callGemini(model: string): Promise<string | null> {
+      if (!GEMINI_API_KEY) return null;
+      const parts: any[] = [{ text: textPrompt }];
+      if (audioBase64) { parts.push({ inlineData: { mimeType: mimeType || "audio/webm", data: audioBase64 } }); }
+      if (imageBase64) { parts.push({ inlineData: { mimeType: mimeType || "image/jpeg", data: imageBase64 } }); }
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts }] }) }
+      );
+      if (!res.ok) {
+        console.warn(`[process-food-ai] ${model} => ${res.status}`);
+        return null;
+      }
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    }
+
+    // Helper: llamar DeepSeek (solo texto, no multimedia)
+    async function callDeepSeek(): Promise<string | null> {
+      if (!DEEPSEEK_API_KEY || isMultimedia) return null;
+      const res = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${DEEPSEEK_API_KEY}` },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: sanitizedMessage || "" },
+          ],
+          temperature: 0.4,
+          max_tokens: 4096,
+        }),
+      });
+      if (!res.ok) {
+        console.warn(`[process-food-ai] deepseek => ${res.status}`);
+        return null;
+      }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || null;
+    }
+
+    // Cadena de providers: Gemini 2.5-flash → 2.0-flash → 1.5-flash → DeepSeek
+    const providers: Array<[string, () => Promise<string | null>]> = [
+      ["gemini-2.5-flash", () => callGemini("gemini-2.5-flash")],
+      ["gemini-2.0-flash", () => callGemini("gemini-2.0-flash")],
+      ["gemini-1.5-flash", () => callGemini("gemini-1.5-flash")],
+      ["deepseek-chat", () => callDeepSeek()],
+    ];
+
+    let rawText: string | null = null;
+    let usedProvider = "unknown";
+    for (const [name, fn] of providers) {
+      try {
+        rawText = await fn();
+        if (rawText) { usedProvider = name; break; }
+      } catch (err) {
+        console.warn(`[process-food-ai] ${name} error:`, err);
+      }
+    }
 
     if (!rawText) {
-      console.error("Gemini returned empty response:", geminiData);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Gemini returned no response",
-          geminiData
-        }),
-        {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ success: false, error: "Todos los proveedores de IA fallaron. Intenta de nuevo." }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Clean and parse JSON
     const firstBrace = rawText.indexOf("{");
     const lastBrace = rawText.lastIndexOf("}");
+    if (firstBrace === -1 || lastBrace === -1) throw new Error("No JSON found in Gemini response");
 
-    if (firstBrace === -1 || lastBrace === -1) {
-      throw new Error("No JSON found in Gemini response");
-    }
-
-    const cleanJson = rawText.substring(firstBrace, lastBrace + 1);
-    const parsed = JSON.parse(cleanJson);
+    const parsed = JSON.parse(rawText.substring(firstBrace, lastBrace + 1));
     const fd = parsed.food_data;
+    if (!fd || !fd.food_name) throw new Error("Invalid response structure from Gemini");
 
-    if (!fd || !fd.food_name) {
-      throw new Error("Invalid response structure from Gemini");
-    }
-
-    // Extract groups
     const g1 = fd.group_1_motor || {};
     const g2 = fd.group_2_cognitive || {};
     const g3 = fd.group_3_hormonal || {};
     const g4 = fd.group_4_inflammation || {};
-
-    // Helper to safely get numeric values
     const val = (v: any) => Number(v) || 0;
 
-    // Prepare VIP columns
     const foodData: FoodData = {
-      food_name: fd.food_name,
-      quantity_g: fd.quantity_g,
-      reply_text: parsed.reply_text,
-
-      // MOTOR VIPs
-      calories: val(g1.calories),
-      protein_g: val(g1.protein_g),
-      carbs_g: val(g1.carbs_g),
-      fat_g: val(g1.fat_g),
-      water_ml: val(g1.water_ml),
-      sodium_mg: val(g1.electrolytes?.sodium_mg),
-      leucine_g: val(g1.aminos_muscle?.leucine_mg) / 1000,
-
-      // COGNITIVE VIPs
+      food_name: fd.food_name, quantity_g: fd.quantity_g, reply_text: parsed.reply_text,
+      calories: val(g1.calories), protein_g: val(g1.protein_g), carbs_g: val(g1.carbs_g), fat_g: val(g1.fat_g),
+      water_ml: val(g1.water_ml), sodium_mg: val(g1.electrolytes?.sodium_mg), leucine_g: val(g1.aminos_muscle?.leucine_mg) / 1000,
       choline_mg: val(g2.neuro_others?.choline_mg),
-
-      // HORMONAL VIPs
       zinc_mg: val(g3.thyroid_insulin?.zinc_mg) || val(g1.structure_minerals?.zinc_mg),
       magnesium_mg: val(g3.thyroid_insulin?.magnesium_mg) || val(g1.structure_minerals?.magnesium_mg),
       vit_d3_iu: val(g3.liposolubles?.vit_d3_iu),
-
-      // INFLAMMATION VIPs
       omega_3_total_g: val(g4.omega?.omega_3_total_mg) / 1000,
       polyphenols_total_mg: val(g4.bioactives?.polyphenols_total_mg),
-
-      // Complete nutritional matrix
-      nutritional_matrix: {
-        motor: g1,
-        cognitive: g2,
-        hormonal: g3,
-        inflammation: g4
-      }
+      nutritional_matrix: { motor: g1, cognitive: g2, hormonal: g3, inflammation: g4 },
     };
 
-    console.log("[process-food-ai] Inserting food log to database", {
-      userId: user.id,
-      foodName: foodData.food_name,
-      calories: foodData.calories
-    });
+    const { data, error } = await supabaseClient.from("food_logs").insert({
+      user_id: user.id, food_name: foodData.food_name, quantity_g: foodData.quantity_g || null, reply_text: foodData.reply_text || null,
+      calories: foodData.calories || 0, protein_g: foodData.protein_g || 0, carbs_g: foodData.carbs_g || 0, fat_g: foodData.fat_g || 0,
+      water_ml: foodData.water_ml || 0, leucine_g: foodData.leucine_g || 0, sodium_mg: foodData.sodium_mg || 0, choline_mg: foodData.choline_mg || 0,
+      zinc_mg: foodData.zinc_mg || 0, magnesium_mg: foodData.magnesium_mg || 0, vit_d3_iu: foodData.vit_d3_iu || 0,
+      omega_3_total_g: foodData.omega_3_total_g || 0, polyphenols_total_mg: foodData.polyphenols_total_mg || 0,
+      nutritional_matrix: foodData.nutritional_matrix, logged_at: new Date(),
+    }).select().single();
 
-    // Insert food log with HYBRID schema (VIP columns + JSONB)
-    const { data, error } = await supabaseClient
-      .from("food_logs")
-      .insert({
-        user_id: user.id,
-        food_name: foodData.food_name,
-        quantity_g: foodData.quantity_g || null,
-        reply_text: foodData.reply_text || null,
+    if (error) { console.error("[process-food-ai] DB insert error:", error.message); throw error; }
 
-        // VIP COLUMNS - MOTOR
-        calories: foodData.calories || 0,
-        protein_g: foodData.protein_g || 0,
-        carbs_g: foodData.carbs_g || 0,
-        fat_g: foodData.fat_g || 0,
-        water_ml: foodData.water_ml || 0,
-        leucine_g: foodData.leucine_g || 0,
-        sodium_mg: foodData.sodium_mg || 0,
+    return new Response(JSON.stringify({ success: true, data, source: usedProvider, message: "Food logged successfully" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-        // VIP COLUMNS - COGNITIVE
-        choline_mg: foodData.choline_mg || 0,
-
-        // VIP COLUMNS - HORMONAL
-        zinc_mg: foodData.zinc_mg || 0,
-        magnesium_mg: foodData.magnesium_mg || 0,
-        vit_d3_iu: foodData.vit_d3_iu || 0,
-
-        // VIP COLUMNS - INFLAMMATION
-        omega_3_total_g: foodData.omega_3_total_g || 0,
-        polyphenols_total_mg: foodData.polyphenols_total_mg || 0,
-
-        // JSONB FIELD - Complete nutritional matrix
-        nutritional_matrix: foodData.nutritional_matrix,
-
-        logged_at: new Date(),
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("[process-food-ai] Database insert error", {
-        error: error.message,
-        code: error.code
-      });
-      throw error;
-    }
-
-    console.log("[process-food-ai] Food log inserted successfully", {
-      logId: data?.id,
-      foodName: data?.food_name
-    });
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data,
-        message: "Food logged successfully with hybrid schema (VIP + JSONB)"
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
   } catch (error) {
     console.error("Unexpected error:", error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "Internal server error"
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ success: false, error: "Internal server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

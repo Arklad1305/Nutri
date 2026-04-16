@@ -9,96 +9,69 @@ const corsHeaders = {
 };
 
 // Prompt del sistema que define el comportamiento y formato de respuesta del chef IA
-const RECIPE_SYSTEM_PROMPT = `Eres un Chef IA Nutricional especializado en crear recetas personalizadas basadas en déficits nutricionales específicos.
+const RECIPE_SYSTEM_PROMPT = `Eres un Chef profesional con formacion en nutricion. Creas recetas REALES que la gente cocina en casa.
 
-TU OBJETIVO: Generar una receta deliciosa, práctica y altamente nutritiva que ayude a cubrir los déficits nutricionales del usuario.
+PRINCIPIO FUNDAMENTAL: Cada receta debe ser UN PLATO COHERENTE con una identidad culinaria clara.
 
-REGLAS CRÍTICAS:
-1. PERSONALIZACIÓN: La receta DEBE enfocarse en cubrir los déficits nutricionales específicos proporcionados.
-2. PRACTICIDAD: Recetas simples, con ingredientes accesibles y tiempos de preparación razonables (15-45 min).
-3. SABOR: Las recetas deben ser deliciosas y apetecibles, no solo nutritivas.
-4. PRECISIÓN: Todas las cantidades deben ser exactas y realistas.
-5. DIVERSIDAD: Varía los tipos de platos (desayuno, almuerzo, cena, snacks).
+REGLAS DE COHERENCIA CULINARIA (NO NEGOCIABLES):
+1. UN PLATO, UNA IDENTIDAD: Cada receta pertenece a UNA tradicion culinaria. No mezcles cocina japonesa con mexicana salvo fusion intencional.
+2. ARMONIA DE SABORES: Los ingredientes deben complementarse. Dulce con dulce (frutas+yogur+miel), salado con salado (pollo+papas+vegetales). NUNCA mezcles salsa de arandanos con papas asadas a menos que sea un glaseado tipico.
+3. COMPONENTES LOGICOS: Un plato tiene maximo 3 componentes: base (proteina/grano) + acompanamiento + salsa/aderezo. No pongas 6 cosas sin relacion.
+4. RESPETAR EL TIPO DE COMIDA:
+   - Desayuno: huevos, avena, tostadas, smoothies, frutas. NO platos elaborados de cena.
+   - Almuerzo: ensaladas completas, bowls, wraps, platos con proteina + acompanamiento.
+   - Cena: platos mas ligeros o reconfortantes. Sopas, salteados, pescado a la plancha.
+   - Snack: porciones pequenas. Frutos secos, fruta con mantequilla de mani, hummus, yogur.
+5. INGREDIENTES REALES: Usa cantidades que alguien tendria en casa. No pongas "200g de higado de res" en un desayuno.
+6. TECNICAS APROPIADAS: Si es un plato de 15 min, no incluyas tecnicas de 2 horas.
 
-ESTRUCTURA DE LA RECETA:
-
-1. TÍTULO: Nombre atractivo y descriptivo
-2. DESCRIPCIÓN: 1-2 frases explicando por qué esta receta es ideal para los déficits
-3. TIEMPO: Preparación y cocción en minutos
-4. DIFICULTAD: Fácil, Media, o Avanzada
-5. PORCIONES: Número de porciones que produce
-6. INGREDIENTES: Lista detallada con cantidades exactas
-7. INSTRUCCIONES: Pasos numerados y claros
-8. INFORMACIÓN NUTRICIONAL: Macros y micros por porción
-9. TIPS: 1-2 consejos útiles
+COMO CUBRIR DEFICITS SIN ARRUINAR EL PLATO:
+- Integra ingredientes ricos en nutrientes de forma NATURAL al plato.
+- Ejemplo BUENO: Deficit de hierro → Ensalada de lentejas con espinacas y limon (la vitamina C mejora absorcion)
+- Ejemplo MALO: Deficit de hierro → Higado con yogur de fresa y arroz con chocolate
+- Si un nutriente es dificil de cubrir en una receta, mencionalo en los tips como suplemento.
+- NO fuerces ingredientes incompatibles solo para cubrir numeros.
 
 FORMATO JSON DE RESPUESTA OBLIGATORIO:
 {
   "recipe": {
-    "title": "Nombre de la Receta",
-    "description": "Descripción breve y motivadora",
+    "title": "Nombre claro y apetecible",
+    "description": "1-2 frases. Por que este plato es ideal para los deficits.",
     "prepTime": 15,
     "cookTime": 20,
     "totalTime": 35,
-    "difficulty": "Fácil",
+    "difficulty": "Facil | Media | Avanzada",
     "servings": 2,
-    "cuisine": "Tipo de cocina (ej: Mediterránea, Mexicana, Asiática)",
-    "mealType": "Tipo de comida (ej: Desayuno, Almuerzo, Cena, Snack)",
-    "dietType": "Tipo de dieta compatible (ej: Omnívora, Vegetariana, Vegana, Keto, etc)",
+    "cuisine": "Tipo de cocina real (Mediterranea, Mexicana, Asiatica, Casera, etc)",
+    "mealType": "Desayuno | Almuerzo | Cena | Snack",
+    "dietType": "Omnivora | Vegetariana | Vegana | Keto | etc",
     "ingredients": [
-      {
-        "name": "Nombre del ingrediente",
-        "amount": 100,
-        "unit": "g",
-        "notes": "opcional: preparación especial"
-      }
+      { "name": "Ingrediente", "amount": 100, "unit": "g", "notes": "opcional" }
     ],
     "instructions": [
-      {
-        "step": 1,
-        "instruction": "Instrucción detallada del paso 1",
-        "time": 5
-      }
+      { "step": 1, "instruction": "Paso claro y especifico", "time": 5 }
     ],
     "nutrition": {
       "perServing": {
-        "calories": 450,
-        "protein_g": 35,
-        "carbs_g": 40,
-        "fat_g": 18,
-        "fiber_g": 8,
-        "sugar_g": 5,
-        "sodium_mg": 450,
-        "calcium_mg": 200,
-        "iron_mg": 6,
-        "magnesium_mg": 150,
-        "zinc_mg": 4,
-        "omega_3_mg": 1200,
-        "vit_d3_iu": 400,
-        "vit_b12_mcg": 2.5,
-        "folate_mcg": 180
+        "calories": 450, "protein_g": 35, "carbs_g": 40, "fat_g": 18,
+        "fiber_g": 8, "sugar_g": 5, "sodium_mg": 450, "calcium_mg": 200,
+        "iron_mg": 6, "magnesium_mg": 150, "zinc_mg": 4, "omega_3_mg": 1200,
+        "vit_d3_iu": 400, "vit_b12_mcg": 2.5, "folate_mcg": 180
       },
       "deficitsCovered": [
-        {
-          "nutrient": "Nombre del nutriente",
-          "amount": "cantidad",
-          "percentOfTarget": 35
-        }
+        { "nutrient": "Nombre", "amount": "cantidad", "percentOfTarget": 35 }
       ]
     },
-    "tips": [
-      "Tip 1: Consejo útil",
-      "Tip 2: Variación o sustitución"
-    ],
-    "tags": ["alto-en-proteina", "rico-en-omega3", "antiinflamatorio"]
+    "tips": ["Tip culinario real", "Sustitucion o variacion practica"],
+    "tags": ["alto-en-proteina", "rapido", "economico"]
   }
 }
 
 IMPORTANTE:
-- Devuelve SOLO el JSON limpio, sin markdown, sin backticks, sin explicaciones adicionales.
-- Las cantidades nutricionales deben ser precisas y calculadas para UNA PORCIÓN.
-- Si el usuario especifica un tipo de dieta, RESPÉTALO estrictamente.
-- Sé creativo pero realista con los ingredientes y preparación.`;
+- Devuelve SOLO JSON limpio, sin markdown, sin backticks.
+- Cantidades nutricionales precisas para UNA PORCION.
+- Si el usuario da ingredientes especificos, USARLOS como base del plato.
+- Prefiere recetas de cocina latinoamericana/casera cuando no se especifique.`;
 
 interface RecipeDeficit {
   nutrient: string;
@@ -116,35 +89,21 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    console.log("🔍 INICIANDO DIAGNÓSTICO DE AUTH...");
-
-    // 1. CHEQUEAR VARIABLES DE ENTORNO
     const sbUrl = Deno.env.get("SUPABASE_URL");
     const sbKey = Deno.env.get("SUPABASE_ANON_KEY");
 
-    console.log("DEBUG VARS:", {
-        hasUrl: !!sbUrl,
-        hasKey: !!sbKey,
-        urlLength: sbUrl?.length || 0,
-        keyLength: sbKey?.length || 0
-    });
-
     if (!sbUrl || !sbKey) {
-        throw new Error("🚨 FATAL: Las variables de entorno SUPABASE_URL o SUPABASE_ANON_KEY no están definidas en el servidor.");
+        throw new Error("SUPABASE_URL o SUPABASE_ANON_KEY no configuradas");
     }
 
-    // 2. CHEQUEAR HEADER
     const authHeader = req.headers.get("Authorization");
-    console.log("DEBUG HEADER:", {
-        hasAuthHeader: !!authHeader,
-        headerPreview: authHeader ? authHeader.substring(0, 20) + "..." : "NULO"
-    });
-
     if (!authHeader) {
-        throw new Error("🚨 FATAL: No llegó el header Authorization a la función.");
+        return new Response(
+            JSON.stringify({ success: false, error: "Authorization header requerido" }),
+            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
     }
 
-    // 3. INTENTAR CONECTAR
     const supabaseClient = createClient(
       sbUrl,
       sbKey,
@@ -154,32 +113,13 @@ Deno.serve(async (req: Request) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
     if (authError || !user) {
-        console.error("🚫 ERROR AL VALIDAR USUARIO:", authError);
         return new Response(
-            JSON.stringify({
-              success: false,
-              error: "Token Rejected by Auth Server",
-              details: authError,
-              authErrorMessage: authError?.message,
-              authErrorCode: authError?.code,
-              authErrorStatus: authError?.status
-            }),
+            JSON.stringify({ success: false, error: "Token inválido" }),
             { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }
 
-    console.log("✅ USUARIO VALIDADO:", user.id);
-
     const requestBody = await req.json();
-    console.log("[generate-recipes] Request body received", {
-      hasDeficits: !!requestBody.deficits,
-      deficitsIsArray: Array.isArray(requestBody.deficits),
-      deficitsCount: requestBody.deficits?.length,
-      hasDietType: !!requestBody.dietType,
-      hasCustomRequest: !!requestBody.customRequest,
-      hasUserContext: !!requestBody.userContext,
-      requestBodyKeys: Object.keys(requestBody)
-    });
 
     const { deficits, dietType, customRequest, userContext } = requestBody;
 
@@ -208,46 +148,39 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Call Gemini API
+    // --- Multi-provider AI call: Gemini -> DeepSeek ---
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
+    const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
+
+    if (!GEMINI_API_KEY && !DEEPSEEK_API_KEY) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "GEMINI_API_KEY not configured. Please set it in Supabase Dashboard > Edge Functions > Secrets"
+          error: "No hay API keys configuradas. Configura GEMINI_API_KEY o DEEPSEEK_API_KEY en Supabase Secrets."
         }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("[generate-recipes] Calling Gemini API", {
-      deficitCount: deficits.length,
-      dietType: dietType || "standard",
-      hasCustomRequest: !!customRequest,
-      hasUserContext: !!userContext
-    });
+    // AI providers configured
 
     // Construir prompt personalizado con déficits, perfil del usuario y preferencias
-    let userPrompt = `DÉFICITS NUTRICIONALES A CUBRIR:\n`;
+    let userPrompt = `DEFICITS NUTRICIONALES A CUBRIR:\n`;
     deficits.forEach((d: RecipeDeficit) => {
       userPrompt += `- ${d.nutrient}: Actual ${d.current.toFixed(1)}, Objetivo ${d.target.toFixed(1)} (${d.status})\n`;
     });
 
-    // Agregar contexto del usuario si está disponible (edad, peso, targets nutricionales, etc.)
     if (userContext) {
       userPrompt += `\nPERFIL DEL USUARIO:\n`;
-      if (userContext.age) userPrompt += `- Edad: ${userContext.age} años\n`;
-      if (userContext.gender) userPrompt += `- Género: ${userContext.gender}\n`;
+      if (userContext.age) userPrompt += `- Edad: ${userContext.age}\n`;
+      if (userContext.gender) userPrompt += `- Genero: ${userContext.gender}\n`;
       if (userContext.weight_kg) userPrompt += `- Peso: ${userContext.weight_kg} kg\n`;
       if (userContext.height_cm) userPrompt += `- Altura: ${userContext.height_cm} cm\n`;
-      if (userContext.activity_level) userPrompt += `- Nivel de actividad: ${userContext.activity_level}\n`;
-      if (userContext.target_calories) userPrompt += `- Target de calorías diarias: ${userContext.target_calories} kcal\n`;
-      if (userContext.target_protein) userPrompt += `- Target de proteína diaria: ${userContext.target_protein}g\n`;
-      if (userContext.target_carbs) userPrompt += `- Target de carbohidratos diarios: ${userContext.target_carbs}g\n`;
-      if (userContext.target_fat) userPrompt += `- Target de grasas diarias: ${userContext.target_fat}g\n`;
+      if (userContext.activity_level) userPrompt += `- Actividad: ${userContext.activity_level}\n`;
+      if (userContext.target_calories) userPrompt += `- Calorias objetivo: ${userContext.target_calories} kcal\n`;
+      if (userContext.target_protein) userPrompt += `- Proteina objetivo: ${userContext.target_protein}g\n`;
+      if (userContext.target_carbs) userPrompt += `- Carbohidratos objetivo: ${userContext.target_carbs}g\n`;
+      if (userContext.target_fat) userPrompt += `- Grasas objetivo: ${userContext.target_fat}g\n`;
     }
 
     if (dietType && dietType !== 'standard') {
@@ -255,74 +188,97 @@ Deno.serve(async (req: Request) => {
     }
 
     if (customRequest) {
-      // Sanitizar input del usuario para mitigar prompt injection
       const sanitizedRequest = String(customRequest)
         .replace(/\bignore\b.*\binstructions?\b/gi, "[filtrado]")
         .replace(/\bsystem\b.*\bprompt\b/gi, "[filtrado]")
         .substring(0, 500);
-      userPrompt += `\nREQUERIMIENTO ESPECIAL DEL USUARIO: ${sanitizedRequest}`;
+      userPrompt += `\nREQUERIMIENTO ESPECIAL: ${sanitizedRequest}`;
     }
 
-    userPrompt += `\n\nGenera UNA receta que ayude a cubrir estos déficits considerando el perfil del usuario. Sé creativo, práctico y asegúrate de que sea deliciosa.`;
+    userPrompt += `\n\nGenera UNA receta coherente y apetecible que integre naturalmente ingredientes ricos en los nutrientes deficitarios. Recuerda: un plato real, con identidad culinaria clara.`;
 
-    // Llamar a la API para generar la receta con contexto completo
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `${RECIPE_SYSTEM_PROMPT}\n\n${userPrompt}`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.8,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 4096,
-          }
-        })
-      }
-    );
-
-    console.log("[generate-recipes] Gemini API responded", {
-      status: geminiResponse.status,
-      ok: geminiResponse.ok
-    });
-
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("[generate-recipes] Gemini API error:", errorText);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: `Gemini API error: ${geminiResponse.status}`,
-          details: errorText
-        }),
+    // Helper: call Gemini
+    async function callGemini(model: string): Promise<string | null> {
+      if (!GEMINI_API_KEY) return null;
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
         {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: RECIPE_SYSTEM_PROMPT + "\n\n" + userPrompt }] }],
+            generationConfig: { temperature: 0.6, topK: 40, topP: 0.9, maxOutputTokens: 4096 }
+          })
         }
       );
+      if (!res.ok) {
+        const errText = await res.text();
+        console.warn(`[generate-recipes] Gemini ${model} => ${res.status}: ${errText.substring(0, 150)}`);
+        return null;
+      }
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
     }
 
-    const geminiData = await geminiResponse.json();
-    const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    // Helper: call DeepSeek (OpenAI-compatible)
+    async function callDeepSeek(): Promise<string | null> {
+      if (!DEEPSEEK_API_KEY) return null;
+      const res = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: RECIPE_SYSTEM_PROMPT },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.6,
+          max_tokens: 4096,
+        })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        console.warn(`[generate-recipes] DeepSeek => ${res.status}: ${errText.substring(0, 150)}`);
+        return null;
+      }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || null;
+    }
+
+    // Cadena de fallback: Gemini flash -> flash-lite -> 1.5-flash -> DeepSeek
+    let rawText: string | null = null;
+    let usedProvider = "";
+
+    const providers: Array<[string, () => Promise<string | null>]> = [
+      ["gemini-2.0-flash", () => callGemini("gemini-2.0-flash")],
+      ["gemini-2.0-flash-lite", () => callGemini("gemini-2.0-flash-lite")],
+      ["gemini-1.5-flash", () => callGemini("gemini-1.5-flash")],
+      ["deepseek-chat", () => callDeepSeek()],
+    ];
+
+    for (const [name, fn] of providers) {
+      try {
+        rawText = await fn();
+        if (rawText) {
+          usedProvider = name;
+          // Provider succeeded
+          break;
+        }
+      } catch (err) {
+        console.warn(`[generate-recipes] ${name} error:`, err);
+      }
+    }
 
     if (!rawText) {
-      console.error("Gemini returned empty response:", geminiData);
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Gemini returned no response",
-          geminiData
+          error: "Todos los modelos de IA estan temporalmente saturados. Intenta de nuevo en unos minutos."
         }),
-        {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -343,11 +299,7 @@ Deno.serve(async (req: Request) => {
 
     const recipe = parsed.recipe;
 
-    console.log("[generate-recipes] Recipe generated successfully", {
-      title: recipe.title,
-      servings: recipe.servings,
-      totalTime: recipe.totalTime
-    });
+    // Recipe parsed successfully
 
     // Guardar receta en la base de datos con todos los datos nutricionales
     const nutrition = recipe.nutrition?.perServing || {};
@@ -386,7 +338,7 @@ Deno.serve(async (req: Request) => {
         tags: recipe.tags || [],
         nutritional_highlights: recipe.nutrition?.deficitsCovered || [],
         recipe_image_url: null,
-        recipe_source: "gemini-ai-generated",
+        recipe_source: `${usedProvider}-ai-generated`,
         user_rating: null,
         times_cooked: 0,
         is_favorite: false,
@@ -400,10 +352,6 @@ Deno.serve(async (req: Request) => {
         code: dbError.code
       });
       // Continue anyway, the recipe was generated successfully
-    } else {
-      console.log("[generate-recipes] Recipe saved to database", {
-        recipeId: savedRecipe?.id
-      });
     }
 
     return new Response(

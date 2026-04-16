@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { format, startOfDay, endOfDay } from 'date-fns'
+import { ClipboardList, Moon, Zap, Dumbbell, ChevronRight, Activity } from 'lucide-react'
 import { FoodLogList } from '../components/FoodLogList'
 import { WaterTracker } from '../components/WaterTracker'
 import { MetabolicStateCard } from '../components/MetabolicStateCard'
@@ -50,8 +51,12 @@ export function Dashboard() {
   const [isTrainingDay, setIsTrainingDay] = useState<boolean>(false)
   const [activities, setActivities] = useState<any[]>([])
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false)
+  const [expandedCard, setExpandedCard] = useState<string | null>(null)
+  const [profileName, setProfileName] = useState<string>('')
   const dashRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
+
+  const toggleCard = (id: string) => setExpandedCard(prev => prev === id ? null : id)
 
   useGSAP(() => {
     if (reducedMotion || !dashRef.current || !goals) return
@@ -83,6 +88,29 @@ export function Dashboard() {
       loadWaterIntake()
     }
   }, [user, refreshKey, isTrainingDay, sleepHours])
+
+  useEffect(() => {
+    if (!user) return
+
+    const bump = () => setRefreshKey(k => k + 1)
+    const channel = supabase
+      .channel(`dashboard-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'food_logs', filter: `user_id=eq.${user.id}` },
+        bump
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'water_logs', filter: `user_id=eq.${user.id}` },
+        bump
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
 
   const loadDailyActivity = async () => {
     const today = format(new Date(), 'yyyy-MM-dd')
@@ -124,6 +152,10 @@ export function Dashboard() {
       .select('*')
       .eq('id', user!.id)
       .maybeSingle()
+
+    if (profileData?.full_name) {
+      setProfileName(profileData.full_name.split(' ')[0])
+    }
 
     if (profileData && profileData.weight_kg && profileData.height_cm && profileData.age) {
       const goalMapping: Record<string, 'lose_weight' | 'maintain' | 'gain_muscle'> = {
@@ -207,6 +239,8 @@ export function Dashboard() {
       setTotals(totals)
 
       // Analyze nutrients against standards (including from nutritional_matrix)
+      // STRATEGY: For each nutrient, prefer VIP column if present; fallback to matrix.
+      // Within matrix, each nutrient is counted from ONE subsystem only (no cross-subsystem sums).
 
       // Initialize accumulators for nutritional_matrix nutrients
       let omega3Total = 0
@@ -255,139 +289,145 @@ export function Dashboard() {
       let vitKTotal = 0
 
       data.forEach(log => {
-        // Use direct VIP columns first (hybrid schema)
-        if (log.omega_3_total_g) omega3Total += Number(log.omega_3_total_g)
-        if (log.sodium_mg) sodiumTotal += Number(log.sodium_mg)
-        if (log.polyphenols_total_mg) polyphenolsTotal += Number(log.polyphenols_total_mg)
-        if (log.leucine_mg) leucineTotal += Number(log.leucine_mg) / 1000 // convert to grams
-        if (log.zinc_mg) zincTotal += Number(log.zinc_mg)
-        if (log.magnesium_mg) magnesiumTotal += Number(log.magnesium_mg)
-        if (log.choline_mg) // choline handled separately if needed
+        const matrix = log.nutritional_matrix as any
+        const hasMatrix = !!matrix
 
-        if (log.nutritional_matrix) {
-          const matrix = log.nutritional_matrix as any
+        // === VIP-first pattern: use VIP column if present, else fallback to matrix ===
 
-          // NEW FORMAT: motor, cognitive, hormonal, inflammation
+        // Omega-3: VIP is in grams, matrix is in mg
+        if (log.omega_3_total_g) {
+          omega3Total += Number(log.omega_3_total_g)
+        } else if (hasMatrix && matrix.inflammation?.omega?.omega_3_total_mg) {
+          omega3Total += Number(matrix.inflammation.omega.omega_3_total_mg) / 1000
+        }
 
-          // INFLAMMATION - Lipid profile and bioactives (REAL SCHEMA)
-          if (matrix.inflammation?.omega) {
-            const omega = matrix.inflammation.omega
-            if (omega.omega_3_total_mg) omega3Total += Number(omega.omega_3_total_mg) / 1000 // convert to grams
-            if (omega.epa_dha_mg) omega3EpaDha += Number(omega.epa_dha_mg) / 1000
-            if (omega.omega_6_mg) omega6Total += Number(omega.omega_6_mg) / 1000
-          }
+        // EPA+DHA: only in matrix
+        if (hasMatrix && matrix.inflammation?.omega?.epa_dha_mg) {
+          omega3EpaDha += Number(matrix.inflammation.omega.epa_dha_mg) / 1000
+        }
 
+        // Omega-6: only in matrix
+        if (hasMatrix && matrix.inflammation?.omega?.omega_6_mg) {
+          omega6Total += Number(matrix.inflammation.omega.omega_6_mg) / 1000
+        }
+
+        // Sodium: VIP or matrix (motor.electrolytes is primary, NOT cognitive which duplicates)
+        if (log.sodium_mg) {
+          sodiumTotal += Number(log.sodium_mg)
+        } else if (hasMatrix && matrix.motor?.electrolytes?.sodium_mg) {
+          sodiumTotal += Number(matrix.motor.electrolytes.sodium_mg)
+        }
+
+        // Polyphenols: VIP or matrix
+        if (log.polyphenols_total_mg) {
+          polyphenolsTotal += Number(log.polyphenols_total_mg)
+        } else if (hasMatrix && matrix.inflammation?.bioactives?.polyphenols_total_mg) {
+          polyphenolsTotal += Number(matrix.inflammation.bioactives.polyphenols_total_mg)
+        }
+
+        // Leucine: VIP or matrix
+        if (log.leucine_mg) {
+          leucineTotal += Number(log.leucine_mg) / 1000
+        } else if (hasMatrix && matrix.motor?.aminos_muscle?.leucine_mg) {
+          leucineTotal += Number(matrix.motor.aminos_muscle.leucine_mg) / 1000
+        }
+
+        // Zinc: VIP or matrix (motor.structure_minerals is primary)
+        if (log.zinc_mg) {
+          zincTotal += Number(log.zinc_mg)
+        } else if (hasMatrix) {
+          zincTotal += Number(matrix.motor?.structure_minerals?.zinc_mg || 0)
+        }
+
+        // Magnesium: VIP or matrix (motor.structure_minerals is primary)
+        if (log.magnesium_mg) {
+          magnesiumTotal += Number(log.magnesium_mg)
+        } else if (hasMatrix) {
+          magnesiumTotal += Number(matrix.motor?.structure_minerals?.magnesium_mg || 0)
+        }
+
+        // Choline: VIP column only (tracked separately if needed)
+
+        // === Matrix-only nutrients (no VIP column) ===
+        if (hasMatrix) {
+          // Sat fats & cholesterol
           if (matrix.inflammation?.sat_fats) {
-            const satFats = matrix.inflammation.sat_fats
-            if (satFats.saturated_g) satFatTotal += Number(satFats.saturated_g)
-            if (satFats.cholesterol_mg) cholesterolTotal += Number(satFats.cholesterol_mg)
+            satFatTotal += Number(matrix.inflammation.sat_fats.saturated_g || 0)
+            cholesterolTotal += Number(matrix.inflammation.sat_fats.cholesterol_mg || 0)
           }
 
-          if (matrix.inflammation?.bioactives) {
-            const bioactives = matrix.inflammation.bioactives
-            if (bioactives.polyphenols_total_mg) polyphenolsTotal += Number(bioactives.polyphenols_total_mg)
-          }
+          // Potassium: use motor.electrolytes only (avoid cognitive duplicate)
+          potassiumTotal += Number(matrix.motor?.electrolytes?.potassium_mg || 0)
 
-          // MOTOR - Electrolytes and muscle amino acids
-          if (matrix.motor?.electrolytes) {
-            const electrolytes = matrix.motor.electrolytes
-            if (electrolytes.sodium_mg) sodiumTotal += Number(electrolytes.sodium_mg)
-            if (electrolytes.potassium_mg) potassiumTotal += Number(electrolytes.potassium_mg)
-          }
-
+          // Muscle amino acids (except leucine handled above)
           if (matrix.motor?.aminos_muscle) {
             const aminos = matrix.motor.aminos_muscle
-            if (aminos.leucine_mg) leucineTotal += Number(aminos.leucine_mg) / 1000
-            if (aminos.isoleucine_mg) isoleucineTotal += Number(aminos.isoleucine_mg) / 1000
-            if (aminos.valine_mg) valineTotal += Number(aminos.valine_mg) / 1000
-            if (aminos.lysine_mg) lysineTotal += Number(aminos.lysine_mg) / 1000
-            if (aminos.methionine_mg) methionineTotal += Number(aminos.methionine_mg) / 1000
-            if (aminos.threonine_mg) threonineTotal += Number(aminos.threonine_mg) / 1000
+            isoleucineTotal += Number(aminos.isoleucine_mg || 0) / 1000
+            valineTotal += Number(aminos.valine_mg || 0) / 1000
+            lysineTotal += Number(aminos.lysine_mg || 0) / 1000
+            methionineTotal += Number(aminos.methionine_mg || 0) / 1000
+            threonineTotal += Number(aminos.threonine_mg || 0) / 1000
           }
 
-          if (matrix.motor?.structure_minerals) {
-            const minerals = matrix.motor.structure_minerals
-            if (minerals.zinc_mg) zincTotal += Number(minerals.zinc_mg)
-            if (minerals.magnesium_mg) magnesiumTotal += Number(minerals.magnesium_mg)
-            if (minerals.iron_mg) ironTotal += Number(minerals.iron_mg)
-          }
+          // Iron: use motor.structure_minerals only (avoid hormonal.structure duplicate)
+          ironTotal += Number(matrix.motor?.structure_minerals?.iron_mg || 0)
 
-          // NOTE: Glycine is not in nutritional_matrix schema - needs to be added later
-
-          // COGNITIVE - Neuro amino acids and vitamins (REAL SCHEMA)
+          // Brain amino acids
           if (matrix.cognitive?.aminos_brain) {
             const aminosBrain = matrix.cognitive.aminos_brain
-            if (aminosBrain.tryptophan_mg) tryptophanTotal += Number(aminosBrain.tryptophan_mg) / 1000
-            if (aminosBrain.phenylalanine_mg) phenylalanineTotal += Number(aminosBrain.phenylalanine_mg) / 1000
-            if (aminosBrain.tyrosine_mg) tyrosineTotal += Number(aminosBrain.tyrosine_mg) / 1000
-            if (aminosBrain.histidine_mg) histidineTotal += Number(aminosBrain.histidine_mg) / 1000
+            tryptophanTotal += Number(aminosBrain.tryptophan_mg || 0) / 1000
+            phenylalanineTotal += Number(aminosBrain.phenylalanine_mg || 0) / 1000
+            tyrosineTotal += Number(aminosBrain.tyrosine_mg || 0) / 1000
+            histidineTotal += Number(aminosBrain.histidine_mg || 0) / 1000
           }
 
+          // Neuro others
           if (matrix.cognitive?.neuro_others) {
-            const neuroOthers = matrix.cognitive.neuro_others
-            if (neuroOthers.choline_mg) // already tracked via VIP column
-            if (neuroOthers.taurine_mg) taurineTotal += Number(neuroOthers.taurine_mg)
-            if (neuroOthers.creatine_mg) creatineTotal += Number(neuroOthers.creatine_mg)
+            taurineTotal += Number(matrix.cognitive.neuro_others.taurine_mg || 0)
+            creatineTotal += Number(matrix.cognitive.neuro_others.creatine_mg || 0)
           }
 
-          if (matrix.cognitive?.electrolytes) {
-            const electrolytes = matrix.cognitive.electrolytes
-            if (electrolytes.sodium_mg) sodiumTotal += Number(electrolytes.sodium_mg)
-            if (electrolytes.potassium_mg) potassiumTotal += Number(electrolytes.potassium_mg)
-          }
-
+          // B vitamins + vitamin C (cognitive.energy_vitamins)
           if (matrix.cognitive?.energy_vitamins) {
             const vitamins = matrix.cognitive.energy_vitamins
-            if (vitamins.vit_b1_thiamin_mg) vitB1Total += Number(vitamins.vit_b1_thiamin_mg)
-            if (vitamins.vit_b2_riboflavin_mg) vitB2Total += Number(vitamins.vit_b2_riboflavin_mg)
-            if (vitamins.vit_b3_niacin_mg) vitB3Total += Number(vitamins.vit_b3_niacin_mg)
-            if (vitamins.vit_b5_pantothenic_mg) vitB5Total += Number(vitamins.vit_b5_pantothenic_mg)
-            if (vitamins.vit_b6_mg) vitB6Total += Number(vitamins.vit_b6_mg)
-            if (vitamins.vit_b7_biotin_mcg) vitB7Total += Number(vitamins.vit_b7_biotin_mcg)
-            if (vitamins.folate_mcg) folateTotal += Number(vitamins.folate_mcg)
-            if (vitamins.vit_b12_mcg) vitB12Total += Number(vitamins.vit_b12_mcg)
-            if (vitamins.vit_c_mg) vitCTotal += Number(vitamins.vit_c_mg)
+            vitB1Total += Number(vitamins.vit_b1_thiamin_mg || 0)
+            vitB2Total += Number(vitamins.vit_b2_riboflavin_mg || 0)
+            vitB3Total += Number(vitamins.vit_b3_niacin_mg || 0)
+            vitB5Total += Number(vitamins.vit_b5_pantothenic_mg || 0)
+            vitB6Total += Number(vitamins.vit_b6_mg || 0)
+            vitB7Total += Number(vitamins.vit_b7_biotin_mcg || 0)
+            folateTotal += Number(vitamins.folate_mcg || 0)
+            vitB12Total += Number(vitamins.vit_b12_mcg || 0)
+            vitCTotal += Number(vitamins.vit_c_mg || 0)
           }
 
-          if (matrix.cognitive?.trace_minerals) {
-            const traceMinerals = matrix.cognitive.trace_minerals
-            if (traceMinerals.selenium_mcg) seleniumTotal += Number(traceMinerals.selenium_mcg)
-            if (traceMinerals.chromium_mcg) chromiumTotal += Number(traceMinerals.chromium_mcg)
-          }
+          // Selenium: use cognitive.trace_minerals only (avoid hormonal duplicate)
+          seleniumTotal += Number(matrix.cognitive?.trace_minerals?.selenium_mcg || 0)
+          chromiumTotal += Number(matrix.cognitive?.trace_minerals?.chromium_mcg || 0)
 
-          // HORMONAL - Thyroid/insulin minerals and fat-soluble vitamins
+          // Hormonal-specific minerals (only those NOT already counted from motor/cognitive)
           if (matrix.hormonal?.thyroid_insulin) {
-            const minerals = matrix.hormonal.thyroid_insulin
-            if (minerals.selenium_mcg) seleniumTotal += Number(minerals.selenium_mcg)
-            if (minerals.chromium_mcg) chromiumTotal += Number(minerals.chromium_mcg)
-            if (minerals.zinc_mg) zincTotal += Number(minerals.zinc_mg)
-            if (minerals.magnesium_mg) magnesiumTotal += Number(minerals.magnesium_mg)
-            if (minerals.iodine_mcg) iodineTotal += Number(minerals.iodine_mcg)
-            if (minerals.manganese_mg) manganeseTotal += Number(minerals.manganese_mg)
+            iodineTotal += Number(matrix.hormonal.thyroid_insulin.iodine_mcg || 0)
+            manganeseTotal += Number(matrix.hormonal.thyroid_insulin.manganese_mg || 0)
           }
 
+          // Hormonal structure minerals (calcium, phosphorus, copper — unique to this subsystem)
           if (matrix.hormonal?.structure) {
-            const structure = matrix.hormonal.structure
-            if (structure.calcium_mg) calciumTotal += Number(structure.calcium_mg)
-            if (structure.phosphorus_mg) phosphorusTotal += Number(structure.phosphorus_mg)
-            if (structure.copper_mg) copperTotal += Number(structure.copper_mg)
-            if (structure.iron_mg) ironTotal += Number(structure.iron_mg)
+            calciumTotal += Number(matrix.hormonal.structure.calcium_mg || 0)
+            phosphorusTotal += Number(matrix.hormonal.structure.phosphorus_mg || 0)
+            copperTotal += Number(matrix.hormonal.structure.copper_mg || 0)
           }
 
+          // Fat-soluble vitamins (only in hormonal.liposolubles)
           if (matrix.hormonal?.liposolubles) {
             const vitamins = matrix.hormonal.liposolubles
-            if (vitamins.vitamin_a_mcg) vitATotal += Number(vitamins.vitamin_a_mcg)
-            if (vitamins.vit_d3_iu) vitDTotal += Number(vitamins.vit_d3_iu)
-            if (vitamins.vitamin_e_iu) vitETotal += Number(vitamins.vitamin_e_iu)
-            if (vitamins.vitamin_k1_mcg) vitKTotal += Number(vitamins.vitamin_k1_mcg)
-            if (vitamins.vitamin_k2_mcg) vitKTotal += Number(vitamins.vitamin_k2_mcg)
+            vitATotal += Number(vitamins.vitamin_a_mcg || 0)
+            vitDTotal += Number(vitamins.vit_d3_iu || 0)
+            vitETotal += Number(vitamins.vitamin_e_iu || 0)
+            vitKTotal += Number(vitamins.vitamin_k1_mcg || 0) + Number(vitamins.vitamin_k2_mcg || 0)
           }
         }
       })
-
-      // VIP columns are tracked directly
-      const directZinc = data.reduce((acc, log) => acc + (Number(log.zinc_mg) || 0), 0)
-      const directMagnesium = data.reduce((acc, log) => acc + (Number(log.magnesium_mg) || 0), 0)
 
       const allNutrients: Record<string, number> = {
         calories: totals.calories,
@@ -404,11 +444,11 @@ export function Dashboard() {
         omega_6_g: omega6Total,
         sat_fat_g: satFatTotal,
         cholesterol_mg: cholesterolTotal,
-        vit_a_iu: vitATotal,
+        vit_a_iu: vitATotal, // Note: stored as mcg in matrix, needs conversion if standards are IU
         vit_c_mg: vitCTotal,
-        vit_d3_iu: data.reduce((acc, log) => acc + (Number(log.vit_d3_iu) || 0), 0) + vitDTotal,
+        vit_d3_iu: vitDTotal, // VIP column already included in matrix read
         vit_e_iu: vitETotal,
-        vit_k2_mcg: vitKTotal,
+        vit_k_mcg: vitKTotal,
         b1_mg: vitB1Total,
         b2_mg: vitB2Total,
         b3_mg: vitB3Total,
@@ -419,8 +459,8 @@ export function Dashboard() {
         folate_mcg: folateTotal,
         calcium_mg: calciumTotal,
         phosphorus_mg: phosphorusTotal,
-        magnesium_mg: directMagnesium + magnesiumTotal,
-        zinc_mg: directZinc + zincTotal,
+        magnesium_mg: magnesiumTotal,
+        zinc_mg: zincTotal,
         potassium_mg: potassiumTotal,
         sodium_mg: sodiumTotal,
         selenium_mcg: seleniumTotal,
@@ -444,10 +484,11 @@ export function Dashboard() {
         creatine_mg: creatineTotal,
         polyphenols_total_mg: polyphenolsTotal,
         water_ml: data.reduce((acc, log) => {
+          // Water: VIP or matrix, not both
           const directWater = Number(log.water_ml) || 0
+          if (directWater > 0) return acc + directWater
           const matrix = log.nutritional_matrix as any
-          const matrixWater = matrix?.motor?.water_ml || 0
-          return acc + directWater + Number(matrixWater)
+          return acc + Number(matrix?.motor?.water_ml || 0)
         }, 0),
       }
 
@@ -488,10 +529,11 @@ export function Dashboard() {
 
     if (foodData) {
       waterTotal += foodData.reduce((acc, log) => {
+        // VIP-first: use direct water_ml if present, else fallback to matrix
         const directWater = Number(log.water_ml) || 0
+        if (directWater > 0) return acc + directWater
         const matrix = log.nutritional_matrix as any
-        const matrixWater = matrix?.motor?.water_ml || 0
-        return acc + directWater + Number(matrixWater)
+        return acc + Number(matrix?.motor?.water_ml || 0)
       }, 0)
     }
 
@@ -552,78 +594,381 @@ export function Dashboard() {
     )
   }
 
+  const waterPercentage = goals.water_ml > 0 ? Math.round((waterIntake / goals.water_ml) * 100) : 0
+  const waterLiters = (waterIntake / 1000).toFixed(1)
+  const waterGoalLiters = (goals.water_ml / 1000).toFixed(1)
+
+  const totalBurned = activities.reduce((acc, a) => acc + (a.calories_burned || 0), 0)
+
   return (
-    <div ref={dashRef} className="min-h-screen bg-dark-bg pb-40">
+    <div ref={dashRef} className="min-h-screen bg-dark-bg pb-24">
       <div className="max-w-7xl mx-auto px-4 py-6">
+
         {/* Hero Header */}
-        <div className="dash-section mb-8">
+        <div className="dash-section mb-6">
           <HeroHeader
-            userName={user?.user_metadata?.first_name || 'Usuario'}
-            totalCalories={totals.calories}
-            goalCalories={goals.calories}
-            metabolicState={isTrainingDay ? 'mTOR_ACTIVE' : 'NEUTRAL'}
+            userName={profileName || user?.user_metadata?.first_name || 'Usuario'}
           />
         </div>
 
-        {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {/* MacroRing - Large (2x1) */}
-          <div className="dash-section md:col-span-2">
-            <MacroRing
-              calories={totals.calories}
-              calorieGoal={goals.calories}
-              protein={totals.protein_g}
-              proteinGoal={goals.protein_g}
-              carbs={totals.carbs_g}
-              carbsGoal={goals.carbs_g}
-              fat={totals.fat_g}
-              fatGoal={goals.fat_g}
-            />
-          </div>
+        {/* MacroRing — central piece */}
+        <div className="dash-section mb-5">
+          <MacroRing
+            calories={totals.calories}
+            calorieGoal={goals.calories}
+            protein={totals.protein_g}
+            proteinGoal={goals.protein_g}
+            carbs={totals.carbs_g}
+            carbsGoal={goals.carbs_g}
+            fat={totals.fat_g}
+            fatGoal={goals.fat_g}
+          />
+        </div>
 
-          {/* Metabolic State - Tall (1x2) */}
-          <div className="dash-section md:row-span-2">
-            <MetabolicStateCard />
-          </div>
+        {/* ── Quick Access Cards ── */}
+        <div className="space-y-3 mb-5">
 
-          {/* Water Tracker */}
+          {/* Hydration — Ocean */}
           <div className="dash-section">
-            <WaterTracker
-              current={waterIntake}
-              goal={goals.water_ml}
-              onWaterAdded={handleWaterAdded}
-            />
-          </div>
+            <button
+              onClick={() => toggleCard('water')}
+              className="relative w-full text-left rounded-2xl overflow-hidden border border-cyan-500/15 bg-[#060d18] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(6,182,212,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-cyan-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+              style={{
+                backgroundImage: '',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              {/* Water fill */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                {/* Water body */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out"
+                  style={{ height: `${Math.max(Math.min(waterPercentage, 100), 15)}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-600/55 via-cyan-500/35 to-cyan-400/15" />
+                </div>
 
-          {/* Quick Sleep Editor */}
-          <div className="dash-section">
-            {sleepHours !== null && (
-              <QuickSleepEditor
-                sleepHours={sleepHours}
-                onSleepUpdated={handleSleepUpdated}
-              />
+                {/* Wave 1 */}
+                <div
+                  className="absolute left-0 right-0 h-12 animate-[wave-move-1_6s_ease-in-out_infinite]"
+                  style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15) - 14}%` }}
+                >
+                  <div className="absolute inset-0 w-[200%]" style={{ background: 'repeating-linear-gradient(90deg, transparent, rgba(6,182,212,0.5) 25%, transparent 50%)', borderRadius: '40%' }} />
+                </div>
+                {/* Wave 2 */}
+                <div
+                  className="absolute left-0 right-0 h-10 animate-[wave-move-2_5s_ease-in-out_infinite]"
+                  style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15) - 12}%` }}
+                >
+                  <div className="absolute inset-0 w-[200%]" style={{ background: 'repeating-linear-gradient(90deg, transparent, rgba(34,211,238,0.35) 25%, transparent 50%)', borderRadius: '45%' }} />
+                </div>
+                {/* Wave 3 */}
+                <div
+                  className="absolute left-0 right-0 h-8 animate-[wave-move-3_4s_ease-in-out_infinite]"
+                  style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15) - 10}%` }}
+                >
+                  <div className="absolute inset-0 w-[200%]" style={{ background: 'repeating-linear-gradient(90deg, transparent, rgba(165,243,252,0.25) 25%, transparent 50%)', borderRadius: '42%' }} />
+                </div>
+
+                {/* Floating bubbles */}
+                <div className="absolute w-1.5 h-1.5 rounded-full bg-cyan-300/40 animate-[bubble-rise_4s_ease-in-out_infinite]" style={{ bottom: '5%', left: '18%' }} />
+                <div className="absolute w-1 h-1 rounded-full bg-cyan-200/30 animate-[bubble-rise_5s_ease-in-out_infinite_1.2s]" style={{ bottom: '8%', left: '40%' }} />
+                <div className="absolute w-2 h-2 rounded-full bg-cyan-300/25 animate-[bubble-rise_6s_ease-in-out_infinite_2.5s]" style={{ bottom: '3%', left: '65%' }} />
+                <div className="absolute w-1 h-1 rounded-full bg-cyan-200/35 animate-[bubble-rise_4.5s_ease-in-out_infinite_0.8s]" style={{ bottom: '10%', left: '82%' }} />
+
+                {/* Surface shimmer */}
+                <div
+                  className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-300/40 to-transparent animate-[shimmer-sweep_5s_ease-in-out_infinite]"
+                  style={{ bottom: `${Math.max(Math.min(waterPercentage, 100), 15)}%` }}
+                />
+              </div>
+
+              <div className="flex items-center gap-4 p-4 relative z-10">
+                <div className="relative shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-cyan-950/60 backdrop-blur-sm border border-cyan-500/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(6,182,212,0.1)]">
+                    <img src="/weather-icons/humidity.svg" alt="" className="w-8 h-8 drop-shadow-[0_0_6px_rgba(6,182,212,0.5)]" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0 relative">
+                  <h3 className="text-sm font-bold text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]">Hidratación</h3>
+                  <p className="text-xs text-cyan-100/50 truncate">{waterLiters}L / {waterGoalLiters}L consumidos</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0 relative">
+                  <span className="text-lg font-black text-white drop-shadow-[0_0_10px_rgba(6,182,212,0.3)]">{waterPercentage}%</span>
+                  <ChevronRight className={`w-4 h-4 text-cyan-400/60 transition-transform duration-300 ${expandedCard === 'water' ? 'rotate-90' : ''}`} />
+                </div>
+              </div>
+            </button>
+            {expandedCard === 'water' && (
+              <div className="mt-2">
+                <WaterTracker current={waterIntake} goal={goals.water_ml} onWaterAdded={handleWaterAdded} />
+              </div>
             )}
           </div>
 
-          {/* Food Log List - Large (full width) */}
-          <div className="dash-section col-span-full lg:col-span-3">
-            <div className="bg-dark-card/40 backdrop-blur-xl border border-dark-border/50 rounded-3xl p-6">
-              <h3 className="text-sm font-semibold text-dark-muted mb-4">Últimos Alimentos</h3>
-              <FoodLogList refreshKey={refreshKey} onFoodDeleted={handleFoodDeleted} limit={5} />
+          {/* Sleep — Aurora + Stars */}
+          {sleepHours !== null && (
+            <div className="dash-section">
+              <button
+                onClick={() => toggleCard('sleep')}
+                className="relative w-full text-left rounded-2xl overflow-hidden border border-indigo-500/15 bg-[#080c1a] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(99,102,241,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-indigo-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+              >
+                {/* Animated night sky */}
+                <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                  {/* Stars */}
+                  <div className="absolute w-1 h-1 rounded-full bg-white/60 animate-[star-twinkle_3s_ease-in-out_infinite]" style={{ top: '20%', left: '15%' }} />
+                  <div className="absolute w-0.5 h-0.5 rounded-full bg-white/40 animate-[star-twinkle_4s_ease-in-out_infinite_1s]" style={{ top: '35%', left: '45%' }} />
+                  <div className="absolute w-1 h-1 rounded-full bg-indigo-300/50 animate-[star-twinkle_3.5s_ease-in-out_infinite_0.5s]" style={{ top: '15%', left: '70%' }} />
+                  <div className="absolute w-0.5 h-0.5 rounded-full bg-white/50 animate-[star-twinkle_5s_ease-in-out_infinite_2s]" style={{ top: '60%', left: '85%' }} />
+                  <div className="absolute w-1 h-1 rounded-full bg-violet-300/40 animate-[star-twinkle_4.5s_ease-in-out_infinite_1.5s]" style={{ top: '50%', left: '30%' }} />
+                  <div className="absolute w-0.5 h-0.5 rounded-full bg-white/30 animate-[star-twinkle_3s_ease-in-out_infinite_2.5s]" style={{ top: '25%', left: '55%' }} />
+
+                  {/* Aurora band */}
+                  <div className="absolute bottom-0 left-0 right-0 h-full animate-[aurora-drift_8s_ease-in-out_infinite]">
+                    <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.15) 20%, rgba(139,92,246,0.1) 40%, rgba(99,102,241,0.12) 60%, transparent 80%)', filter: 'blur(8px)' }} />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 h-3/4 animate-[aurora-drift-2_6s_ease-in-out_infinite]">
+                    <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(167,139,250,0.1) 30%, rgba(196,181,253,0.08) 50%, transparent 70%)', filter: 'blur(12px)' }} />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 relative z-10">
+                  <div className="relative shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-950/60 backdrop-blur-sm border border-indigo-500/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(99,102,241,0.1)]">
+                      <Moon className="w-5 h-5 text-indigo-400 drop-shadow-[0_0_6px_rgba(99,102,241,0.5)]" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0 relative">
+                    <h3 className="text-sm font-bold text-indigo-300 drop-shadow-[0_0_8px_rgba(99,102,241,0.4)]">Sueño</h3>
+                    <p className="text-xs text-indigo-100/50 truncate">
+                      {sleepHours < 6 ? 'Descanso insuficiente' : sleepHours < 7.5 ? 'Descanso moderado' : 'Buen descanso'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0 relative">
+                    <span className="text-lg font-black text-white drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]">{sleepHours}h</span>
+                    <ChevronRight className={`w-4 h-4 text-indigo-400/60 transition-transform duration-300 ${expandedCard === 'sleep' ? 'rotate-90' : ''}`} />
+                  </div>
+                </div>
+              </button>
+              {expandedCard === 'sleep' && (
+                <div className="mt-2">
+                  <QuickSleepEditor sleepHours={sleepHours} onSleepUpdated={handleSleepUpdated} />
+                </div>
+              )}
             </div>
+          )}
+
+          {/* Metabolic State — Pulse waves */}
+          <div className="dash-section">
+            <button
+              onClick={() => toggleCard('metabolic')}
+              className="relative w-full text-left rounded-2xl overflow-hidden border border-emerald-500/15 bg-[#081210] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(16,185,129,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-emerald-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+            >
+              {/* Animated pulse rings */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                {/* Expanding pulse rings from center-left */}
+                <div className="absolute top-1/2 left-[15%] -translate-y-1/2 w-20 h-20 rounded-full border border-emerald-500/20 animate-[pulse-ring_4s_ease-out_infinite]" />
+                <div className="absolute top-1/2 left-[15%] -translate-y-1/2 w-20 h-20 rounded-full border border-emerald-500/15 animate-[pulse-ring_4s_ease-out_infinite_1.3s]" />
+                <div className="absolute top-1/2 left-[15%] -translate-y-1/2 w-20 h-20 rounded-full border border-teal-400/10 animate-[pulse-ring_4s_ease-out_infinite_2.6s]" />
+
+                {/* Horizontal scan line */}
+                <div className="absolute top-0 left-0 w-full h-full animate-[scan-line_5s_linear_infinite]">
+                  <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
+                </div>
+
+                {/* Ambient glow */}
+                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-emerald-500/8 to-transparent" />
+              </div>
+
+              <div className="flex items-center gap-4 p-4 relative z-10">
+                <div className="relative shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-950/60 backdrop-blur-sm border border-emerald-500/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(16,185,129,0.1)]">
+                    <Activity className="w-5 h-5 text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0 relative">
+                  <h3 className="text-sm font-bold text-emerald-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">Estado Metabólico</h3>
+                  <p className="text-xs text-emerald-100/50 truncate">Monitor de vía mTOR / autofagia</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 relative">
+                  <ChevronRight className={`w-4 h-4 text-emerald-400/60 transition-transform duration-300 ${expandedCard === 'metabolic' ? 'rotate-90' : ''}`} />
+                </div>
+              </div>
+            </button>
+            {expandedCard === 'metabolic' && (
+              <div className="mt-2">
+                <MetabolicStateCard />
+              </div>
+            )}
+          </div>
+
+          {/* Activity — Fire/Flames */}
+          <div className="dash-section">
+            <button
+              onClick={() => toggleCard('activity')}
+              className="relative w-full text-left rounded-2xl overflow-hidden border border-amber-500/15 bg-[#140c06] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(245,158,11,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-amber-400/30 hover:-translate-y-0.5 transition-all duration-300 group"
+            >
+              {/* Animated flames */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                {/* Flame layer 1 — tall, slow */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-3/4 animate-[flame-flicker-1_3s_ease-in-out_infinite]"
+                >
+                  <div
+                    className="absolute inset-0 w-[200%]"
+                    style={{
+                      background: 'repeating-linear-gradient(90deg, transparent, rgba(245,158,11,0.2) 20%, transparent 40%)',
+                      borderRadius: '50% 50% 0 0',
+                      filter: 'blur(4px)',
+                    }}
+                  />
+                </div>
+
+                {/* Flame layer 2 — medium, offset */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-1/2 animate-[flame-flicker-2_2.5s_ease-in-out_infinite]"
+                >
+                  <div
+                    className="absolute inset-0 w-[200%]"
+                    style={{
+                      background: 'repeating-linear-gradient(90deg, transparent, rgba(251,191,36,0.15) 25%, transparent 50%)',
+                      borderRadius: '45% 55% 0 0',
+                      filter: 'blur(3px)',
+                    }}
+                  />
+                </div>
+
+                {/* Flame layer 3 — core glow */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-1/3 animate-[flame-flicker-3_2s_ease-in-out_infinite]"
+                >
+                  <div
+                    className="absolute inset-0 w-[200%]"
+                    style={{
+                      background: 'repeating-linear-gradient(90deg, transparent, rgba(249,115,22,0.18) 20%, transparent 40%)',
+                      borderRadius: '40% 60% 0 0',
+                      filter: 'blur(2px)',
+                    }}
+                  />
+                </div>
+
+                {/* Heat shimmer at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-orange-500/15 via-amber-500/8 to-transparent" />
+              </div>
+
+              <div className="flex items-center gap-4 p-4 relative z-10">
+                <div className="relative shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-amber-950/60 backdrop-blur-sm border border-amber-500/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(245,158,11,0.1)]">
+                    <Dumbbell className="w-5 h-5 text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0 relative">
+                  <h3 className="text-sm font-bold text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Actividad Física</h3>
+                  <p className="text-xs text-amber-100/50 truncate">
+                    {activities.length > 0 ? `${activities.length} actividad${activities.length > 1 ? 'es' : ''} registrada${activities.length > 1 ? 's' : ''}` : 'Sin actividad registrada'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0 relative">
+                  {totalBurned > 0 && <span className="text-lg font-black text-white drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">{totalBurned} kcal</span>}
+                  <ChevronRight className={`w-4 h-4 text-amber-400/60 transition-transform duration-300 ${expandedCard === 'activity' ? 'rotate-90' : ''}`} />
+                </div>
+              </div>
+            </button>
+            {expandedCard === 'activity' && (
+              <div className="mt-2">
+                <ActivityTracker activities={activities} onActivityAdded={handleActivityAdded} />
+              </div>
+            )}
+          </div>
+
+          {/* Day Type — Energy / Zen */}
+          <div className="dash-section">
+            <button
+              onClick={() => toggleCard('daytype')}
+              className={`relative w-full text-left rounded-2xl overflow-hidden border shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5 transition-all duration-300 group ${isTrainingDay ? 'border-red-500/20 bg-[#140606] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(239,68,68,0.25)] hover:border-red-400/35' : 'border-blue-500/15 bg-[#060810] hover:shadow-[0_12px_40px_-4px_rgba(0,0,0,0.6),0_4px_12px_-2px_rgba(96,165,250,0.15)] hover:border-blue-400/25'}`}
+            >
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                {isTrainingDay ? (
+                  <>
+                    {/* Core glow — pulsing */}
+                    <div className="absolute top-1/2 right-[8%] -translate-y-1/2 w-16 h-16 rounded-full bg-red-500/20 animate-[pulse-glow_3s_ease-in-out_infinite]" style={{ filter: 'blur(14px)' }} />
+                    {/* Embers rising */}
+                    <div className="absolute w-1.5 h-1.5 rounded-full bg-red-400/50 animate-[float-up_3s_ease-out_infinite]" style={{ bottom: '5%', left: '20%' }} />
+                    <div className="absolute w-1 h-1 rounded-full bg-orange-400/45 animate-[float-up_4s_ease-out_infinite_0.8s]" style={{ bottom: '10%', left: '40%' }} />
+                    <div className="absolute w-1.5 h-1.5 rounded-full bg-red-300/40 animate-[float-up_3.5s_ease-out_infinite_1.6s]" style={{ bottom: '3%', left: '60%' }} />
+                    <div className="absolute w-1 h-1 rounded-full bg-orange-300/35 animate-[float-up_5s_ease-out_infinite_2.4s]" style={{ bottom: '8%', left: '78%' }} />
+                    {/* Bottom heat glow */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-red-500/15 via-orange-500/5 to-transparent" />
+                  </>
+                ) : (
+                  <>
+                    {/* Moon glow */}
+                    <div className="absolute top-1/2 right-[12%] -translate-y-1/2 w-16 h-16 rounded-full bg-blue-400/10 animate-[pulse-glow_5s_ease-in-out_infinite]" style={{ filter: 'blur(12px)' }} />
+                    {/* Mist layers — thicker */}
+                    <div className="absolute inset-0 animate-[mist-drift-1_8s_ease-in-out_infinite]">
+                      <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.08) 25%, rgba(147,197,253,0.06) 50%, transparent 75%)', filter: 'blur(8px)' }} />
+                    </div>
+                    <div className="absolute inset-0 animate-[mist-drift-2_6s_ease-in-out_infinite]">
+                      <div className="absolute inset-0 w-[200%]" style={{ background: 'linear-gradient(90deg, transparent 15%, rgba(96,165,250,0.06) 35%, rgba(147,197,253,0.04) 55%, transparent 75%)', filter: 'blur(12px)' }} />
+                    </div>
+                    {/* Zen particles */}
+                    <div className="absolute w-1 h-1 rounded-full bg-blue-400/25 animate-[star-twinkle_5s_ease-in-out_infinite]" style={{ top: '25%', left: '15%' }} />
+                    <div className="absolute w-0.5 h-0.5 rounded-full bg-blue-300/20 animate-[star-twinkle_4s_ease-in-out_infinite_1.5s]" style={{ top: '55%', left: '45%' }} />
+                    <div className="absolute w-1 h-1 rounded-full bg-blue-400/15 animate-[star-twinkle_6s_ease-in-out_infinite_3s]" style={{ top: '35%', left: '75%' }} />
+                    {/* Bottom cool glow */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-blue-500/8 to-transparent" />
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center gap-4 p-4 relative z-10">
+                <div className="relative shrink-0">
+                  <div className={`w-12 h-12 rounded-xl backdrop-blur-sm flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] ${isTrainingDay ? 'bg-red-950/60 border border-red-500/25' : 'bg-blue-950/60 border border-blue-500/20'}`} style={{ boxShadow: isTrainingDay ? 'inset 0 1px 0 rgba(239,68,68,0.15)' : 'inset 0 1px 0 rgba(96,165,250,0.1)' }}>
+                    <Zap className={`w-5 h-5 ${isTrainingDay ? 'text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]' : 'text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.4)]'}`} />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0 relative">
+                  <h3 className={`text-sm font-bold ${isTrainingDay ? 'text-red-300 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'text-blue-300 drop-shadow-[0_0_8px_rgba(96,165,250,0.3)]'}`}>Tipo de Día</h3>
+                  <p className={`text-xs truncate ${isTrainingDay ? 'text-red-100/50' : 'text-blue-100/40'}`}>{isTrainingDay ? 'Día de entrenamiento' : 'Día de descanso'}</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0 relative">
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${isTrainingDay ? 'bg-red-500/20 text-red-400 shadow-[0_0_8px_rgba(239,68,68,0.2)]' : 'bg-blue-500/15 text-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.15)]'}`}>
+                    {isTrainingDay ? 'Training' : 'Rest'}
+                  </span>
+                  <ChevronRight className={`w-4 h-4 ${isTrainingDay ? 'text-red-400/60' : 'text-blue-400/60'} transition-transform duration-300 ${expandedCard === 'daytype' ? 'rotate-90' : ''}`} />
+                </div>
+              </div>
+            </button>
+            {expandedCard === 'daytype' && (
+              <div className="mt-2">
+                <DayTypeSelector isTrainingDay={isTrainingDay} onChange={updateDailyActivity} />
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Activity & Training Day Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="dash-section">
-            <DayTypeSelector isTrainingDay={isTrainingDay} onChange={updateDailyActivity} />
-          </div>
-          <div className="dash-section">
-            <ActivityTracker
-              activities={activities}
-              onActivityAdded={handleActivityAdded}
-            />
+        {/* ── Food Log ── */}
+        <div className="dash-section">
+          <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-[#060a0a] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.04)]">
+            {/* Subtle animated background */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-primary/8 to-transparent" />
+              <div className="absolute top-1/2 left-[50%] -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-primary/5 animate-[pulse-glow_6s_ease-in-out_infinite]" style={{ filter: 'blur(30px)' }} />
+            </div>
+
+            <div className="relative z-10 p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(13,148,136,0.1)]">
+                  <ClipboardList className="w-5 h-5 text-primary drop-shadow-[0_0_6px_rgba(13,148,136,0.5)]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white drop-shadow-[0_0_8px_rgba(13,148,136,0.3)]">Registro de Alimentos</h3>
+                  <p className="text-[10px] text-dark-muted">Comidas de hoy</p>
+                </div>
+              </div>
+              <FoodLogList refreshKey={refreshKey} onFoodDeleted={handleFoodDeleted} limit={5} />
+            </div>
           </div>
         </div>
       </div>
