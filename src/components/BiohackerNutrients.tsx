@@ -174,16 +174,13 @@ export function BiohackerNutrients({ nutrients, targets }: BiohackerNutrientsPro
   ]
 
   return (
-    <div className="relative bg-gradient-to-br from-dark-card to-dark-bg border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-all duration-300">
-      {/* Ambient gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-blue-500/5 opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
-
+    <div className="relative bg-dark-card border border-dark-border rounded-2xl p-6 overflow-hidden group hover:border-dark-border/80 transition-colors duration-300">
       <div className="relative z-10">
         {/* Header section */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-500 via-purple-500 to-blue-500 shadow-md shadow-cyan-500/30">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20">
+              <Sparkles className="w-5 h-5 text-primary-400" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">Nutrientes Biohacker</h3>

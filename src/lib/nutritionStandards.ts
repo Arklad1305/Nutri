@@ -96,18 +96,18 @@ export function analyzeNutrient(
     // Normal nutrients: higher is better (up to max)
     if (currentValue < min_survival_value * 0.5) {
       level = 'critical'
-      color = '#ef4444' // Red for severe deficiency
-      message = 'Deficiencia importante. Refuerza este nutriente.'
+      color = '#ef4444'
+      message = 'Nivel bajo. Considera añadir alimentos ricos en este nutriente.'
       percentage = (currentValue / min_survival_value) * 100
     } else if (currentValue < min_survival_value) {
       level = 'survival'
       color = '#f59e0b'
-      message = 'Por debajo del mínimo. Aumenta este nutriente.'
+      message = 'Podrías beneficiarte de más de este nutriente.'
       percentage = (currentValue / min_survival_value) * 100
     } else if (min_optimal_value && currentValue < min_optimal_value) {
       level = 'functional'
       color = '#fbbf24'
-      message = 'Buen progreso. Falta poco para el nivel óptimo.'
+      message = 'Vas bien. Un poco más te llevará al óptimo.'
       percentage = (currentValue / min_optimal_value) * 100
     } else {
       level = 'optimal'
@@ -118,8 +118,8 @@ export function analyzeNutrient(
 
     if (max_optimal_value && currentValue > max_optimal_value) {
       level = 'critical'
-      color = '#ef4444' // Red for excess (was amber — now distinct from sub-optimal)
-      message = 'Excedido. Considera reducir este nutriente.'
+      color = '#ef4444'
+      message = 'Has superado el rango óptimo. Considera moderar este nutriente.'
       percentage = 150
     }
   }

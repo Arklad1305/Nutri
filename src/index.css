@@ -51,10 +51,7 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5);
 
-  --gradient-cyber: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #10b981 100%);
-  --gradient-neon: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  --gradient-fire: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
-  --gradient-electric: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+  --gradient-primary: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
 }
 
 @layer base {
@@ -228,18 +225,6 @@
       background: rgba(163, 163, 163, 0.3);
       border-radius: 3px;
     }
-  }
-
-  .text-gradient-cyber {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-400 via-electric-500 to-neon-400;
-  }
-
-  .text-gradient-neon {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-neon-400 to-primary-500;
-  }
-
-  .text-gradient-fire {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-magenta-500;
   }
 
   .border-gradient {
