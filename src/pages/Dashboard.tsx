@@ -89,6 +89,29 @@ export function Dashboard() {
     }
   }, [user, refreshKey, isTrainingDay, sleepHours])
 
+  useEffect(() => {
+    if (!user) return
+
+    const bump = () => setRefreshKey(k => k + 1)
+    const channel = supabase
+      .channel(`dashboard-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'food_logs', filter: `user_id=eq.${user.id}` },
+        bump
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'water_logs', filter: `user_id=eq.${user.id}` },
+        bump
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
+
   const loadDailyActivity = async () => {
     const today = format(new Date(), 'yyyy-MM-dd')
 

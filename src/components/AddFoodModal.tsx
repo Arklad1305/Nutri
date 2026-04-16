@@ -48,6 +48,8 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
   }, [onClose, reducedMotion])
   const [inputMode, setInputMode] = useState<'manual' | 'ai'>('manual')
   const [aiDescription, setAiDescription] = useState('')
+  const [consumedAt, setConsumedAt] = useState(() => toLocalDatetimeInput(new Date()))
+  const [timeError, setTimeError] = useState('')
   const [formData, setFormData] = useState({
     food_name: '',
     quantity_g: 100,
@@ -65,6 +67,17 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
     omega_3_total_g: 0,
     polyphenols_total_mg: 0,
   })
+
+  const validateConsumedAt = (value: string): string | null => {
+    if (!value) return null
+    const d = new Date(value)
+    if (isNaN(d.getTime())) return 'Fecha inválida'
+    const now = new Date()
+    if (d.getTime() > now.getTime() + 60_000) return 'No puede ser en el futuro'
+    const sevenDaysAgo = now.getTime() - 7 * 24 * 60 * 60 * 1000
+    if (d.getTime() < sevenDaysAgo) return 'Máximo 7 días atrás'
+    return null
+  }
 
   const handleAiSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,6 +133,10 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
     e.preventDefault()
     if (!user) return
 
+    const err = validateConsumedAt(consumedAt)
+    if (err) { setTimeError(err); return }
+    setTimeError('')
+
     setLoading(true)
     try {
       const nutritionalMatrix = createNutritionalMatrix({
@@ -156,6 +173,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
         omega_3_total_g: formData.omega_3_total_g,
         polyphenols_total_mg: formData.polyphenols_total_mg,
         nutritional_matrix: nutritionalMatrix,
+        logged_at: new Date(consumedAt).toISOString(),
       })
 
       setFormData({
@@ -175,6 +193,7 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
         omega_3_total_g: 0,
         polyphenols_total_mg: 0,
       })
+      setConsumedAt(toLocalDatetimeInput(new Date()))
 
       onSuccess()
     } catch (error) {
@@ -301,6 +320,26 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
                 min="1"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-base font-semibold text-white mb-2">
+                Momento del consumo
+              </label>
+              <input
+                type="datetime-local"
+                value={consumedAt}
+                onChange={(e) => {
+                  setConsumedAt(e.target.value)
+                  setTimeError(validateConsumedAt(e.target.value) || '')
+                }}
+                className="w-full px-4 py-3 text-base bg-dark-bg/40 border border-white/[0.06] rounded-xl focus:outline-none focus:border-primary/40 text-white"
+              />
+              {timeError ? (
+                <p className="text-xs text-amber-400 mt-1.5">{timeError}</p>
+              ) : (
+                <p className="text-xs text-dark-muted mt-1.5">Por defecto: ahora. Puedes registrar comidas de hasta 7 días atrás.</p>
+              )}
             </div>
           </div>
 
@@ -527,4 +566,9 @@ export function AddFoodModal({ isOpen, onClose, onSuccess }: AddFoodModalProps) 
       </div>
     </div>
   )
+}
+
+function toLocalDatetimeInput(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
