@@ -1,179 +1,41 @@
-import { ReactNode, useRef } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { ReactNode } from 'react'
+import { NavLink } from 'react-router-dom'
 import { Home, BarChart3, User, MessageCircle, ChefHat } from 'lucide-react'
-import { gsap, useGSAP } from '../lib/gsap'
-import { useReducedMotion } from '../hooks/useReducedMotion'
 
 interface LayoutProps {
   children: ReactNode
 }
 
+const navItems = [
+  { to: '/', icon: Home, label: 'Dashboard' },
+  { to: '/chat', icon: MessageCircle, label: 'Chat' },
+  { to: '/recipes', icon: ChefHat, label: 'Recetas' },
+  { to: '/analysis', icon: BarChart3, label: 'Análisis' },
+  { to: '/profile', icon: User, label: 'Perfil' },
+]
+
 export function Layout({ children }: LayoutProps) {
-  const contentRef = useRef<HTMLDivElement>(null)
-  const location = useLocation()
-  const reducedMotion = useReducedMotion()
-
-  useGSAP(() => {
-    if (reducedMotion || !contentRef.current) return
-    gsap.fromTo(contentRef.current,
-      { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
-    )
-  }, { dependencies: [location.pathname, reducedMotion] })
-
   return (
     <div className="min-h-screen bg-dark-bg">
-      <div ref={contentRef}>
-        {children}
-      </div>
+      {children}
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-dark-card/95 backdrop-blur-xl border-t border-dark-border/50 z-50">
-        <div className="max-w-7xl mx-auto px-2">
-          <div className="flex items-center justify-around h-16 py-1.5">
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                `relative flex flex-col items-center justify-center gap-1.5 px-5 py-2 rounded-2xl transition-all duration-300 group ${
-                  isActive
-                    ? 'text-primary scale-105'
-                    : 'text-dark-muted hover:text-white hover:scale-105'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
-                  )}
-                  <div className={`relative p-2 rounded-xl transition-all duration-300 ${
-                    isActive
-                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
-                      : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
-                  }`}>
-                    <Home className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                  </div>
-                  <span className={`text-[10px] font-bold relative transition-all ${isActive ? 'text-primary' : ''}`}>
-                    Dashboard
-                  </span>
-                </>
-              )}
-            </NavLink>
-
-            <NavLink
-              to="/chat"
-              className={({ isActive }) =>
-                `relative flex flex-col items-center justify-center gap-1.5 px-5 py-2 rounded-2xl transition-all duration-300 group ${
-                  isActive
-                    ? 'text-primary scale-105'
-                    : 'text-dark-muted hover:text-white hover:scale-105'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
-                  )}
-                  <div className={`relative p-2 rounded-xl transition-all duration-300 ${
-                    isActive
-                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
-                      : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
-                  }`}>
-                    <MessageCircle className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                  </div>
-                  <span className={`text-[10px] font-bold relative transition-all ${isActive ? 'text-primary' : ''}`}>
-                    Chat
-                  </span>
-                </>
-              )}
-            </NavLink>
-
-            <NavLink
-              to="/recipes"
-              className={({ isActive }) =>
-                `relative flex flex-col items-center justify-center gap-1.5 px-5 py-2 rounded-2xl transition-all duration-300 group ${
-                  isActive
-                    ? 'text-primary scale-105'
-                    : 'text-dark-muted hover:text-white hover:scale-105'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
-                  )}
-                  <div className={`relative p-2 rounded-xl transition-all duration-300 ${
-                    isActive
-                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
-                      : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
-                  }`}>
-                    <ChefHat className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                  </div>
-                  <span className={`text-[10px] font-bold relative transition-all ${isActive ? 'text-primary' : ''}`}>
-                    Recetas
-                  </span>
-                </>
-              )}
-            </NavLink>
-
-            <NavLink
-              to="/analysis"
-              className={({ isActive }) =>
-                `relative flex flex-col items-center justify-center gap-1.5 px-5 py-2 rounded-2xl transition-all duration-300 group ${
-                  isActive
-                    ? 'text-primary scale-105'
-                    : 'text-dark-muted hover:text-white hover:scale-105'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
-                  )}
-                  <div className={`relative p-2 rounded-xl transition-all duration-300 ${
-                    isActive
-                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
-                      : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
-                  }`}>
-                    <BarChart3 className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                  </div>
-                  <span className={`text-[10px] font-bold relative transition-all ${isActive ? 'text-primary' : ''}`}>
-                    Análisis
-                  </span>
-                </>
-              )}
-            </NavLink>
-
-            <NavLink
-              to="/profile"
-              className={({ isActive }) =>
-                `relative flex flex-col items-center justify-center gap-1.5 px-5 py-2 rounded-2xl transition-all duration-300 group ${
-                  isActive
-                    ? 'text-primary scale-105'
-                    : 'text-dark-muted hover:text-white hover:scale-105'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-sm" />
-                  )}
-                  <div className={`relative p-2 rounded-xl transition-all duration-300 ${
-                    isActive
-                      ? 'bg-primary/15 shadow-lg shadow-primary/20'
-                      : 'bg-dark-hover/0 group-hover:bg-dark-hover/50'
-                  }`}>
-                    <User className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                  </div>
-                  <span className={`text-[10px] font-bold relative transition-all ${isActive ? 'text-primary' : ''}`}>
-                    Perfil
-                  </span>
-                </>
-              )}
-            </NavLink>
+      <nav className="fixed bottom-0 left-0 right-0 bg-dark-card/95 backdrop-blur-md border-t border-dark-border z-50">
+        <div className="max-w-lg mx-auto px-2">
+          <div className="flex items-center justify-around h-14">
+            {navItems.map(({ to, icon: Icon, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `flex flex-col items-center gap-1 px-3 py-1.5 transition-colors duration-200 ${
+                    isActive ? 'text-primary' : 'text-dark-muted hover:text-dark-text'
+                  }`
+                }
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium">{label}</span>
+              </NavLink>
+            ))}
           </div>
         </div>
       </nav>
